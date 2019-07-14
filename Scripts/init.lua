@@ -57,6 +57,7 @@ mod.alltiles = {
   "reset",
   "persist",
   "back",
+  "with"
 }
 
 function mod.addblock(tile)

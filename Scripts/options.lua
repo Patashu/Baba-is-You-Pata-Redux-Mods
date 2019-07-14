@@ -21,6 +21,7 @@ mod.enabled["stubborn"] = true
 mod.enabled["reset"] = true
 mod.enabled["persist"] = true
 mod.enabled["back"] = true
+mod.enabled["with"] = true
 
 --If true, MOONWALK and related properties (DRUNK, DRUNKER, SKIP) apply to PUSH, PULL, SHIFT and YEET in addition to basically everything else. Defaults to true.
 activemod.very_drunk = true
@@ -285,5 +286,20 @@ mod.tile["back"] = {
 	colour = {6, 0},
 	active = {6, 1},
 	tile = {96, 20},
+	layer = 20,
+}
+
+mod.tile["with"] = {
+	name = "text_with",
+	sprite = "text_with",
+	sprite_in_root = false,
+	unittype = "text",
+	tiling = -1,
+	type = 7,
+	operatortype = "cond_arg",
+	argtype = {2},
+	colour = {0, 1},
+	active = {0, 3},
+	tile = {96, 21},
 	layer = 20,
 }

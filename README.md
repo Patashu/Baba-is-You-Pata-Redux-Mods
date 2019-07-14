@@ -30,6 +30,8 @@ To install: Copy modloader.lua until Baba Is You/Data/Lua folder. Copy the rest 
 
 **COPY** - __Verb__ If x COPY y, whenever y moves, x will try to move the same way.
 
+**WITH** - __Infix Condition__ True if the unit has the specified property.
+
 Baba is You Discord server: https://discord.gg/GGbUUse
 
 You may use these mods in your mod pack or custom world with attribution!

@@ -807,6 +807,52 @@ function testcond(conds,unitid,x_,y_,autofail_)
 							end
 						end
 					end
+        elseif (condtype == "with") then
+					valid = true
+
+					local isfirst = false
+					if withrecursion == nil then
+						isfirst = true
+						withrecursion = {}
+					end
+
+					if not withrecursion[conds] then
+						withrecursion[conds] = true
+						for a,b in ipairs(params) do
+							if not hasfeature(name,"is",b,unitid,x,y) then
+								result = false
+							end
+						end
+
+						if isfirst then
+							withrecursion = nil
+						end
+					else
+						result = false
+					end
+				elseif (condtype == "not with") then
+					valid = true
+
+					local isfirst = false
+					if withrecursion == nil then
+						isfirst = true
+						withrecursion = {}
+					end
+
+					if not withrecursion[conds] then
+						withrecursion[conds] = true
+						for a,b in ipairs(params) do
+							if hasfeature(name,"is",b,unitid,x,y) then
+								result = false
+							end
+						end
+
+						if isfirst then
+							withrecursion = nil
+						end
+					else
+						result = false
+					end
 				elseif (condtype == "idle") then
 					valid = true
 					
