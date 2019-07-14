@@ -1,3 +1,5 @@
+moving_units = {}
+
 function movecommand(ox,oy,dir_,playerid_)
 	statusblock()
 	movelist = {}
@@ -6,7 +8,7 @@ function movecommand(ox,oy,dir_,playerid_)
 	local takecount = 3
 	local finaltake = false
   
-  slipped = {}
+  local slipped = {}
 	
 	local still_moving = {}
 	
@@ -34,7 +36,7 @@ function movecommand(ox,oy,dir_,playerid_)
 	end
 	
 	while (take <= takecount) or finaltake do
-		local moving_units = {}
+		moving_units = {}
 		local been_seen = {}
 		
 		if (finaltake == false) then
@@ -440,7 +442,7 @@ function movecommand(ox,oy,dir_,playerid_)
 									end
 								end
 								
-								table.insert(movelist, {data.unitid,ox,oy,dir,specials, data.reason})
+								queue_move(data.unitid,ox,oy,dir,specials, data.reason)
 								--move(data.unitid,ox,oy,dir,specials)
 								
 								local swapped = {}
@@ -583,7 +585,7 @@ function movecommand(ox,oy,dir_,playerid_)
 			end
 			
 			if (#movelist > 0) then
-        for i,data in ipairs(movelist) do
+        --[[for i,data in ipairs(movelist) do
           unitid = data[1]
           --implement SIDEKICK
           if (unitid ~= 2) then
@@ -607,7 +609,7 @@ function movecommand(ox,oy,dir_,playerid_)
               end
             end
           end
-        end
+        end]]--
       
 				for i,data in ipairs(movelist) do
 					local success = move(data[1],data[2],data[3],data[4],data[5])
@@ -1130,7 +1132,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 		
 		while (finaldone == false) and (HACK_MOVES < 10000) do
 			if (result == 0) then
-				table.insert(movelist, {unitid,ox,oy,dir,specials,reason})
+				queue_move(unitid,ox,oy,dir,specials,reason)
 				--move(unitid,ox,oy,dir,specials)
 				pushsound = true
 				finaldone = true
@@ -1140,7 +1142,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 					for i,obs in ipairs(pullhmlist) do
 						if (obs < -1) or (obs > 1) and (obs ~= pusherid) then
 							if (obs ~= 2) then
-								table.insert(movelist, {obs,ox,oy,dir,pullspecials,reason})
+								queue_move(obs,ox,oy,dir,pullspecials,reason)
 								pushsound = true
 								--move(obs,ox,oy,dir,specials)
 							end
@@ -1196,7 +1198,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 			for i,obs in pairs(hmlist) do
 				if (obs < -1) or (obs > 1) then
 					if (obs ~= 2) then
-						table.insert(movelist, {obs,ox,oy,dir,specials,reason})
+						queue_move(obs,ox,oy,dir,specials,reason)
 						pushsound = true
 						--move(obs,ox,oy,dir,specials)
 					end
@@ -1534,4 +1536,31 @@ function trunc(num)
 	else
 		return 0
 	end
+end
+
+function queue_move(unitid,ox,oy,dir,specials,reason)
+  table.insert(movelist, {unitid,ox,oy,dir,specials,reason})
+  
+  --implement SIDEKICK
+  if (unitid ~= 2) then
+    local unit = mmf.newObject(unitid)
+    unitname = getname(unit)
+    local sidekicks = find_sidekicks(unitid, dir);
+    for _,sidekickid in ipairs(sidekicks) do
+      --no multiplicative cascades in sidekick - only start sidekicking if we're not already sidekicking
+      local sidekick = mmf.newObject(sidekickid)
+      local alreadysidekicking = false
+      for _,other in ipairs(moving_units) do
+        if other.unitid == sidekickid then
+          alreadysidekicking = true
+          break
+        end
+      end
+      if not alreadysidekicking then
+        updatedir(sidekickid, dir)
+        print("adding to moving_units",unitid,getname(sidekick))
+        table.insert(moving_units, {unitid = sidekickid, reason = "sidekick", state = 0, moves = 1, dir = dir, xpos = sidekick.values[XPOS], ypos = sidekick.values[YPOS]})
+      end
+    end
+  end
 end
