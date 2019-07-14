@@ -1424,7 +1424,7 @@ function levelblock()
 		end
 	end
 	
-	if (#emptythings > 0) then
+  if (#emptythings > 0) then
 		for i=1,roomsizex-2 do
 			for j=1,roomsizey-2 do
 				local tileid = i + j * roomsizex
@@ -1432,7 +1432,9 @@ function levelblock()
 				if (unitmap[tileid] == nil) or (#unitmap[tileid] == 0) then
 					--MF_alert(tostring(i) .. ", " .. tostring(j))
 					local keypair = ""
+					local winpair = ""
 					local unlock = false
+					local victory = false
 					
 					for a,rules in ipairs(emptythings) do
 						local rule = rules[1]
@@ -1451,6 +1453,20 @@ function levelblock()
 								unlock = true
 							end
 						end
+						
+						if (rule[3] == "win") and testcond(conds,2,i,j) then
+							if (string.len(winpair) == 0) then
+								winpair = "you"
+							elseif (winpair == "win") then
+								victory = true
+							end
+						elseif (rule[3] == "you") and testcond(conds,2,i,j) then
+							if (string.len(winpair) == 0) then
+								winpair = "win"
+							elseif (winpair == "you") then
+								victory = true
+							end
+						end
 					end
 					
 					if unlock then
@@ -1461,6 +1477,10 @@ function levelblock()
 						end
 						
 						delete(2,i,j)
+					end
+					
+					if victory then
+						MF_win()
 					end
 				end
 			end
