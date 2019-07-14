@@ -42,6 +42,85 @@ function addundo(line)
 	end
 end
 
+function undoRemove(turn, i, line)
+  local uid = line[6]
+  local baseuid = line[7] or -1
+  local unit = nil
+  
+  if (paradox[uid] == nil) and (paradox[baseuid] == nil) then
+    local x,y,dir,levelfile,levelname,vislevel,complete,visstyle,maplevel,colour,clearcolour,convert,oldid = line[3],line[4],line[5],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],line[16],line[17]
+    local name = line[2]
+    
+    local unitname = ""
+    local unitid = 0
+    
+    --If the unit was converted into 'no undo' byproducts that still exist, don't bring it back.
+    local proceed = true;
+    if (convert and featureindex["persist"] ~= nil) then
+      proceed = not turnedIntoOnlyNoUndoUnits(turn, i, oldid);
+    end
+    
+    if (proceed) then
+      unitname = unitreference[name]
+      unitid = MF_emptycreate(unitname,x,y)
+    
+      unit = mmf.newObject(unitid)
+      unit.values[ONLINE] = 1
+      unit.values[XPOS] = x
+      unit.values[YPOS] = y
+      unit.values[DIR] = dir
+      unit.values[ID] = line[6]
+      unit.flags[9] = true
+      
+      unit.strings[U_LEVELFILE] = levelfile
+      unit.strings[U_LEVELNAME] = levelname
+      unit.flags[MAPLEVEL] = maplevel
+      unit.values[VISUALLEVEL] = vislevel
+      unit.values[VISUALSTYLE] = visstyle
+      unit.values[COMPLETED] = complete
+      
+      unit.strings[COLOUR] = colour
+      unit.strings[CLEARCOLOUR] = clearcolour
+      
+      if (unit.className == "level") then
+        MF_setcolourfromstring(unitid,colour)
+      end
+      
+      --If the unit was actually a destroyed 'no undo', oops. Don't actually bring it back. It's dead, Jim.
+      addunit(unitid,true)
+      addunitmap(unitid,x,y,unit.strings[UNITNAME])
+      dynamic(unitid)
+      if (not convert and (hasfeature(getname(unit),"is","persist",unitid))) then
+        delunit(unitid)
+        MF_remove(unitid)
+      else
+        if (unit.strings[UNITTYPE] == "text") then
+          updatecode = 1
+        end
+        
+        local undowordunits = undobuffer[turn].wordunits
+        if (#undowordunits > 0) then
+          for a,b in ipairs(undowordunits) do
+            if (b == line[6]) then
+              updatecode = 1
+            end
+          end
+        end
+        
+        local visibility = hasfeature(name,"is","hide",unitid)
+        
+        if (visibility ~= nil) then
+          unit.visible = false
+        end
+        return unit
+      end
+    end
+  else
+    particles("hot",line[3],line[4],1,{1, 1})
+  end
+  return nil
+end
+
 function undo()
 	if (#undobuffer > 1) then
 		local currentundo = undobuffer[2]
@@ -99,79 +178,7 @@ function undo()
 						particles("hot",line[3],line[4],1,{1, 1})
 					end
 				elseif (style == "remove") then
-					local uid = line[6]
-					local baseuid = line[7] or -1
-					
-					if (paradox[uid] == nil) and (paradox[baseuid] == nil) then
-						local x,y,dir,levelfile,levelname,vislevel,complete,visstyle,maplevel,colour,clearcolour,convert,oldid = line[3],line[4],line[5],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],line[16],line[17]
-						local name = line[2]
-						
-						local unitname = ""
-						local unitid = 0
-            
-            --If the unit was converted into 'no undo' byproducts that still exist, don't bring it back.
-            local proceed = true;
-            if (convert and featureindex["persist"] ~= nil) then
-              proceed = not turnedIntoOnlyNoUndoUnits(i, oldid);
-            end
-						
-            if (proceed) then
-              unitname = unitreference[name]
-              unitid = MF_emptycreate(unitname,x,y)
-            
-              local unit = mmf.newObject(unitid)
-              unit.values[ONLINE] = 1
-              unit.values[XPOS] = x
-              unit.values[YPOS] = y
-              unit.values[DIR] = dir
-              unit.values[ID] = line[6]
-              unit.flags[9] = true
-              
-              unit.strings[U_LEVELFILE] = levelfile
-              unit.strings[U_LEVELNAME] = levelname
-              unit.flags[MAPLEVEL] = maplevel
-              unit.values[VISUALLEVEL] = vislevel
-              unit.values[VISUALSTYLE] = visstyle
-              unit.values[COMPLETED] = complete
-              
-              unit.strings[COLOUR] = colour
-              unit.strings[CLEARCOLOUR] = clearcolour
-              
-              if (unit.className == "level") then
-                MF_setcolourfromstring(unitid,colour)
-              end
-              
-              --If the unit was actually a destroyed 'no undo', oops. Don't actually bring it back. It's dead, Jim.
-              addunit(unitid,true)
-              addunitmap(unitid,x,y,unit.strings[UNITNAME])
-              dynamic(unitid)
-              if (not convert and (hasfeature(getname(unit),"is","persist",unitid))) then
-                delunit(unitid)
-                MF_remove(unitid)
-              else
-                if (unit.strings[UNITTYPE] == "text") then
-                  updatecode = 1
-                end
-                
-                local undowordunits = currentundo.wordunits
-                if (#undowordunits > 0) then
-                  for a,b in ipairs(undowordunits) do
-                    if (b == line[6]) then
-                      updatecode = 1
-                    end
-                  end
-                end
-                
-                local visibility = hasfeature(name,"is","hide",unitid)
-                
-                if (visibility ~= nil) then
-                  unit.visible = false
-                end
-              end
-            end
-					else
-						particles("hot",line[3],line[4],1,{1, 1})
-					end
+					undoRemove(2, i, line)
 				elseif (style == "create") then
 					local uid = line[3]
 					
@@ -283,7 +290,8 @@ end
 
 function doBack(unit, turn)
   local unitid = unit.fixed
-  if (turn < #undobuffer) and (turn > 0) then
+  print(turn, #undobuffer)
+  if (turn <= #undobuffer) and (turn > 0) then
     local currentundo = undobuffer[turn]
     
     if (currentundo ~= nil) then
@@ -291,7 +299,7 @@ function doBack(unit, turn)
       updateundo = true
       for a,line in ipairs(currentundo) do
         local style = line[1]
-        
+        print(line[1], line[3], unit.values[ID])
         if (style == "update") and (line[9] == unit.values[ID]) then
           local uid = line[9]
           
@@ -306,9 +314,15 @@ function doBack(unit, turn)
           end
         elseif (style == "create") and (line[3] == unit.values[ID]) then
           local uid = line[3]
+          local created_from_id = line[5]
+          local created_id = line[6]
+          if (unit.values[MISC_A] > 0) then
+            addundo({"backer_turn", unitid, unit.values[MISC_A]})
+          end
           
           if (paradox[uid] == nil) then
             local name = unit.strings[UNITNAME]
+            --scanAndRecreateOldUnit(turn, a, unit.fixed, created_from_id);
             
             addundo({"remove",unit.strings[UNITNAME],unit.values[XPOS],unit.values[YPOS],unit.values[DIR],unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],false,unitid})
             
@@ -323,43 +337,44 @@ function doBack(unit, turn)
 end
 
 --If gras becomes roc, then later roc becomes undo, when it disappears we want the gras to come back. This is how we code that - by scanning for the related remove event and undoing that too.
---[[function scanAndRecreateOldUnit(i, unit_id, created_from_id, ignore_no_undo)
+function scanAndRecreateOldUnit(turn, i, unit_id, created_from_id)
   while (true) do
-    local v = undobuffer[2][i]
+    local v = undobuffer[turn][i]
     if (v == nil) then
       return
     end
     local action = v[1]
-    --TODO: implement for MOUS
     if (action == "remove") then
-      local old_creator_id = v[7];
+      local old_creator_id = v[17];
       if v[7] == created_from_id then
         --no exponential cloning if gras turned into 2 rocs - abort if there's already a unit with that name on that tile
-        local tile, x, y = v[2], v[3], v[4];
-        local data = tiles_list[tile];
-        local stuff = getUnitsOnTile(x, y, nil, true);
+        local name, x, y = v[2], v[3], v[4];
+        local stuff = findobstacle(x, y);
         for _,on in ipairs(stuff) do
-          if on.name == data.name then
-            return
+          if on > 2 then
+            local other = mmf.newObject(on);
+            if other.name == name then
+              return
+            end
           end
         end
-        local _, new_unit = undoOneAction(turn, i, v, ignore_no_undo);
+        local new_unit = undoRemove(turn, i, v);
         if (new_unit ~= nil) then
-          addUndo({"create", new_unit.id, true, created_from_id = unit_id})
+          addundo({"create",newunit.strings[UNITNAME],newunit.values[ID],newunit.values[ID],unit_id,new_unit.fixed})
         end
         return
       end
     end
     i = i - 1;
   end
-end]]
+end
 
 --if water becomes roc, and roc is no undo, if we undo then the water shouldn't come back. This is how we code that - by scanning for all related create events. If we find one existing no undo byproduct and no existing non-no undo byproducts, we return false.
-function turnedIntoOnlyNoUndoUnits(i, unit_id)
+function turnedIntoOnlyNoUndoUnits(turn, i, unit_id)
   local found_no_undo = false;
   local found_non_no_undo = false;
   while (true) do
-    local v = undobuffer[2][i]
+    local v = undobuffer[turn][i]
     if (v == nil) then
       break
     end
