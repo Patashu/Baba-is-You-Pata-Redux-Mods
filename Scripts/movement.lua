@@ -8,7 +8,7 @@ function movecommand(ox,oy,dir_,playerid_)
 	local takecount = 3
 	local finaltake = false
   
-  local slipped = {}
+  slipped = {}
 	
 	local still_moving = {}
 	
@@ -350,12 +350,14 @@ function movecommand(ox,oy,dir_,playerid_)
 							end
 						elseif (state == 3) then
 							if ((data.reason == "move") or (data.reason == "chill")) then
-								dir = rotate(dir)
-								
-								if (data.unitid ~= 2) then
-									updatedir(data.unitid, dir)
-									--unit.values[DIR] = dir
-								end
+                if (not hasfeature(name,"is","stubborn",data.unitid,x,y)) then
+                  dir = rotate(dir)
+                  
+                  if (data.unitid ~= 2) then
+                    updatedir(data.unitid, dir)
+                    --unit.values[DIR] = dir
+                  end
+                end
 							end
 						end
 						
@@ -502,7 +504,7 @@ function movecommand(ox,oy,dir_,playerid_)
 									local finalpushobs = {}
 									
 									for c,pushobs in ipairs(pushobslist) do
-										local hm = trypush(pushobs,ox,oy,dir,false,x,y,data.reason)
+										local hm = trypush(pushobs,ox,oy,dir,false,x,y,data.reason,data.unitid)
 										if (hm == 0) then
 											table.insert(finalpushobs, pushobs)
 										elseif (hm == 1) or (hm == -1) then
@@ -516,7 +518,7 @@ function movecommand(ox,oy,dir_,playerid_)
 									if (result == 1) then
 										for c,pushobs in ipairs(finalpushobs) do
 											pushedunits = {}
-											dopush(pushobs,ox,oy,dir,false,x,y,data.reason)
+											dopush(pushobs,ox,oy,dir,false,x,y,data.reason,data.unitid)
 										end
 										result = 0
 									end
@@ -990,6 +992,13 @@ function trypush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 	local pulling = pulling_ or false
 	
 	local weak = hasfeature(name,"is","weak",unitid,x_,y_)
+  
+  local pushername = "empty";
+	if (pusherid > 2) then
+		local pusherunit = mmf.newObject(pusherid);
+		pushername = getname(pusherunit);
+	end
+	local lazypusher = hasfeature(pushername,"is","lazy",pusherid,x,y) ~= nil
 
 	if (weak == nil) or pulling then
 		local hmlist,hms,specials = check(unitid,x,y,dir,false,reason)
@@ -1000,7 +1009,9 @@ function trypush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 			local done = false
 			
 			while (done == false) do
-				if (hm == 0) then
+        if (lazypusher) then
+					return 1
+				elseif (hm == 0) then
 					result = math.max(0, result)
 					done = true
 				elseif (hm == 1) or (hm == -1) then
@@ -1047,6 +1058,14 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 		name = "empty"
 	end
 	
+  local pushername = "empty";
+	if (pusherid > 2) then
+		local pusherunit = mmf.newObject(pusherid);
+		pushername = getname(pusherunit);
+	end
+	local lazypusher = hasfeature(pushername,"is","lazy",pusherid,x,y) ~= nil
+	local lazyid = hasfeature(name,"is","lazy",unitid,x,y) ~= nil
+  
 	local pulling = false
 	if (pulling_ ~= nil) then
 		pulling = pulling_
@@ -1105,7 +1124,9 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 		for i,obs in pairs(hmlist) do
 			local done = false
 			while (done == false) do
-				if (obs == 0) then
+				if (lazypusher) then
+					return 1
+				elseif (obs == 0) then
 					result = math.max(0, result)
 					done = true
 				elseif (obs == 1) or (obs == -1) then
@@ -1192,26 +1213,33 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 		end
 		
 		if pulling and (HACK_MOVES < 10000) then
+      if (lazypusher) then
+        return 1
+			end
 			hmlist,hms,specials = check(unitid,x,y,dir,pulling,reason)
 			hm = 0
 			
 			for i,obs in pairs(hmlist) do
 				if (obs < -1) or (obs > 1) then
-					if (obs ~= 2) then
-						queue_move(obs,ox,oy,dir,specials,reason)
-						pushsound = true
-						--move(obs,ox,oy,dir,specials)
-					end
-					
-					local pid = tostring(x-ox + (y-oy) * roomsizex) .. tostring(obs)
-					
-					if (pushedunits[pid] == nil) then
-						pushedunits[pid] = 1
-						hm = dopush(obs,ox,oy,dir,pulling,x-ox,y-oy,reason,unitid)
+					if (not lazyid) then
+						--Mostly the lazypusher stuff is self-explanatory - don't do a push if we're lazy.
+						--But in the case of pulling, the item one ahead of us does a pull 'early', so we have to stop it in advance.
+						if (obs ~= 2) then
+							table.insert(movelist, {obs,ox,oy,dir,specials,1,reason})
+							pushsound = true
+							--move(obs,ox,oy,dir,specials)
+						end
+
+						local pid = tostring(x-ox + (y-oy) * roomsizex) .. tostring(obs)
+						
+						if (pushedunits[pid] == nil) then
+							pushedunits[pid] = 1
+							hm = dopush(obs,ox,oy,dir,pulling,x-ox,y-oy,reason,unitid)
+						end
 					end
 				end
 			end
-		end
+    end
 		
 		if pushsound and (generaldata2.strings[TURNSOUND] == "") then
 			setsoundname("turn",5)
