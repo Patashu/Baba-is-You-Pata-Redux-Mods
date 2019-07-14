@@ -524,8 +524,10 @@ function simplecouldenter(unitid, x, y, ox, oy, name_is_wall, text_is_wall, chec
 				if (obstype == "text") then
 					obsname = "text"
 				end
-				
-				local obsstop = hasfeature(obsname,"is","stop",b,x,y) or hasfeature(obsname,"is","sidekick",b,x,y)
+        
+        local obsstop = hasfeature(obsname,"is","stop",b) or hasfeature(obsname,"is","sidekick",b) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,b,x,y)) or (hasfeature(obsname,"is","oneway",b) and oxoytodir(ox,oy) == rotate(bunit.values[DIR]))
+				--local obsstop = hasfeature(obsname,"is","stop",b,x,y) or hasfeature(obsname,"is","sidekick",b,x,y)
+        if (not obsstop) then obsstop = nil end
 				local obspush = hasfeature(obsname,"is","push",b,x,y)
 				local obspull = hasfeature(obsname,"is","pull",b,x,y)
 				
@@ -544,6 +546,25 @@ function simplecouldenter(unitid, x, y, ox, oy, name_is_wall, text_is_wall, chec
 	end
 	
 	return true
+end
+
+function countfeature(rule1,rule2,rule3,unitid,x,y)
+	local result = 0;
+	if (featureindex[rule3] ~= nil) and (rule1 ~= nil) and (rule2 ~= nil) then
+		for i,rules in ipairs(featureindex[rule3]) do
+			local rule = rules[1]
+			local conds = rules[2]
+			
+			if (conds[1] ~= "never") then
+				if (rule[1] == rule1) and (rule[2] == rule2) and (rule[3] == rule3) then
+					if testcond(conds,unitid,x,y) then
+						result = result + 1
+					end
+				end
+			end
+		end
+	end
+	return result
 end
 
 function writerules(parent,name,x_,y_)

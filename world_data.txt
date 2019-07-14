@@ -1,8 +1,8 @@
-[levels]
-levelid=7
-
 [general]
+firstlevel=3level
+start=3level
 name=pataredux
-start=1level
-firstlevel=1level
+
+[levels]
+levelid=8
 

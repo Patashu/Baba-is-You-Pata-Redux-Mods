@@ -871,7 +871,7 @@ function check(unitid,x,y,dir,pulling_,reason)
 				if valid then
 					--MF_alert("checking for solidity for " .. obsname .. " by " .. name .. " at " .. tostring(x) .. ", " .. tostring(y))
 					
-					local isstop = hasfeature(obsname,"is","stop",id) or hasfeature(obsname,"is","sidekick",id) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,id,x,y))
+					local isstop = hasfeature(obsname,"is","stop",id) or hasfeature(obsname,"is","sidekick",id) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,id,x,y)) or (hasfeature(obsname,"is","oneway",id) and dir == rotate(obsunit.values[DIR]))
           if (not isstop) then isstop = nil end
 					local ispush = hasfeature(obsname,"is","push",id)
 					local ispull = hasfeature(obsname,"is","pull",id)

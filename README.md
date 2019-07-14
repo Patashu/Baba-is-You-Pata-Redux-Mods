@@ -26,6 +26,8 @@ To install: Copy modloader.lua until Baba Is You/Data/Lua folder. Copy the rest 
 
 **TALL** - __Property__ This unit is considered to be both float levels simultaneously.
 
+**ONEWAY** - __Property__ Prevents units from walking onto it from the tile it faces (like a directional STOP).
+
 Baba is You Discord server: https://discord.gg/GGbUUse
 
 You may use these mods in your mod pack or custom world with attribution!
