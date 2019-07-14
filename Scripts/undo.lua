@@ -254,7 +254,15 @@ function undo()
 					MF_setcolour(unitid,line[3],line[4])
 					local unit = mmf.newObject(unitid)
 					unit.values[A] = line[5]
-				end
+				elseif (style == "backer_turn") then
+          local unitid = line[2]
+          local backer_turn = line[3]
+          local unit = mmf.newObject(unitid)
+          if (unit ~= nil and not hasfeature(getname(unit),"is","persist",unitid)) then
+            backers_cache[unit.fixed] = backer_turn;
+            unit.values[MISC_A] = backer_turn;
+          end
+        end
 			end
 		end
 		
@@ -272,6 +280,47 @@ function undostate(state)
 		doundo = state
 	end
 end 
+
+function doBack(unit, turn)
+  local unitid = unit.fixed
+  if (turn < #undobuffer) and (turn > 0) then
+    local currentundo = undobuffer[turn]
+    
+    if (currentundo ~= nil) then
+      --add a dummy action so that undoing happens
+      updateundo = true
+      for a,line in ipairs(currentundo) do
+        local style = line[1]
+        
+        if (style == "update") and (line[9] == unit.values[ID]) then
+          local uid = line[9]
+          
+          if (paradox[uid] == nil) then
+            local oldx,oldy = unit.values[XPOS],unit.values[YPOS]
+            local x,y,dir = line[3],line[4],line[5]
+            
+            addaction(unitid,{"update",x,y,dir})
+          else
+            particles("hot",line[3],line[4],1,{1, 1})
+            updateundo = true
+          end
+        elseif (style == "create") and (line[3] == unit.values[ID]) then
+          local uid = line[3]
+          
+          if (paradox[uid] == nil) then
+            local name = unit.strings[UNITNAME]
+            
+            addundo({"remove",unit.strings[UNITNAME],unit.values[XPOS],unit.values[YPOS],unit.values[DIR],unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],false,unitid})
+            
+            delunit(unitid)
+            dynamic(unitid)
+            MF_specialremove(unitid,2)
+          end
+        end
+      end
+    end
+  end
+end
 
 --If gras becomes roc, then later roc becomes undo, when it disappears we want the gras to come back. This is how we code that - by scanning for the related remove event and undoing that too.
 --[[function scanAndRecreateOldUnit(i, unit_id, created_from_id, ignore_no_undo)

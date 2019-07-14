@@ -63,24 +63,6 @@ function statusblock(ids,undoing_)
 					updatedir(unit.fixed,3)
 				end
 			end
-			
-			if (generaldata.values[MODE] == 0) then
-				if (featureindex["back"] ~= nil) then
-					local isback = hasfeature(name,"is","back",unit.fixed)
-					
-					if (isback == nil) then
-						unit.values[MISC_A] = 0
-						unit.values[MISC_B] = 0
-					end
-					
-					if (isback ~= nil) and (unit.values[MISC_A] == 0) then
-						unit.values[MISC_A] = #undobuffer
-					end
-				else
-					unit.values[MISC_A] = 0
-					unit.values[MISC_B] = 0
-				end
-			end
 		end
 		
 		if (unit.visible == false) and (generaldata2.values[ENDINGGOING] == 0) then
@@ -342,54 +324,36 @@ function moveblock()
 			end
 		end
 		]]--
-		
-		local isback = findallfeature(nil,"is","back",true)
-		
-		for i,unitid in ipairs(isback) do
-			local unit = mmf.newObject(unitid)
-			
-			local undooffset = #undobuffer - unit.values[MISC_A] - 1
-			unit.values[MISC_B] = unit.values[MISC_B] + 1
-			
-			local undotargetid = undooffset + unit.values[MISC_B] + 1
-			
-			if (undotargetid < #undobuffer) and (undotargetid > 0) then
-				local currentundo = undobuffer[undotargetid]
-				
-				if (currentundo ~= nil) then
-					for a,line in ipairs(currentundo) do
-						local style = line[1]
-						
-						if (style == "update") and (line[9] == unit.values[ID]) then
-							local uid = line[9]
-							
-							if (paradox[uid] == nil) then
-								local oldx,oldy = unit.values[XPOS],unit.values[YPOS]
-								local x,y,dir = line[3],line[4],line[5]
-								
-								addaction(unitid,{"update",x,y,dir})
-							else
-								particles("hot",line[3],line[4],1,{1, 1})
-								updateundo = true
-							end
-						elseif (style == "create") and (line[3] == unit.values[ID]) then
-							local uid = line[3]
-							
-							if (paradox[uid] == nil) then
-								local name = unit.strings[UNITNAME]
-								
-								addundo({"remove",unit.strings[UNITNAME],unit.values[XPOS],unit.values[YPOS],unit.values[DIR],unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],false,unitid})
-								
-								delunit(unitid)
-								dynamic(unitid)
-								MF_specialremove(unitid,2)
-							end
-						end
-					end
-				end
-			end
-		end
-	end
+  end
+  
+  local backed_this_turn = {};
+  local not_backed_this_turn = {};
+  
+  local isback = findallfeature(nil,"is","back",true)
+  for _,unitid in pairs(isback) do
+    local unit = mmf.newObject(unitid)
+    local name = getname(unit)
+    backed_this_turn[unit.fixed] = true;
+    if (unit.values[MISC_A] == 0) then
+      addundo({"backer_turn", unit.fixed, 0})
+      unit.values[MISC_A] = #undobuffer;
+      backers_cache[unit.fixed] = unit.values[MISC_A];
+    end
+    doBack(unit, 2*(#undobuffer-unit.values[MISC_A]));
+  end
+  
+  for unit,turn in pairs(backers_cache) do
+    if turn ~= nil and not backed_this_turn[unit] then
+      not_backed_this_turn[unit] = true;
+    end
+  end
+  
+  for unitid,_ in pairs(not_backed_this_turn) do
+    local unit = mmf.newObject(unitid)
+    addundo({"backer_turn", unitid, unit.values[MISC_A]})
+    unit.values[MISC_A] = 0;
+    backers_cache[unit] = nil;
+  end
 	
 	doupdate()
 	
@@ -518,6 +482,29 @@ function moveblock()
       local left = (fwd+1)%4
       local result = changeDirIfFree(unitid, fwd) or changeDirIfFree(unitid, right) or changeDirIfFree(unitid, left) or changeDirIfFree(unitid, bwd);
     end
+  end
+  
+  --Fix the 'txt be undo' bug by checking an additional time if we need to unset backer_turn for a unit.
+  
+  local backed_this_turn = {};
+  local not_backed_this_turn = {};
+  
+  local isback = findallfeature(nil,"is","back",true)
+  for _,unitid in pairs(isback) do
+    backed_this_turn[unitid] = true;
+  end
+  
+  for unit,turn in pairs(backers_cache) do
+    if turn ~= nil and not backed_this_turn[unit] then
+      not_backed_this_turn[unit] = true;
+    end
+  end
+  
+  for unitid,_ in pairs(not_backed_this_turn) do
+    local unit = mmf.newObject(unitid)
+    addundo({"backer_turn", unit, unit.values[MISC_A]})
+    unit.values[MISC_A] = 0;
+    backers_cache[unitid] = nil;
   end
   
 	doupdate()

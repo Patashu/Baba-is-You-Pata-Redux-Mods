@@ -43,6 +43,7 @@ function init(tilemapid,roomsizex_,roomsizey_,tilesize_,Xoffset_,Yoffset_,genera
 	memory = {}
 	memoryneeded = false
 	powered = false
+  backers_cache = {}
 	
 	generaldata.values[CURRID] = 0
 	updatecode = 1
@@ -167,6 +168,7 @@ function clearunits()
 	memory = {}
 	memoryneeded = false
 	powered = false
+  backers_cache = {}
 	
 	generaldata.values[CURRID] = 0
 	updateundo = true

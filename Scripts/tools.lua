@@ -1302,7 +1302,7 @@ function append(t1,t2)
 end
 
 function getname(unit)
-  if (not type(unit) == "table") then
+  if (unit == nil or not type(unit) == "table") then
     print(debug.traceback())
     return "error"
   end
