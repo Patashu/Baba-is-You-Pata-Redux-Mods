@@ -583,21 +583,48 @@ function movecommand(ox,oy,dir_,playerid_)
 			end
 			
 			if (#movelist > 0) then
+        for i,data in ipairs(movelist) do
+          unitid = data[1]
+          --implement SIDEKICK
+          if (unitid ~= 2) then
+            local unit = mmf.newObject(unitid)
+            unitname = getname(unit)
+            local sidekicks = find_sidekicks(unitid, data[4]);
+            for _,sidekickid in ipairs(sidekicks) do
+              --no multiplicative cascades in sidekick - only start sidekicking if we're not already sidekicking
+              local sidekick = mmf.newObject(sidekickid)
+              local alreadysidekicking = false
+              for _,other in ipairs(still_moving) do
+                if other.unitid == sidekickid then
+                  alreadysidekicking = true
+                  break
+                end
+              end
+              if not alreadysidekicking then
+                updatedir(sidekickid, data[4])
+                print("adding back to still_moving",unitid,getname(sidekick))
+                table.insert(still_moving, {unitid = sidekickid, reason = "sidekick", state = 0, moves = 1, dir = data[4], xpos = sidekick.values[XPOS], ypos = sidekick.values[YPOS]})
+              end
+            end
+          end
+        end
+      
 				for i,data in ipairs(movelist) do
 					local success = move(data[1],data[2],data[3],data[4],data[5])
           if (success) then
             if (data[6] == "slip") then
 							slipped[data[1]] = true
 						end
-            unitid = movelist[i][1]
-            local unit = nil
+            unitid = data[1]
+            
+            --implement SLIDE
             if (unitid ~= 2) then
-              unit = mmf.newObject(unitid)
+              local unit = mmf.newObject(unitid)
               unitname = getname(unit)
-              local x = unit.values[XPOS] + movelist[i][2]
-              local y = unit.values[YPOS] + movelist[i][3]
-              local slides = findfeatureat(nil,"is","slide",x,y)
-              if (slides ~= nil and #slides > 0) then
+              local x = unit.values[XPOS] + data[2]
+              local y = unit.values[YPOS] + data[3]
+              local slides = findfeatureat(nil,"is","slide",x,y) and true or (hasfeature("empty","is","slide",2,x,y) and #findobstacle(x,y) == 0)
+              if slides then
                 --no multiplicative cascades in slide - only start sliding if we're not already sliding
                 local alreadysliding = false
                 for _,other in ipairs(still_moving) do
@@ -709,6 +736,7 @@ function check(unitid,x,y,dir,pulling_,reason)
 	end
   
   emptystop = emptystop or hasfeature(name,"hates","empty",unitid,x,y)
+  emptystop = emptystop or hasfeature("empty","is","sidekick",2,x+ox,y+oy)
   
   if (hasfeature(name,"hates","level",unitid,x,y)) then
     return {-1},{-1},specials
@@ -835,7 +863,7 @@ function check(unitid,x,y,dir,pulling_,reason)
 				if valid then
 					--MF_alert("checking for solidity for " .. obsname .. " by " .. name .. " at " .. tostring(x) .. ", " .. tostring(y))
 					
-					local isstop = hasfeature(obsname,"is","stop",id) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,id,x,y))
+					local isstop = hasfeature(obsname,"is","stop",id) or hasfeature(obsname,"is","sidekick",id) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,id,x,y))
           if (not isstop) then isstop = nil end
 					local ispush = hasfeature(obsname,"is","push",id)
 					local ispull = hasfeature(obsname,"is","pull",id)
@@ -1452,4 +1480,58 @@ function add_moving_units(rule,newdata,data,been_seen,empty_)
 	end
 	
 	return result,seen
+end
+
+function find_sidekicks(unitid,dir)
+  --fast track
+  if featureindex["sidekick"] == nil then return {} end
+  local result = {}
+  local unit = mmf.newObject(unitid)
+  local unitname = getname(unit)
+  local lazy = hasfeature(unitname,"is","lazy",unitid)
+  if lazy ~= nil then
+    return result;
+  end
+  local x,y = unit.values[XPOS],unit.values[YPOS]
+  print("find_sidekicks",x,y,dir)
+  local dir90 = (dir+1) % 4;
+  for i = 1,2 do
+    local curdir = (dir90+2*i) % 4;
+    local curdx = ndirs[curdir+1][1];
+    local curdy = ndirs[curdir+1][2];
+    local curx = x+curdx;
+    local cury = y+curdy;
+    print("find_sidekicks is checking",curx,cury)
+    local obs = findobstacle(curx,cury);
+    for i,id in ipairs(obs) do
+      if (id ~= -1) then
+        local obsunit = mmf.newObject(id)
+        local obsname = getname(obsunit)
+        if hasfeature(obsname,"is","sidekick",id) then
+          table.insert(result, id);
+        end
+      end
+    end
+  end
+  return result;
+end
+
+function sign(num)
+	if num > 0 then
+		return 1
+	elseif num < 0 then
+		return -1
+	else
+		return 0
+	end
+end
+
+function trunc(num)
+	if num > 0 then
+		return math.floor(num)
+	elseif num < 0 then
+		return math.ceil(num)
+	else
+		return 0
+	end
 end

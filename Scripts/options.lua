@@ -28,7 +28,7 @@ mod.tile["slip"] = {
 	type = 2,
 	colour = {1, 3},
 	active = {1, 4},
-	tile = {8, 15},
+	tile = {96, 1},
 	layer = 20,
 }
 
@@ -41,7 +41,7 @@ mod.tile["slide"] = {
 	type = 2,
 	colour = {1, 3},
 	active = {1, 4},
-	tile = {2, 12},
+	tile = {96, 2},
 	layer = 20,
 }
 
@@ -55,7 +55,7 @@ mod.tile["likes"] = {
 	operatortype = "verb",
 	colour = {5, 0},
 	active = {5, 1},
-	tile = {12, 13},
+	tile = {96, 3},
 	layer = 20,
 }
 
@@ -69,7 +69,7 @@ mod.tile["hates"] = {
 	operatortype = "verb",
 	colour = {5, 0},
 	active = {5, 1},
-	tile = {12, 14},
+	tile = {96, 4},
 	layer = 20,
 }
 
@@ -82,7 +82,7 @@ mod.tile["sidekick"] = {
 	type = 2,
 	colour = {6, 0},
 	active = {6, 1},
-	tile = {13, 15},
+	tile = {96, 5},
 	layer = 20,
 }
 
@@ -95,7 +95,7 @@ mod.tile["lazy"] = {
 	type = 2,
 	colour = {6, 1},
 	active = {6, 2},
-	tile = {13, 15},
+	tile = {96, 6},
 	layer = 20,
 }
 
@@ -108,7 +108,7 @@ mod.tile["lean"] = {
 	type = 2,
 	colour = {5, 2},
 	active = {5, 3},
-	tile = {13, 16},
+	tile = {96, 7},
 	layer = 20,
 }
 
@@ -121,7 +121,7 @@ mod.tile["turn"] = {
 	type = 2,
 	colour = {5, 2},
 	active = {5, 3},
-	tile = {13, 17},
+	tile = {96, 8},
 	layer = 20,
 }
 
@@ -134,7 +134,7 @@ mod.tile["spin"] = {
 	type = 2,
 	colour = {1, 3},
 	active = {1, 4},
-	tile = {13, 18},
+	tile = {96, 9},
 	layer = 20,
 }
 
@@ -147,7 +147,7 @@ mod.tile["moonwalk"] = {
 	type = 2,
 	colour = {1, 3},
 	active = {1, 4},
-	tile = {6, 15},
+	tile = {96, 10},
 	layer = 20,
 }
 
@@ -160,7 +160,7 @@ mod.tile["oneway"] = {
 	type = 2,
 	colour = {1, 3},
 	active = {1, 4},
-	tile = {6, 16},
+	tile = {96, 11},
 	layer = 20,
 }
 
@@ -173,7 +173,7 @@ mod.tile["tall"] = {
 	type = 2,
 	colour = {0, 0},
 	active = {0, 1},
-	tile = {6, 17},
+	tile = {96, 12},
 	layer = 20,
 }
 
@@ -186,7 +186,7 @@ mod.tile["stubborn"] = {
 	type = 2,
 	colour = {6, 1},
 	active = {6, 2},
-	tile = {12, 15},
+	tile = {96, 13},
 	layer = 20,
 }
 
@@ -200,7 +200,7 @@ mod.tile["copy"] = {
 	operatortype = "verb",
 	colour = {2, 1},
 	active = {2, 2},
-	tile = {4, 12},
+	tile = {96, 14},
 	layer = 20,
 }
 
@@ -213,7 +213,7 @@ mod.tile["reset"] = {
 	type = 2,
 	colour = {3, 0},
 	active = {3, 1},
-	tile = {7, 12},
+	tile = {96, 15},
 	layer = 20,
 }
 
@@ -226,7 +226,7 @@ mod.tile["persist"] = {
 	type = 2,
 	colour = {0, 2},
 	active = {0, 3},
-	tile = {8, 12},
+	tile = {96, 16},
 	layer = 20,
 }
 
@@ -239,6 +239,6 @@ mod.tile["back"] = {
 	type = 2,
 	colour = {6, 0},
 	active = {6, 1},
-	tile = {13, 13},
+	tile = {96, 17},
 	layer = 20,
 }

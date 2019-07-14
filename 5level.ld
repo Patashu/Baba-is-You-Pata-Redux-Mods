@@ -12,5 +12,5 @@ levels=0
 palette=default.png
 customparent=
 paletteroot=1
-name=hates likes test
+name=sidekick test
 
