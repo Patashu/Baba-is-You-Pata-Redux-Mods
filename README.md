@@ -1,5 +1,7 @@
 # Baba Is You Pata Redux Mods
 
+Special thanks to JumboDS64 for initial LEAN implementation, lily for modloader and initial COPY/WITH/PERSIST/RESET implementation.
+
 To install: Copy modloader.lua until Baba Is You/Data/Lua folder. Copy the rest into the World folder that you wish to use this mod.
 
 **SLIP** - __Property__ Once per turn, objects standing on something SLIP will involuntarily move in the direction they're facing. If they did, voluntary movement (YOU, MOVE, COPY) is prevented that turn.
