@@ -120,6 +120,9 @@ function moveblock()
 	local isshift = findallfeature(nil,"is","shift",true)
 	local istele = findallfeature(nil,"is","tele",true)
 	local isfollow = findfeature(nil,"follow",nil,true)
+  local isspin = findallfeature(nil,"is","spin",true)
+  local islean = findallfeature(nil,"is","lean",true)
+  local isturn = findallfeature(nil,"is","turn",true)
 	
 	local doned = {}
 	
@@ -486,8 +489,47 @@ function moveblock()
 			end
 		end
 	end
+  
+  for a,unitid in ipairs(isspin) do
+		if (unitid ~= 2) and (unitid ~= 1) then
+			local unit = mmf.newObject(unitid)
+			local x,y,dir = unit.values[XPOS],unit.values[YPOS],unit.values[DIR]
+			updatedir(unitid,(dir+3)%4);
+		end
+	end
 	
+  for a,unitid in ipairs(islean) do
+    if (unitid ~= 2) and (unitid ~= 1) then
+      local unit = mmf.newObject(unitid)
+      local fwd = unit.values[DIR]
+      local right = (fwd+3)%4
+      local bwd = (fwd+2)%4
+      local left = (fwd+1)%4
+      local result = changeDirIfFree(unitid, right) or changeDirIfFree(unitid, fwd) or changeDirIfFree(unitid, left) or changeDirIfFree(unitid, bwd);
+    end
+  end
+  
+  for a,unitid in ipairs(isturn) do
+    if (unitid ~= 2) and (unitid ~= 1) then
+      local unit = mmf.newObject(unitid)
+      local fwd = unit.values[DIR]
+      local right = (fwd+3)%4
+      local bwd = (fwd+2)%4
+      local left = (fwd+1)%4
+      local result = changeDirIfFree(unitid, fwd) or changeDirIfFree(unitid, right) or changeDirIfFree(unitid, left) or changeDirIfFree(unitid, bwd);
+    end
+  end
+  
 	doupdate()
+end
+
+function changeDirIfFree(unitid, dir)
+  local unit = mmf.newObject(unitid)
+  if simplecouldenter(unitid, unit.values[XPOS],unit.values[YPOS], ndirs[dir+1][1], ndirs[dir+1][2], true, false, true) then
+    updatedir(unitid, dir);
+    return true
+  end
+  return false
 end
 
 function fallblock(things)
@@ -662,34 +704,8 @@ function block(small_)
 				ox = drs[1]
 				oy = drs[2]
 				
-				local valid = true
-				local obs = findobstacle(x+ox,y+oy)
-				local tileid = (x+ox) + (y+oy) * roomsizex
-				
-				if (#obs > 0) then
-					for a,b in ipairs(obs) do
-						if (b == -1) then
-							valid = false
-						elseif (b ~= 0) and (b ~= -1) then
-							local bunit = mmf.newObject(b)
-							local obsname = bunit.strings[UNITNAME]
-							local obstype = bunit.strings[UNITTYPE]
-							
-							if (obstype == "text") then
-								obsname = "text"
-							end
-							
-							local obsstop = hasfeature(obsname,"is","stop",b,x+ox,y+oy)
-							local obspush = hasfeature(obsname,"is","push",b,x+ox,y+oy)
-							local obspull = hasfeature(obsname,"is","pull",b,x+ox,y+oy)
-							
-							if (obsstop ~= nil) or (obspush ~= nil) or (obspull ~= nil) or (obsname == name) or (obstype == "text") then
-								valid = false
-							end
-						end
-					end
-				end
-				
+				local valid = simplecouldenter(unit.fixed, x, y, ox, oy, true, false, true)
+        
 				if valid then
 					local newunit = copy(unit.fixed,x+ox,y+oy)
 				end

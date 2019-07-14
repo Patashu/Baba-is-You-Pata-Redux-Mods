@@ -467,6 +467,85 @@ function findwalls(x,y)
 	return result
 end
 
+function simplecouldenter(unitid, x, y, ox, oy, name_is_wall, text_is_wall, check_empty)
+	--not actually that simple, but I like irony. for use with MORE and variants.
+	--not the same logic as check!
+	local unit, name, unit_x, unit_y
+	unit_x = x
+	unit_y = y
+	x = x+ox
+	y = y+oy
+	if (unitid ~= 2) then
+		unit = mmf.newObject(unitid)
+		name = getname(unit)
+	else
+		unit = nil
+		name = "empty"
+	end
+  
+  if (hasfeature(name,"hates","level",unitid,x,y)) then
+    return false
+  end
+
+	local obs = findobstacle(x,y)
+  
+  --likes: if we like stuff and there are no units in the destination that we like, we can't go
+  local likes = hasfeature(name,"likes",nil,unitid,x,y)
+  if (likes ~= nil) then
+    local success = false
+    if (#obs > 0) then
+      for i,id in ipairs(obs) do
+        if (id ~= -1) then
+          local obsunit = mmf.newObject(id)
+          local obsname = getname(obsunit)
+          if hasfeature(name,"likes",obsname,unitid,x,y) then
+            success = true
+            break
+          end
+        end
+      end
+    else
+      success = hasfeature(name,"likes","empty",unitid,x,y)
+    end
+    if (not success) then
+      return false
+    end
+  end
+	
+	if (#obs > 0) then
+		for a,b in ipairs(obs) do
+			if (b == -1) then
+				return false
+			elseif (b ~= 0) and (b ~= -1) then
+				local bunit = mmf.newObject(b)
+				local obsname = bunit.strings[UNITNAME]
+				local obstype = bunit.strings[UNITTYPE]
+				
+				if (obstype == "text") then
+					obsname = "text"
+				end
+				
+				local obsstop = hasfeature(obsname,"is","stop",b,x,y) or hasfeature(obsname,"is","sidekick",b,x,y)
+				local obspush = hasfeature(obsname,"is","push",b,x,y)
+				local obspull = hasfeature(obsname,"is","pull",b,x,y)
+				
+				if (obsstop ~= nil) or (obspush ~= nil) or (obspull ~= nil) or (name_is_wall and obsname == name) or (text_is_wall and obstype == "text") then
+					return false
+				end
+			end
+		end
+	elseif (check_empty) then
+		local emptystop = hasfeature("empty","is","stop",2,x,y) or hasfeature("empty","is","sidekick",2,x,y) or hasfeature(name,"hates","empty",unitid,unit_x,unit_y)
+		local emptypush = hasfeature("empty","is","push",2,x,y)
+		local emptypull = hasfeature("empty","is","pull",2,x,y)
+		if (emptystop ~= nil) or (emptypush ~= nil) or (emptypull ~= nil) or (name_is_wall and "empty" == name) then
+			return false
+		end
+	end
+	
+	return true
+end
+
 function writerules(parent,name,x_,y_)
 	local basex = x_
 	local basey = y_
