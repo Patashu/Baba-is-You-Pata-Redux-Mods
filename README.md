@@ -28,6 +28,8 @@ To install: Copy modloader.lua until Baba Is You/Data/Lua folder. Copy the rest 
 
 **ONEWAY** - __Property__ Prevents units from walking onto it from the tile it faces (like a directional STOP).
 
+**COPY** - __Verb__ If x COPY y, whenever y moves, x will try to move the same way.
+
 Baba is You Discord server: https://discord.gg/GGbUUse
 
 You may use these mods in your mod pack or custom world with attribution!

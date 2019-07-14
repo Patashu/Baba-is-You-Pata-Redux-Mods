@@ -591,31 +591,32 @@ function movecommand(ox,oy,dir_,playerid_)
 			end
 			
 			if (#movelist > 0) then
-        --[[for i,data in ipairs(movelist) do
-          unitid = data[1]
-          --implement SIDEKICK
-          if (unitid ~= 2) then
-            local unit = mmf.newObject(unitid)
-            unitname = getname(unit)
-            local sidekicks = find_sidekicks(unitid, data[4]);
-            for _,sidekickid in ipairs(sidekicks) do
-              --no multiplicative cascades in sidekick - only start sidekicking if we're not already sidekicking
-              local sidekick = mmf.newObject(sidekickid)
-              local alreadysidekicking = false
-              for _,other in ipairs(still_moving) do
-                if other.unitid == sidekickid then
-                  alreadysidekicking = true
-                  break
+        if featureindex["copy"] ~= nil then
+          for i,data in ipairs(movelist) do
+            unitid = data[1]
+            --implement COPY
+            if (unitid ~= 2) then
+              local unit = mmf.newObject(unitid)
+              unitname = getname(unit)
+              local copys = find_copys(unitid, data[4]);
+              for _,copyid in ipairs(copys) do
+                --no multiplicative cascades in copy - only start copying if we're not already copying
+                local copy = mmf.newObject(copyid)
+                local alreadycopying = false
+                for _,other in ipairs(still_moving) do
+                  if other.unitid == copyid then
+                    alreadycopying = true
+                    break
+                  end
                 end
-              end
-              if not alreadysidekicking then
-                updatedir(sidekickid, data[4])
-                print("adding back to still_moving",unitid,getname(sidekick))
-                table.insert(still_moving, {unitid = sidekickid, reason = "sidekick", state = 0, moves = 1, dir = data[4], xpos = sidekick.values[XPOS], ypos = sidekick.values[YPOS]})
+                if not alreadycopying then
+                  updatedir(copyid, data[4])
+                  table.insert(still_moving, {unitid = copyid, reason = "copy", state = 0, moves = 1, dir = data[4], xpos = copy.values[XPOS], ypos = copy.values[YPOS]})
+                end
               end
             end
           end
-        end]]--
+        end
       
 				for i,data in ipairs(movelist) do
 					local success = move(data[1],data[2],data[3],data[4],data[5])
@@ -1525,6 +1526,23 @@ function add_moving_units(rule,newdata,data,been_seen,empty_)
 	return result,seen
 end
 
+function find_copys(unitid,dir)
+  --fast track
+  if featureindex["copy"] == nil then return {} end
+  local result = {}
+  local unit = mmf.newObject(unitid)
+  local unitname = getname(unit)
+  local iscopy = findallfeature(nil,"copy",unitname,true)
+  for _,copyid in ipairs(iscopy) do
+    local copyunit = mmf.newObject(copyid)
+    local copyname = getname(copyunit)
+    if not hasfeature(copyname,"is","sleep",copyid) then
+      table.insert(result, copyid)
+    end
+  end
+  return result;
+end
+
 function find_sidekicks(unitid,dir)
   --fast track
   if featureindex["sidekick"] == nil then return {} end
@@ -1536,7 +1554,6 @@ function find_sidekicks(unitid,dir)
     return result;
   end
   local x,y = unit.values[XPOS],unit.values[YPOS]
-  print("find_sidekicks",x,y,dir)
   local dir90 = (dir+1) % 4;
   for i = 1,2 do
     local curdir = (dir90+2*i) % 4;
@@ -1544,7 +1561,6 @@ function find_sidekicks(unitid,dir)
     local curdy = ndirs[curdir+1][2];
     local curx = x+curdx;
     local cury = y+curdy;
-    print("find_sidekicks is checking",curx,cury)
     local obs = findobstacle(curx,cury);
     for i,id in ipairs(obs) do
       if (id ~= -1) then
@@ -1671,7 +1687,6 @@ function queue_move(unitid,ox,oy,dir,specials,reason)
       end
       if not alreadysidekicking then
         updatedir(sidekickid, dir)
-        print("adding to moving_units",unitid,getname(sidekick))
         table.insert(moving_units, {unitid = sidekickid, reason = "sidekick", state = 0, moves = 1, dir = dir, xpos = sidekick.values[XPOS], ypos = sidekick.values[YPOS]})
       end
     end
