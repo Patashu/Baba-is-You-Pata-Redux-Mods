@@ -1,0 +1,8 @@
+[general]
+firstlevel=1level
+start=1level
+name=pataredux
+
+[levels]
+levelid=3
+
