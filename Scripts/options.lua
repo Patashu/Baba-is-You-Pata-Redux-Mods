@@ -11,6 +11,9 @@ mod.enabled["lean"] = true
 mod.enabled["turn"] = true
 mod.enabled["spin"] = true
 mod.enabled["moonwalk"] = true
+mod.enabled["drunk"] = true
+mod.enabled["drunker"] = true
+mod.enabled["skip"] = true
 mod.enabled["oneway"] = true
 mod.enabled["tall"] = true
 mod.enabled["copy"] = true
@@ -18,6 +21,9 @@ mod.enabled["stubborn"] = true
 mod.enabled["reset"] = true
 mod.enabled["persist"] = true
 mod.enabled["back"] = true
+
+--If true, MOONWALK and related properties (DRUNK, DRUNKER, SKIP) apply to PUSH, PULL, SHIFT and YEET in addition to basically everything else. Defaults to true.
+activemod.very_drunk = true
 
 mod.tile["slip"] = {
 	name = "text_slip",
@@ -151,6 +157,45 @@ mod.tile["moonwalk"] = {
 	layer = 20,
 }
 
+mod.tile["drunk"] = {
+	name = "text_drunk",
+	sprite = "text_drunk",
+	sprite_in_root = false,
+	unittype = "text",
+	tiling = -1,
+	type = 2,
+	colour = {1, 3},
+	active = {1, 4},
+	tile = {96, 11},
+	layer = 20,
+}
+
+mod.tile["drunker"] = {
+	name = "text_drunker",
+	sprite = "text_drunker",
+	sprite_in_root = false,
+	unittype = "text",
+	tiling = -1,
+	type = 2,
+	colour = {1, 3},
+	active = {1, 4},
+	tile = {96, 12},
+	layer = 20,
+}
+
+mod.tile["skip"] = {
+	name = "text_skip",
+	sprite = "text_skip",
+	sprite_in_root = false,
+	unittype = "text",
+	tiling = -1,
+	type = 2,
+	colour = {1, 3},
+	active = {1, 4},
+	tile = {96, 13},
+	layer = 20,
+}
+
 mod.tile["oneway"] = {
 	name = "text_oneway",
 	sprite = "text_oneway",
@@ -160,7 +205,7 @@ mod.tile["oneway"] = {
 	type = 2,
 	colour = {1, 3},
 	active = {1, 4},
-	tile = {96, 11},
+	tile = {96, 14},
 	layer = 20,
 }
 
@@ -173,7 +218,7 @@ mod.tile["tall"] = {
 	type = 2,
 	colour = {0, 0},
 	active = {0, 1},
-	tile = {96, 12},
+	tile = {96, 15},
 	layer = 20,
 }
 
@@ -186,7 +231,7 @@ mod.tile["stubborn"] = {
 	type = 2,
 	colour = {6, 1},
 	active = {6, 2},
-	tile = {96, 13},
+	tile = {96, 16},
 	layer = 20,
 }
 
@@ -200,7 +245,7 @@ mod.tile["copy"] = {
 	operatortype = "verb",
 	colour = {2, 1},
 	active = {2, 2},
-	tile = {96, 14},
+	tile = {96, 17},
 	layer = 20,
 }
 
@@ -213,7 +258,7 @@ mod.tile["reset"] = {
 	type = 2,
 	colour = {3, 0},
 	active = {3, 1},
-	tile = {96, 15},
+	tile = {96, 18},
 	layer = 20,
 }
 
@@ -226,7 +271,7 @@ mod.tile["persist"] = {
 	type = 2,
 	colour = {0, 2},
 	active = {0, 3},
-	tile = {96, 16},
+	tile = {96, 19},
 	layer = 20,
 }
 
@@ -239,6 +284,6 @@ mod.tile["back"] = {
 	type = 2,
 	colour = {6, 0},
 	active = {6, 1},
-	tile = {96, 17},
+	tile = {96, 20},
 	layer = 20,
 }

@@ -1031,7 +1031,13 @@ function floating(id1,id2)
 	if (unit1.values[FLOAT] == unit2.values[FLOAT]) then
 		return true
 	end
-	
+  
+  local name1 = getname(unit1)
+	local name2 = getname(unit2)
+  if (hasfeature(name1,"is","tall",id1) or hasfeature(name2,"is","tall",id2)) then
+    return true
+  end
+  
 	return false
 end
 

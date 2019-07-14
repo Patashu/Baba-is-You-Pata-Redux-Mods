@@ -363,6 +363,10 @@ function movecommand(ox,oy,dir_,playerid_)
 						
 						local ndrs = ndirs[dir + 1]
 						local ox,oy = ndrs[1],ndrs[2]
+            if (activemod.very_drunk or (data.reason ~= "shift" and data.reason ~= "yeet")) then
+							dir, ox, oy = apply_moonwalk(data.unitid,x,y,dir,ox,oy,false)
+						end
+            
 						local pushobslist = {}
 						
 						local obslist,allobs,specials = check(data.unitid,x,y,dir,false,data.reason)
@@ -988,6 +992,10 @@ function trypush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 		y = y_
 		name = "empty"
 	end
+  
+  if (activemod.very_drunk) then
+		dir, ox, oy = apply_moonwalk(unitid,x,y,dir,ox,oy,false)
+	end
 	
 	local pulling = pulling_ or false
 	
@@ -1056,6 +1064,10 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 		x = x_
 		y = y_
 		name = "empty"
+	end
+  
+  if (activemod.very_drunk) then
+		dir, ox, oy = apply_moonwalk(unitid,x,y,dir,ox,oy,false) 
 	end
 	
   local pushername = "empty";
@@ -1371,6 +1383,7 @@ function move(unitid,ox,oy,dir,specials_,instant_,simulate_)
 		
 		if (gone == false) and (simulate == false) then
       success = true
+      dir = apply_moonwalk(unitid, x, y, dir, nil, nil, true)
 			if instant then
 				update(unitid,x+ox,y+oy,dir)
 				MF_alert("Instant movement on " .. tostring(unitid))
@@ -1544,6 +1557,78 @@ function find_sidekicks(unitid,dir)
     end
   end
   return result;
+end
+
+function apply_moonwalk(unitid, x, y, dir, ox, oy, reverse)
+	local name = "empty"
+	local sgn = reverse == true and -1 or 1
+	if (unitid ~= 2) then
+		local unit = mmf.newObject(unitid)
+		name = getname(unit)
+	end
+	local rotatedness = 0;
+	rotatedness = rotatedness + sgn*countfeature(name,"is","moonwalk",unitid,x,y)*2;
+	rotatedness = rotatedness + sgn*countfeature(name,"is","drunk",unitid,x,y);
+	rotatedness = rotatedness + sgn*countfeature(name,"is","drunker",unitid,x,y)*0.5;
+	local mag = 1;
+	mag = mag + countfeature(name,"is","skip",unitid,x,y);
+	if (dir ~= nil and ox ~= nil and oy ~= nil) then
+		dir = (dir + trunc(rotatedness)) % 4
+		ox, oy = dirtooxoy(oxoytodir(ox, oy) + rotatedness)
+		ox = ox * mag;
+		oy = oy * mag;
+		return dir, ox, oy
+	elseif (dir ~= nil) then
+		dir = (dir + trunc(rotatedness)) % 4
+		return dir
+	elseif (ox ~= nil and oy ~= nil) then
+		ox, oy = dirtooxoy(oxoytodir(ox, oy) + rotatedness)
+		ox = ox * mag;
+		oy = oy * mag;
+		return ox, oy
+	else
+		return nil
+	end
+end
+
+function oxoytodir(ox, oy)
+	ox = sign(ox)
+	oy = sign(oy)
+	if ox == 1 and oy == 0 then
+		return 0
+	elseif ox == 1 and oy == -1 then
+		return 0.5
+	elseif ox == 0 and oy == -1 then
+		return 1
+	elseif ox == -1 and oy == -1 then
+		return 1.5
+	elseif ox == -1 and oy == 0 then
+		return 2
+	elseif ox == -1 and oy == 1 then
+		return 2.5
+	elseif ox == 0 and oy == 1 then
+		return 3
+	elseif ox == 1 and oy == 1 then
+		return 3.5
+	end
+	return nil
+end
+
+function dirtooxoy(dir)
+	dir = dir % 4
+	if dir == math.floor(dir) then
+		local result = ndirs[dir+1]
+		return result[1], result[2]
+	elseif dir == 0.5 then
+		return 1, -1
+	elseif dir == 1.5 then
+		return -1, -1
+	elseif dir == 2.5 then
+		return -1, 1
+	elseif dir == 3.5 then
+		return 1, 1
+	end
+	return 0, 0
 end
 
 function sign(num)
