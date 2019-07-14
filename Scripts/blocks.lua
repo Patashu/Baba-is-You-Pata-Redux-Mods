@@ -334,12 +334,11 @@ function moveblock()
     local unit = mmf.newObject(unitid)
     local name = getname(unit)
     backed_this_turn[unit.fixed] = true;
-    if (unit.values[MISC_A] == 0) then
+    if (backers_cache[unit.fixed] == 0 or backers_cache[unit.fixed] == nil) then
       addundo({"backer_turn", unit.fixed, 0})
-      unit.values[MISC_A] = #undobuffer;
-      backers_cache[unit.fixed] = unit.values[MISC_A];
+      backers_cache[unit.fixed] = #undobuffer;
     end
-    doBack(unit, 2*(#undobuffer-unit.values[MISC_A]));
+    doBack(unit, 2*(#undobuffer-backers_cache[unit.fixed]));
   end
   
   for unit,turn in pairs(backers_cache) do
@@ -349,10 +348,8 @@ function moveblock()
   end
   
   for unitid,_ in pairs(not_backed_this_turn) do
-    local unit = mmf.newObject(unitid)
-    addundo({"backer_turn", unitid, unit.values[MISC_A]})
-    unit.values[MISC_A] = 0;
-    backers_cache[unit] = nil;
+    addundo({"backer_turn", unitid, backers_cache[unitid]})
+    backers_cache[unitid] = nil;
   end
 	
 	doupdate()
@@ -501,9 +498,7 @@ function moveblock()
   end
   
   for unitid,_ in pairs(not_backed_this_turn) do
-    local unit = mmf.newObject(unitid)
-    addundo({"backer_turn", unit, unit.values[MISC_A]})
-    unit.values[MISC_A] = 0;
+    addundo({"backer_turn", unitid, backers_cache[unitid]})
     backers_cache[unitid] = nil;
   end
   

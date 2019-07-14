@@ -38,7 +38,7 @@ To install: Copy modloader.lua until Baba Is You/Data/Lua folder. Copy the rest 
 
 **PERSIST** - __Property__ PERSIST units are unaffected by undoing. Edge cases: If a PERSIST unit is created by conversion, the thing that converted into it does not come back. If a PERSIST unit is destroyed, it does not come back when you undo.If a unit is currently PERSIST, it will remain unchanged when YOU RESET, even if it used to not be PERSIST.
 
-**BACK** - __Property__ BACK units retrace their history in reverse, undoing their movements.
+**BACK** - __Property__ BACK units retrace their history in reverse, undoing their movements. Edge cases; If an BACK unit undoes a conversion, the old unit will re-appear. Units that no longer exist can't be BACK, so they won't re-appear by waiting. NOTE: There are some non-deterministic bugs involving using BACK and destroying units then undoing their destruction. If you can help me track them down, let me know!
 
 Baba is You Discord server: https://discord.gg/GGbUUse
 

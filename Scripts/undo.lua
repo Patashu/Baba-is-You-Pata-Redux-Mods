@@ -264,11 +264,7 @@ function undo()
 				elseif (style == "backer_turn") then
           local unitid = line[2]
           local backer_turn = line[3]
-          local unit = mmf.newObject(unitid)
-          if (unit ~= nil and not hasfeature(getname(unit),"is","persist",unitid)) then
-            backers_cache[unit.fixed] = backer_turn;
-            unit.values[MISC_A] = backer_turn;
-          end
+          backers_cache[unitid] = backer_turn;
         end
 			end
 		end
@@ -290,7 +286,6 @@ end
 
 function doBack(unit, turn)
   local unitid = unit.fixed
-  print(turn, #undobuffer)
   if (turn <= #undobuffer) and (turn > 0) then
     local currentundo = undobuffer[turn]
     
@@ -299,7 +294,6 @@ function doBack(unit, turn)
       updateundo = true
       for a,line in ipairs(currentundo) do
         local style = line[1]
-        print(line[1], line[3], unit.values[ID])
         if (style == "update") and (line[9] == unit.values[ID]) then
           local uid = line[9]
           
@@ -316,13 +310,14 @@ function doBack(unit, turn)
           local uid = line[3]
           local created_from_id = line[5]
           local created_id = line[6]
-          if (unit.values[MISC_A] > 0) then
-            addundo({"backer_turn", unitid, unit.values[MISC_A]})
+          local backer_turn = backers_cache[unit.fixed]
+          if (backer_turn > 0) then
+            addundo({"backer_turn", unitid, backer_turn})
           end
           
           if (paradox[uid] == nil) then
             local name = unit.strings[UNITNAME]
-            --scanAndRecreateOldUnit(turn, a, unit.fixed, created_from_id);
+            scanAndRecreateOldUnit(turn, a, unit.fixed, created_from_id);
             
             addundo({"remove",unit.strings[UNITNAME],unit.values[XPOS],unit.values[YPOS],unit.values[DIR],unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],false,unitid})
             
@@ -346,21 +341,21 @@ function scanAndRecreateOldUnit(turn, i, unit_id, created_from_id)
     local action = v[1]
     if (action == "remove") then
       local old_creator_id = v[17];
-      if v[7] == created_from_id then
+      if old_creator_id == created_from_id then
         --no exponential cloning if gras turned into 2 rocs - abort if there's already a unit with that name on that tile
         local name, x, y = v[2], v[3], v[4];
         local stuff = findobstacle(x, y);
         for _,on in ipairs(stuff) do
           if on > 2 then
             local other = mmf.newObject(on);
-            if other.name == name then
+            if other ~= nil and getname(other) == name then
               return
             end
           end
         end
         local new_unit = undoRemove(turn, i, v);
         if (new_unit ~= nil) then
-          addundo({"create",newunit.strings[UNITNAME],newunit.values[ID],newunit.values[ID],unit_id,new_unit.fixed})
+          addundo({"create",new_unit.strings[UNITNAME],new_unit.values[ID],new_unit.values[ID],unit_id,new_unit.fixed})
         end
         return
       end

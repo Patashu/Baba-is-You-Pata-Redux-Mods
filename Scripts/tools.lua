@@ -1302,10 +1302,6 @@ function append(t1,t2)
 end
 
 function getname(unit)
-  if (unit == nil or not type(unit) == "table") then
-    print(debug.traceback())
-    return "error"
-  end
 	local result = unit.strings[UNITNAME]
 	
 	if (unit.strings[UNITTYPE] == "text") then
