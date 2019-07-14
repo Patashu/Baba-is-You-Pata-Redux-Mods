@@ -69,7 +69,7 @@ mod.tile["hates"] = {
 	operatortype = "verb",
 	colour = {5, 0},
 	active = {5, 1},
-	tile = {12, 13},
+	tile = {12, 14},
 	layer = 20,
 }
 
@@ -82,7 +82,7 @@ mod.tile["sidekick"] = {
 	type = 2,
 	colour = {6, 0},
 	active = {6, 1},
-	tile = {13, 13},
+	tile = {13, 15},
 	layer = 20,
 }
 
@@ -108,7 +108,7 @@ mod.tile["lean"] = {
 	type = 2,
 	colour = {5, 2},
 	active = {5, 3},
-	tile = {13, 15},
+	tile = {13, 16},
 	layer = 20,
 }
 
@@ -121,7 +121,7 @@ mod.tile["turn"] = {
 	type = 2,
 	colour = {5, 2},
 	active = {5, 3},
-	tile = {13, 15},
+	tile = {13, 17},
 	layer = 20,
 }
 
@@ -134,7 +134,7 @@ mod.tile["spin"] = {
 	type = 2,
 	colour = {1, 3},
 	active = {1, 4},
-	tile = {13, 15},
+	tile = {13, 18},
 	layer = 20,
 }
 
@@ -160,7 +160,7 @@ mod.tile["oneway"] = {
 	type = 2,
 	colour = {1, 3},
 	active = {1, 4},
-	tile = {6, 15},
+	tile = {6, 16},
 	layer = 20,
 }
 
@@ -173,7 +173,7 @@ mod.tile["tall"] = {
 	type = 2,
 	colour = {0, 0},
 	active = {0, 1},
-	tile = {6, 15},
+	tile = {6, 17},
 	layer = 20,
 }
 
