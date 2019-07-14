@@ -16,6 +16,8 @@ function mod.load(dir)
   loadscript(dir .. "movement")
   loadscript(dir .. "tools")
   loadscript(dir .. "undo")
+  loadscript(dir .. "syntax")
+  loadscript(dir .. "convert")
 
 	-- Load mod tiles enabled in options.lua
 	for _,v in ipairs(mod.alltiles) do
@@ -34,6 +36,8 @@ function mod.unload(dir)
   loadscript("Data/movement")
   loadscript("Data/tools")
   loadscript("Data/undo")
+  loadscript("Data/syntax")
+  loadscript("Data/convert")
 end
 
 mod.alltiles = {

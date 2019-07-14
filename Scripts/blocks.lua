@@ -378,7 +378,7 @@ function moveblock()
 							if (paradox[uid] == nil) then
 								local name = unit.strings[UNITNAME]
 								
-								addundo({"remove",unit.strings[UNITNAME],unit.values[XPOS],unit.values[YPOS],unit.values[DIR],unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR]})
+								addundo({"remove",unit.strings[UNITNAME],unit.values[XPOS],unit.values[YPOS],unit.values[DIR],unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],false,unitid})
 								
 								delunit(unitid)
 								dynamic(unitid)
@@ -1040,6 +1040,25 @@ function block(small_)
 				end
 			end
 			
+      local reset = findfeature(nil,"is","reset")
+			
+			if (reset ~= nil) and not doreset then
+				for a,b in ipairs(reset) do
+					if (b[1] ~= "empty") then
+						local flag = findtype(b,x,y,0)
+						
+						if (#flag > 0) then
+							for c,d in ipairs(flag) do
+								if floating(d,unit.fixed) then
+									doreset = true
+									break
+								end
+							end
+						end
+					end
+				end
+			end
+      
 			local win = findfeature(nil,"is","win")
 			
 			if (win ~= nil) then
@@ -1474,7 +1493,7 @@ function levelblock()
 			if testcond(conds,1) and (rule[2] == "is") then
 				local action = rule[3]
 				
-				if (action == "win") then
+        if (action == "reset" or action == "win") then
 					local yous = findfeature(nil,"is","you")
 					local yous2 = findfeature(nil,"is","you2")
 					
@@ -1503,11 +1522,13 @@ function levelblock()
 							
 							if doit then
 								canwin = true
-								for c,d in ipairs(allyous) do
-									local unit = mmf.newObject(d)
-									local pmult,sound = checkeffecthistory("win")
-									MF_particles("win",unit.values[XPOS],unit.values[YPOS],10 * pmult,2,4,1,1)
-								end
+                if action == "win" then
+                  for c,d in ipairs(allyous) do
+                    local unit = mmf.newObject(d)
+                    local pmult,sound = checkeffecthistory("win")
+                    MF_particles("win",unit.values[XPOS],unit.values[YPOS],10 * pmult,2,4,1,1)
+                  end
+                end
 							end
 						end
 					end
@@ -1517,7 +1538,7 @@ function levelblock()
 					end
 					
 					if canwin then
-						MF_win()
+						if action == "win" then MF_win() else doreset = true end
 					end
 				elseif (action == "defeat") then
 					local yous = findfeature(nil,"is","you")
@@ -1874,4 +1895,18 @@ function findfears(unitid)
 	end
 	
 	return result,resultdir
+end
+
+function resetlevel()
+	MF_playsound("restart")
+	resetting = true
+	while #undobuffer > 1 do
+		undo()
+	end
+	resetting = false
+	undobuffer = {}
+	newundo()
+	doreset = false
+	resetcount = resetcount + 1
+	resetmoves = resetcount
 end

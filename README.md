@@ -34,6 +34,10 @@ To install: Copy modloader.lua until Baba Is You/Data/Lua folder. Copy the rest 
 
 **WITH** - __Infix Condition__ True if the unit has the specified property.
 
+**RESET** - __Property__ If YOU touches RESET, the game is undone back to the starting state. However, anything that is currently PERSIST will remain as-is.
+
+**PERSIST** - __Property__ PERSIST units are unaffected by undoing. Edge cases: If a PERSIST unit is created by conversion, the thing that converted into it does not come back. If a PERSIST unit is destroyed, it does not come back when you undo.If a unit is currently PERSIST, it will remain unchanged when YOU RESET, even if it used to not be PERSIST.
+
 Baba is You Discord server: https://discord.gg/GGbUUse
 
 You may use these mods in your mod pack or custom world with attribution!

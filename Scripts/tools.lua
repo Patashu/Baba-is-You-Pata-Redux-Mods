@@ -403,7 +403,7 @@ function delete(unitid,x_,y_,total_)
 		end
 		
 		if (unitid ~= 2) then
-			addundo({"remove",unitname,x,y,dir,unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR]})
+			addundo({"remove",unitname,x,y,dir,unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],false,unitid})
 			unit = {}
 			delunit(unitid)
 			MF_remove(unitid)
@@ -694,7 +694,7 @@ function create(name,x,y,dir,oldx_,oldy_,float_,skipundo_)
 	newunit.flags[9] = true
 	
 	if (skipundo == false) then
-		addundo({"create",name,id})
+		addundo({"create",name,id,nil,nil,newunitid})
 	end
 	
 	addunit(newunitid)
@@ -1302,6 +1302,10 @@ function append(t1,t2)
 end
 
 function getname(unit)
+  if (not type(unit) == "table") then
+    print(debug.traceback())
+    return "error"
+  end
 	local result = unit.strings[UNITNAME]
 	
 	if (unit.strings[UNITTYPE] == "text") then

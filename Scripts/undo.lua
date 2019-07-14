@@ -60,39 +60,41 @@ function undo()
 						local unitid = getunitid(line[9])
 						
 						local unit = mmf.newObject(unitid)
-						
-						local oldx,oldy = unit.values[XPOS],unit.values[YPOS]
-						local x,y,dir = line[3],line[4],line[5]
-						unit.values[XPOS] = x
-						unit.values[YPOS] = y
-						unit.values[DIR] = dir
-						unit.values[POSITIONING] = 0
-						
-						updateunitmap(unitid,oldx,oldy,x,y,unit.strings[UNITNAME])
-						dynamic(unitid)
-						dynamicat(oldx,oldy)
-						
-						local ox = math.abs(oldx-x)
-						local oy = math.abs(oldy-y)
-						
-						if (ox + oy == 1) and (unit.values[TILING] == 2) then
-							unit.values[VISUALDIR] = ((unit.values[VISUALDIR] - 1)+4) % 4
-							unit.direction = unit.values[DIR] * 8 + unit.values[VISUALDIR]
-						end
-						
-						if (unit.strings[UNITTYPE] == "text") then
-							updatecode = 1
-						end
-						
-						local undowordunits = currentundo.wordunits
-						
-						if (#undowordunits > 0) then
-							for a,b in pairs(undowordunits) do
-								if (b == line[9]) then
-									updatecode = 1
-								end
-							end
-						end
+            local unitname = getname(unit)
+            if not hasfeature(unitname,"is","persist",unitid) then	
+              local oldx,oldy = unit.values[XPOS],unit.values[YPOS]
+              local x,y,dir = line[3],line[4],line[5]
+              unit.values[XPOS] = x
+              unit.values[YPOS] = y
+              unit.values[DIR] = dir
+              unit.values[POSITIONING] = 0
+              
+              updateunitmap(unitid,oldx,oldy,x,y,unit.strings[UNITNAME])
+              dynamic(unitid)
+              dynamicat(oldx,oldy)
+              
+              local ox = math.abs(oldx-x)
+              local oy = math.abs(oldy-y)
+              
+              if (ox + oy == 1) and (unit.values[TILING] == 2) then
+                unit.values[VISUALDIR] = ((unit.values[VISUALDIR] - 1)+4) % 4
+                unit.direction = unit.values[DIR] * 8 + unit.values[VISUALDIR]
+              end
+              
+              if (unit.strings[UNITTYPE] == "text") then
+                updatecode = 1
+              end
+              
+              local undowordunits = currentundo.wordunits
+              
+              if (#undowordunits > 0) then
+                for a,b in pairs(undowordunits) do
+                  if (b == line[9]) then
+                    updatecode = 1
+                  end
+                end
+              end
+            end
 					else
 						particles("hot",line[3],line[4],1,{1, 1})
 					end
@@ -101,59 +103,72 @@ function undo()
 					local baseuid = line[7] or -1
 					
 					if (paradox[uid] == nil) and (paradox[baseuid] == nil) then
-						local x,y,dir,levelfile,levelname,vislevel,complete,visstyle,maplevel,colour,clearcolour = line[3],line[4],line[5],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15]
+						local x,y,dir,levelfile,levelname,vislevel,complete,visstyle,maplevel,colour,clearcolour,convert,oldid = line[3],line[4],line[5],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],line[16],line[17]
 						local name = line[2]
 						
 						local unitname = ""
 						local unitid = 0
+            
+            --If the unit was converted into 'no undo' byproducts that still exist, don't bring it back.
+            local proceed = true;
+            if (convert and featureindex["persist"] ~= nil) then
+              proceed = not turnedIntoOnlyNoUndoUnits(i, oldid);
+            end
 						
-						unitname = unitreference[name]
-						unitid = MF_emptycreate(unitname,x,y)
-						
-						local unit = mmf.newObject(unitid)
-						unit.values[ONLINE] = 1
-						unit.values[XPOS] = x
-						unit.values[YPOS] = y
-						unit.values[DIR] = dir
-						unit.values[ID] = line[6]
-						unit.flags[9] = true
-						
-						unit.strings[U_LEVELFILE] = levelfile
-						unit.strings[U_LEVELNAME] = levelname
-						unit.flags[MAPLEVEL] = maplevel
-						unit.values[VISUALLEVEL] = vislevel
-						unit.values[VISUALSTYLE] = visstyle
-						unit.values[COMPLETED] = complete
-						
-						unit.strings[COLOUR] = colour
-						unit.strings[CLEARCOLOUR] = clearcolour
-						
-						if (unit.className == "level") then
-							MF_setcolourfromstring(unitid,colour)
-						end
-						
-						addunit(unitid,true)
-						addunitmap(unitid,x,y,unit.strings[UNITNAME])
-						dynamic(unitid)
-						
-						if (unit.strings[UNITTYPE] == "text") then
-							updatecode = 1
-						end
-						
-						local undowordunits = currentundo.wordunits
-						if (#undowordunits > 0) then
-							for a,b in ipairs(undowordunits) do
-								if (b == line[6]) then
-									updatecode = 1
-								end
-							end
-						end
-						
-						local visibility = hasfeature(name,"is","hide",unitid)
-						
-						if (visibility ~= nil) then
-							unit.visible = false
-						end
+            if (proceed) then
+              unitname = unitreference[name]
+              unitid = MF_emptycreate(unitname,x,y)
+            
+              local unit = mmf.newObject(unitid)
+              unit.values[ONLINE] = 1
+              unit.values[XPOS] = x
+              unit.values[YPOS] = y
+              unit.values[DIR] = dir
+              unit.values[ID] = line[6]
+              unit.flags[9] = true
+              
+              unit.strings[U_LEVELFILE] = levelfile
+              unit.strings[U_LEVELNAME] = levelname
+              unit.flags[MAPLEVEL] = maplevel
+              unit.values[VISUALLEVEL] = vislevel
+              unit.values[VISUALSTYLE] = visstyle
+              unit.values[COMPLETED] = complete
+              
+              unit.strings[COLOUR] = colour
+              unit.strings[CLEARCOLOUR] = clearcolour
+              
+              if (unit.className == "level") then
+                MF_setcolourfromstring(unitid,colour)
+              end
+              
+              --If the unit was actually a destroyed 'no undo', oops. Don't actually bring it back. It's dead, Jim.
+              addunit(unitid,true)
+              addunitmap(unitid,x,y,unit.strings[UNITNAME])
+              dynamic(unitid)
+              if (not convert and (hasfeature(getname(unit),"is","persist",unitid))) then
+                delunit(unitid)
+                MF_remove(unitid)
+              else
+                if (unit.strings[UNITTYPE] == "text") then
+                  updatecode = 1
+                end
+                
+                local undowordunits = currentundo.wordunits
+                if (#undowordunits > 0) then
+                  for a,b in ipairs(undowordunits) do
+                    if (b == line[6]) then
+                      updatecode = 1
+                    end
+                  end
+                end
+                
+                local visibility = hasfeature(name,"is","hide",unitid)
+                
+                if (visibility ~= nil) then
+                  unit.visible = false
+                end
+              end
+            end
 					else
 						particles("hot",line[3],line[4],1,{1, 1})
 					end
@@ -167,23 +182,25 @@ function undo()
 						local x,y = unit.values[XPOS],unit.values[YPOS]
 						local unittype = unit.strings[UNITTYPE]
 						
-						unit = {}
-						delunit(unitid)
-						MF_remove(unitid)
-						dynamicat(x,y)
-						
-						if (unittype == "text") then
-							updatecode = 1
-						end
-						
-						local undowordunits = currentundo.wordunits
-						if (#undowordunits > 0) then
-							for a,b in ipairs(undowordunits) do
-								if (b == line[3]) then
-									updatecode = 1
-								end
-							end
-						end
+            if not hasfeature(getname(unit),"is","persist",unitid) then
+              unit = {}
+              delunit(unitid)
+              MF_remove(unitid)
+              dynamicat(x,y)
+              
+              if (unittype == "text") then
+                updatecode = 1
+              end
+              
+              local undowordunits = currentundo.wordunits
+              if (#undowordunits > 0) then
+                for a,b in ipairs(undowordunits) do
+                  if (b == line[3]) then
+                    updatecode = 1
+                  end
+                end
+              end
+            end
 					end
 				elseif (style == "done") then
 					local unitid = line[7]
@@ -255,3 +272,64 @@ function undostate(state)
 		doundo = state
 	end
 end 
+
+--If gras becomes roc, then later roc becomes undo, when it disappears we want the gras to come back. This is how we code that - by scanning for the related remove event and undoing that too.
+--[[function scanAndRecreateOldUnit(i, unit_id, created_from_id, ignore_no_undo)
+  while (true) do
+    local v = undobuffer[2][i]
+    if (v == nil) then
+      return
+    end
+    local action = v[1]
+    --TODO: implement for MOUS
+    if (action == "remove") then
+      local old_creator_id = v[7];
+      if v[7] == created_from_id then
+        --no exponential cloning if gras turned into 2 rocs - abort if there's already a unit with that name on that tile
+        local tile, x, y = v[2], v[3], v[4];
+        local data = tiles_list[tile];
+        local stuff = getUnitsOnTile(x, y, nil, true);
+        for _,on in ipairs(stuff) do
+          if on.name == data.name then
+            return
+          end
+        end
+        local _, new_unit = undoOneAction(turn, i, v, ignore_no_undo);
+        if (new_unit ~= nil) then
+          addUndo({"create", new_unit.id, true, created_from_id = unit_id})
+        end
+        return
+      end
+    end
+    i = i - 1;
+  end
+end]]
+
+--if water becomes roc, and roc is no undo, if we undo then the water shouldn't come back. This is how we code that - by scanning for all related create events. If we find one existing no undo byproduct and no existing non-no undo byproducts, we return false.
+function turnedIntoOnlyNoUndoUnits(i, unit_id)
+  local found_no_undo = false;
+  local found_non_no_undo = false;
+  while (true) do
+    local v = undobuffer[2][i]
+    if (v == nil) then
+      break
+    end
+    local action = v[1];
+    local created_from_id = v[5]
+    local created_id = v[6]
+    if (action == "create") and created_from_id == unit_id then
+      local still_exists = mmf.newObject(created_id)
+      if (still_exists ~= nil) then
+        local name = getname(still_exists)
+        if (hasfeature(name,"is","persist",created_id)) then
+          found_no_undo = true;
+        else
+          found_non_no_undo = true;
+          break;
+        end
+      end
+    end
+    i = i + 1;
+  end
+  return not (found_non_no_undo or not found_no_undo);
+end
