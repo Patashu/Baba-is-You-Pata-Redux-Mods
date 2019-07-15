@@ -179,7 +179,7 @@ function testcond(conds,unitid,x_,y_,autofail_)
 					if (allfound ~= #params) then
 						result = false
 					end
-				elseif (condtype == "not on") then
+				elseif (condtype == "not on") or (condtype == "reverse on") then
 					valid = true
 					local allfound = 0
 					local alreadyfound = {}
@@ -525,6 +525,136 @@ function testcond(conds,unitid,x_,y_,autofail_)
 					if (allfound == #params) then
 						result = false
 					end
+				elseif (condtype == "reverse facing") then
+					valid = true
+					local allfound = 0
+					local alreadyfound = {}
+					
+					--gets the opposite direction. don't ask.
+					local ndrs = ndirs[(dir+2)%4+1]
+					local ox = ndrs[1]
+					local oy = ndrs[2]
+					
+					local tileid = (x + ox) + (y + oy) * roomsizex
+					
+					if (#params > 0) then
+						if (name ~= "empty") then
+							for a,b in ipairs(params) do
+								if (unitid ~= 1) then
+									if (b ~= "empty") and (b ~= "level") then
+										if (stringintable(b,extras) == false) then
+											if (unitmap[tileid] ~= nil) then
+												for c,d in ipairs(unitmap[tileid]) do
+													if (d ~= unitid) then
+														local unit = mmf.newObject(d)
+														local name_ = getname(unit)
+														
+														if (name_ == b) and (alreadyfound[b] == nil) then
+															alreadyfound[b] = 1
+															allfound = allfound + 1
+														end
+													end
+												end
+											end
+										else
+											if ((b == "right") and (dir == 2)) or ((b == "up") and (dir == 3)) or ((b == "left") and (dir == 0)) or ((b == "down") and (dir == 1)) then
+												alreadyfound[b] = 1
+												allfound = allfound + 1
+											end
+										end
+									elseif (b == "empty") then
+										if (unitmap[tileid] == nil) or (#unitmap[tileid] == 0) then
+											if (alreadyfound[b] == nil) then
+												alreadyfound[b] = 1
+												allfound = allfound + 1
+											end
+										end
+									elseif (b == "level") then
+										alreadyfound[b] = 1
+										allfound = allfound + 1
+									end
+								else
+									local dirids = {"r","u","l","d"}
+									local dirid = dirids[(dir+2)%4+1]
+									
+									if (surrounds[dirid] ~= nil) then
+										for c,d in ipairs(surrounds[dirid]) do
+											if (d == b) and (alreadyfound[b] == nil) then
+												alreadyfound[b] = 1
+												allfound = allfound + 1
+											end
+										end
+									end
+								end
+							end
+						else
+							result = false
+						end
+					else
+						print("no parameters given!")
+					end
+					
+					if (allfound ~= #params) then
+						result = false
+					end
+				elseif (condtype == "not reverse facing") then
+					valid = true
+
+					local ndrs = ndirs[(dir+2)%4+1]
+					local ox = ndrs[1]
+					local oy = ndrs[2]
+					
+					local tileid = (x + ox) + (y + oy) * roomsizex
+					
+					if (#params > 0) then
+						if (name ~= "empty") then
+							for a,b in ipairs(params) do
+								if (unitid ~= 1) then
+									if (b ~= "empty") and (b ~= "level") then
+										if (stringintable(b, extras) == false) then
+											if (unitmap[tileid] ~= nil) then
+												for c,d in ipairs(unitmap[tileid]) do
+													if (d ~= unitid) then
+														local unit = mmf.newObject(d)
+														local name_ = getname(unit)
+														
+														if (name_ == b) then
+															result = false
+														end
+													end
+												end
+											end
+										else
+											if ((b == "right") and (dir == 2)) or ((b == "up") and (dir == 3)) or ((b == "left") and (dir == 0)) or ((b == "down") and (dir == 1)) then
+												result = false
+											end
+										end
+									elseif (b == "empty") then
+										if (unitmap[tileid] == nil) or (#unitmap[tileid] == 0) then
+											result = false
+										end
+									elseif (b == "level") then
+										result = false
+									end
+								else
+									local dirids = {"r","u","l","d"}
+									local dirid = dirids[(dir+2)%4+1]
+									
+									if (surrounds[dirid] ~= nil) then
+										for c,d in ipairs(surrounds[dirid]) do
+											if (d == b) and (alreadyfound[b] == nil) then
+												result = false
+											end
+										end
+									end
+								end
+							end
+						elseif (name == "empty") then
+							result = false
+						end
+					else
+						print("no parameters given!")
+					end
 				elseif (condtype == "near") then
 					valid = true
 					local allfound = 0
@@ -648,7 +778,7 @@ function testcond(conds,unitid,x_,y_,autofail_)
 					if (allfound ~= #params) then
 						result = false
 					end
-				elseif (condtype == "not near") then
+				elseif (condtype == "not near") or (condtype == "reverse near") then
 					valid = true
 					
 					local allfound = 0
@@ -790,7 +920,7 @@ function testcond(conds,unitid,x_,y_,autofail_)
 					else
 						result = false
 					end
-				elseif (condtype == "not lonely") then
+				elseif (condtype == "not lonely") or (condtype == "reverse lonely") then
 					valid = true
 					
 					if (unitid ~= 1) then
@@ -830,7 +960,7 @@ function testcond(conds,unitid,x_,y_,autofail_)
 					else
 						result = false
 					end
-				elseif (condtype == "not with") then
+				elseif (condtype == "not with") or (condtype == "reverse with") then
 					valid = true
 
 					local isfirst = false
@@ -859,7 +989,7 @@ function testcond(conds,unitid,x_,y_,autofail_)
 					if (last_key ~= 4) then
 						result = false
 					end
-				elseif (condtype == "not idle") then
+				elseif (condtype == "not idle") or (condtype == "reverse idle") then
 					valid = true
 					
 					if (last_key == 4) then

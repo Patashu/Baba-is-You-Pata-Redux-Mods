@@ -18,6 +18,7 @@ function mod.load(dir)
 	loadscript(dir .. "undo")
 	loadscript(dir .. "syntax")
 	loadscript(dir .. "convert")
+	loadscript(dir .. "rules")
 
 	-- Load mod tiles enabled in options.lua
 	for _,v in ipairs(mod.alltiles) do
@@ -38,6 +39,7 @@ function mod.unload(dir)
 	loadscript("Data/undo")
 	loadscript("Data/syntax")
 	loadscript("Data/convert")
+	loadscript("Data/rules")
 end
 
 mod.alltiles = {
@@ -61,7 +63,9 @@ mod.alltiles = {
 	"reset",
 	"persist",
 	"back",
-	"with"
+	"with",
+	"reverse",
+	"vall"
 }
 
 function mod.addblock(tile)

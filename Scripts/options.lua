@@ -22,6 +22,8 @@ mod.enabled["reset"] = true
 mod.enabled["persist"] = true
 mod.enabled["back"] = true
 mod.enabled["with"] = true
+mod.enabled["reverse"] = true
+--mod.enabled["vall"] = true
 
 --If true, MOONWALK and related properties (DRUNK, DRUNKER, SKIP) apply to PUSH, PULL, SHIFT and YEET in addition to basically everything else. Defaults to true.
 activemod.very_drunk = true
@@ -303,3 +305,83 @@ mod.tile["with"] = {
 	tile = {96, 21},
 	layer = 20,
 }
+
+mod.tile["reverse"] = {
+	name = "text_reverse",
+	sprite = "text_reverse",
+	sprite_in_root = false,
+	unittype = "text",
+	tiling = -1,
+	type = 9,
+	colour = {2, 1},
+	active = {2, 2},
+	tile = {96,22},
+	layer = 20,
+}
+
+--[[
+mod.tile["vall"] = {
+	name = "text_vall",
+	sprite = "text_vall",
+	sprite_in_root = false,
+	unittype = "text",
+	tiling = -1,
+	type = 2,
+	colour = {2, 1},
+	active = {2, 2},
+	tile = {96,23},
+	layer = 20,
+}
+]]
+
+reversefeatures =
+{
+	push = "pull",
+	pull = "push",
+	swap = "stop",
+	up = "down",
+	down = "up",
+	left = "right",
+	right = "left",
+	win = "defeat",
+	defeat = "win",
+	stop = "swap",
+	open = "shut",
+	shut = "open",
+	melt = "hot",
+	hot = "melt",
+	fall = "vall",
+	vall = "fall",
+	best = "sad",
+	sad = "best",
+	red = "blue",
+	blue = "red",
+	float = "tall",
+	make = "eat",
+	eat = "make",
+	fear = "follow",
+	follow = "fear",
+	safe = "weak",
+	word = "text",
+	on = "not on",
+	near = "not near",
+	lonely = "not lonely",
+	group = "not group",
+	sleep = "move",
+	bonus = "done",
+	done = "bonus",
+	
+	--mods
+	likes = "hates",
+	hates = "likes",
+	drunk = "drunker",
+	drunker = "drunk",
+	stubborn = "lazy",
+	lazy = "stubborn",
+	persist = "back",
+	back = "persist",
+}
+
+reversefeatures["end"] = "reset"
+reversefeatures["reset"] = "end"
+reversefeatures["not"] = "not not"
