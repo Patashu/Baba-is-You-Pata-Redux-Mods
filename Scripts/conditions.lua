@@ -807,7 +807,7 @@ function testcond(conds,unitid,x_,y_,autofail_)
 							end
 						end
 					end
-        elseif (condtype == "with") then
+				elseif (condtype == "with") then
 					valid = true
 
 					local isfirst = false

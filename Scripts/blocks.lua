@@ -102,9 +102,9 @@ function moveblock()
 	local isshift = findallfeature(nil,"is","shift",true)
 	local istele = findallfeature(nil,"is","tele",true)
 	local isfollow = findfeature(nil,"follow",nil,true)
-  local isspin = findallfeature(nil,"is","spin",true)
-  local islean = findallfeature(nil,"is","lean",true)
-  local isturn = findallfeature(nil,"is","turn",true)
+	local isspin = findallfeature(nil,"is","spin",true)
+	local islean = findallfeature(nil,"is","lean",true)
+	local isturn = findallfeature(nil,"is","turn",true)
 	
 	local doned = {}
 	
@@ -324,33 +324,33 @@ function moveblock()
 			end
 		end
 		]]--
-  end
-  
-  local backed_this_turn = {};
-  local not_backed_this_turn = {};
-  
-  local isback = findallfeature(nil,"is","back",true)
-  for _,unitid in pairs(isback) do
-    local unit = mmf.newObject(unitid)
-    local name = getname(unit)
-    backed_this_turn[unit.fixed] = true;
-    if (backers_cache[unit.fixed] == 0 or backers_cache[unit.fixed] == nil) then
-      addundo({"backer_turn", unit.fixed, 0})
-      backers_cache[unit.fixed] = #undobuffer;
-    end
-    doBack(unit, 2*(#undobuffer-backers_cache[unit.fixed]));
-  end
-  
-  for unit,turn in pairs(backers_cache) do
-    if turn ~= nil and not backed_this_turn[unit] then
-      not_backed_this_turn[unit] = true;
-    end
-  end
-  
-  for unitid,_ in pairs(not_backed_this_turn) do
-    addundo({"backer_turn", unitid, backers_cache[unitid]})
-    backers_cache[unitid] = nil;
-  end
+	end
+	
+	local backed_this_turn = {};
+	local not_backed_this_turn = {};
+	
+	local isback = findallfeature(nil,"is","back",true)
+	for _,unitid in pairs(isback) do
+		local unit = mmf.newObject(unitid)
+		local name = getname(unit)
+		backed_this_turn[unit.fixed] = true;
+		if (backers_cache[unit.fixed] == 0 or backers_cache[unit.fixed] == nil) then
+			addundo({"backer_turn", unit.fixed, 0})
+			backers_cache[unit.fixed] = #undobuffer;
+		end
+		doBack(unit, 2*(#undobuffer-backers_cache[unit.fixed]));
+	end
+	
+	for unit,turn in pairs(backers_cache) do
+		if turn ~= nil and not backed_this_turn[unit] then
+			not_backed_this_turn[unit] = true;
+		end
+	end
+	
+	for unitid,_ in pairs(not_backed_this_turn) do
+		addundo({"backer_turn", unitid, backers_cache[unitid]})
+		backers_cache[unitid] = nil;
+	end
 	
 	doupdate()
 	
@@ -450,8 +450,8 @@ function moveblock()
 			end
 		end
 	end
-  
-  for a,unitid in ipairs(isspin) do
+	
+	for a,unitid in ipairs(isspin) do
 		if (unitid ~= 2) and (unitid ~= 1) then
 			local unit = mmf.newObject(unitid)
 			local x,y,dir = unit.values[XPOS],unit.values[YPOS],unit.values[DIR]
@@ -459,59 +459,59 @@ function moveblock()
 		end
 	end
 	
-  for a,unitid in ipairs(islean) do
-    if (unitid ~= 2) and (unitid ~= 1) then
-      local unit = mmf.newObject(unitid)
-      local fwd = unit.values[DIR]
-      local right = (fwd+3)%4
-      local bwd = (fwd+2)%4
-      local left = (fwd+1)%4
-      local result = changeDirIfFree(unitid, right) or changeDirIfFree(unitid, fwd) or changeDirIfFree(unitid, left) or changeDirIfFree(unitid, bwd);
-    end
-  end
-  
-  for a,unitid in ipairs(isturn) do
-    if (unitid ~= 2) and (unitid ~= 1) then
-      local unit = mmf.newObject(unitid)
-      local fwd = unit.values[DIR]
-      local right = (fwd+3)%4
-      local bwd = (fwd+2)%4
-      local left = (fwd+1)%4
-      local result = changeDirIfFree(unitid, fwd) or changeDirIfFree(unitid, right) or changeDirIfFree(unitid, left) or changeDirIfFree(unitid, bwd);
-    end
-  end
-  
-  --Fix the 'txt be undo' bug by checking an additional time if we need to unset backer_turn for a unit.
-  
-  local backed_this_turn = {};
-  local not_backed_this_turn = {};
-  
-  local isback = findallfeature(nil,"is","back",true)
-  for _,unitid in pairs(isback) do
-    backed_this_turn[unitid] = true;
-  end
-  
-  for unit,turn in pairs(backers_cache) do
-    if turn ~= nil and not backed_this_turn[unit] then
-      not_backed_this_turn[unit] = true;
-    end
-  end
-  
-  for unitid,_ in pairs(not_backed_this_turn) do
-    addundo({"backer_turn", unitid, backers_cache[unitid]})
-    backers_cache[unitid] = nil;
-  end
-  
+	for a,unitid in ipairs(islean) do
+		if (unitid ~= 2) and (unitid ~= 1) then
+			local unit = mmf.newObject(unitid)
+			local fwd = unit.values[DIR]
+			local right = (fwd+3)%4
+			local bwd = (fwd+2)%4
+			local left = (fwd+1)%4
+			local result = changeDirIfFree(unitid, right) or changeDirIfFree(unitid, fwd) or changeDirIfFree(unitid, left) or changeDirIfFree(unitid, bwd);
+		end
+	end
+	
+	for a,unitid in ipairs(isturn) do
+		if (unitid ~= 2) and (unitid ~= 1) then
+			local unit = mmf.newObject(unitid)
+			local fwd = unit.values[DIR]
+			local right = (fwd+3)%4
+			local bwd = (fwd+2)%4
+			local left = (fwd+1)%4
+			local result = changeDirIfFree(unitid, fwd) or changeDirIfFree(unitid, right) or changeDirIfFree(unitid, left) or changeDirIfFree(unitid, bwd);
+		end
+	end
+	
+	--Fix the 'txt be undo' bug by checking an additional time if we need to unset backer_turn for a unit.
+	
+	local backed_this_turn = {};
+	local not_backed_this_turn = {};
+	
+	local isback = findallfeature(nil,"is","back",true)
+	for _,unitid in pairs(isback) do
+		backed_this_turn[unitid] = true;
+	end
+	
+	for unit,turn in pairs(backers_cache) do
+		if turn ~= nil and not backed_this_turn[unit] then
+			not_backed_this_turn[unit] = true;
+		end
+	end
+	
+	for unitid,_ in pairs(not_backed_this_turn) do
+		addundo({"backer_turn", unitid, backers_cache[unitid]})
+		backers_cache[unitid] = nil;
+	end
+	
 	doupdate()
 end
 
 function changeDirIfFree(unitid, dir)
-  local unit = mmf.newObject(unitid)
-  if simplecouldenter(unitid, unit.values[XPOS],unit.values[YPOS], ndirs[dir+1][1], ndirs[dir+1][2], true, false, true) then
-    updatedir(unitid, dir);
-    return true
-  end
-  return false
+	local unit = mmf.newObject(unitid)
+	if simplecouldenter(unitid, unit.values[XPOS],unit.values[YPOS], ndirs[dir+1][1], ndirs[dir+1][2], true, false, true) then
+		updatedir(unitid, dir);
+		return true
+	end
+	return false
 end
 
 function fallblock(things)
@@ -687,7 +687,7 @@ function block(small_)
 				oy = drs[2]
 				
 				local valid = simplecouldenter(unit.fixed, x, y, ox, oy, true, false, true)
-        
+				
 				if valid then
 					local newunit = copy(unit.fixed,x+ox,y+oy)
 				end
@@ -1022,7 +1022,7 @@ function block(small_)
 				end
 			end
 			
-      local reset = findfeature(nil,"is","reset")
+			local reset = findfeature(nil,"is","reset")
 			
 			if (reset ~= nil) and not doreset then
 				for a,b in ipairs(reset) do
@@ -1040,7 +1040,7 @@ function block(small_)
 					end
 				end
 			end
-      
+			
 			local win = findfeature(nil,"is","win")
 			
 			if (win ~= nil) then
@@ -1424,7 +1424,7 @@ function levelblock()
 		end
 	end
 	
-  if (#emptythings > 0) then
+	if (#emptythings > 0) then
 		for i=1,roomsizex-2 do
 			for j=1,roomsizey-2 do
 				local tileid = i + j * roomsizex
@@ -1495,7 +1495,7 @@ function levelblock()
 			if testcond(conds,1) and (rule[2] == "is") then
 				local action = rule[3]
 				
-        if (action == "reset" or action == "win") then
+				if (action == "reset" or action == "win") then
 					local yous = findfeature(nil,"is","you")
 					local yous2 = findfeature(nil,"is","you2")
 					
@@ -1524,13 +1524,13 @@ function levelblock()
 							
 							if doit then
 								canwin = true
-                if action == "win" then
-                  for c,d in ipairs(allyous) do
-                    local unit = mmf.newObject(d)
-                    local pmult,sound = checkeffecthistory("win")
-                    MF_particles("win",unit.values[XPOS],unit.values[YPOS],10 * pmult,2,4,1,1)
-                  end
-                end
+								if action == "win" then
+									for c,d in ipairs(allyous) do
+										local unit = mmf.newObject(d)
+										local pmult,sound = checkeffecthistory("win")
+										MF_particles("win",unit.values[XPOS],unit.values[YPOS],10 * pmult,2,4,1,1)
+									end
+								end
 							end
 						end
 					end

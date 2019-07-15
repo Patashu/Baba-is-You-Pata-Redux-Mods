@@ -7,8 +7,8 @@ function movecommand(ox,oy,dir_,playerid_)
 	local take = 0
 	local takecount = 3
 	local finaltake = false
-  
-  slipped = {}
+	
+	slipped = {}
 	
 	local still_moving = {}
 	
@@ -40,7 +40,7 @@ function movecommand(ox,oy,dir_,playerid_)
 		local been_seen = {}
 		
 		if (finaltake == false) then
-      if (take == 0) then
+			if (take == 0) then
 				local slipperys = findallfeature(nil,"is","slip",true)
 				
 				for i,v in ipairs(slipperys) do
@@ -57,14 +57,14 @@ function movecommand(ox,oy,dir_,playerid_)
 										local newunit = mmf.newObject(b)
 										local unitname = getname(newunit)
 
-                    if (been_seen[b] == nil) then
-                      table.insert(moving_units, {unitid = b, reason = "slip", state = 0, moves = 1, dir = unit.values[DIR], xpos = x, ypos = y})
-                      been_seen[b] = #moving_units
-                    else
-                      local id = been_seen[b]
-                      local this = moving_units[id]
-                      this.moves = this.moves + 1
-                    end
+										if (been_seen[b] == nil) then
+											table.insert(moving_units, {unitid = b, reason = "slip", state = 0, moves = 1, dir = unit.values[DIR], xpos = x, ypos = y})
+											been_seen[b] = #moving_units
+										else
+											local id = been_seen[b]
+											local this = moving_units[id]
+											this.moves = this.moves + 1
+										end
 									end
 								end
 							end
@@ -72,7 +72,7 @@ function movecommand(ox,oy,dir_,playerid_)
 					end
 				end
 			end
-    
+		
 			if (dir_ ~= 4) and (take == 1) then
 				local players = {}
 				local empty = {}
@@ -95,7 +95,7 @@ function movecommand(ox,oy,dir_,playerid_)
 				for i,v in ipairs(players) do
 					local sleeping = false
 					
-          if (slipped[v] ~= nil) then
+					if (slipped[v] ~= nil) then
 						sleeping = true
 					elseif (v ~= 2) then
 						local unit = mmf.newObject(v)
@@ -350,23 +350,23 @@ function movecommand(ox,oy,dir_,playerid_)
 							end
 						elseif (state == 3) then
 							if ((data.reason == "move") or (data.reason == "chill")) then
-                if (not hasfeature(name,"is","stubborn",data.unitid,x,y)) then
-                  dir = rotate(dir)
-                  
-                  if (data.unitid ~= 2) then
-                    updatedir(data.unitid, dir)
-                    --unit.values[DIR] = dir
-                  end
-                end
+								if (not hasfeature(name,"is","stubborn",data.unitid,x,y)) then
+									dir = rotate(dir)
+									
+									if (data.unitid ~= 2) then
+										updatedir(data.unitid, dir)
+										--unit.values[DIR] = dir
+									end
+								end
 							end
 						end
 						
 						local ndrs = ndirs[dir + 1]
 						local ox,oy = ndrs[1],ndrs[2]
-            if (activemod.very_drunk or (data.reason ~= "shift" and data.reason ~= "yeet")) then
+						if (activemod.very_drunk or (data.reason ~= "shift" and data.reason ~= "yeet")) then
 							dir, ox, oy = apply_moonwalk(data.unitid,x,y,dir,ox,oy,false)
 						end
-            
+						
 						local pushobslist = {}
 						
 						local obslist,allobs,specials = check(data.unitid,x,y,dir,false,data.reason)
@@ -591,63 +591,63 @@ function movecommand(ox,oy,dir_,playerid_)
 			end
 			
 			if (#movelist > 0) then
-        if featureindex["copy"] ~= nil then
-          for i,data in ipairs(movelist) do
-            unitid = data[1]
-            --implement COPY
-            if (unitid ~= 2) then
-              local unit = mmf.newObject(unitid)
-              unitname = getname(unit)
-              local copys = find_copys(unitid, data[4]);
-              for _,copyid in ipairs(copys) do
-                --no multiplicative cascades in copy - only start copying if we're not already copying
-                local copy = mmf.newObject(copyid)
-                local alreadycopying = false
-                for _,other in ipairs(still_moving) do
-                  if other.unitid == copyid then
-                    alreadycopying = true
-                    break
-                  end
-                end
-                if not alreadycopying then
-                  updatedir(copyid, data[4])
-                  table.insert(still_moving, {unitid = copyid, reason = "copy", state = 0, moves = 1, dir = data[4], xpos = copy.values[XPOS], ypos = copy.values[YPOS]})
-                end
-              end
-            end
-          end
-        end
-      
+				if featureindex["copy"] ~= nil then
+					for i,data in ipairs(movelist) do
+						unitid = data[1]
+						--implement COPY
+						if (unitid ~= 2) then
+							local unit = mmf.newObject(unitid)
+							unitname = getname(unit)
+							local copys = find_copys(unitid, data[4]);
+							for _,copyid in ipairs(copys) do
+								--no multiplicative cascades in copy - only start copying if we're not already copying
+								local copy = mmf.newObject(copyid)
+								local alreadycopying = false
+								for _,other in ipairs(still_moving) do
+									if other.unitid == copyid then
+										alreadycopying = true
+										break
+									end
+								end
+								if not alreadycopying then
+									updatedir(copyid, data[4])
+									table.insert(still_moving, {unitid = copyid, reason = "copy", state = 0, moves = 1, dir = data[4], xpos = copy.values[XPOS], ypos = copy.values[YPOS]})
+								end
+							end
+						end
+					end
+				end
+			
 				for i,data in ipairs(movelist) do
 					local success = move(data[1],data[2],data[3],data[4],data[5])
-          if (success) then
-            if (data[6] == "slip") then
+					if (success) then
+						if (data[6] == "slip") then
 							slipped[data[1]] = true
 						end
-            unitid = data[1]
-            
-            --implement SLIDE
-            if (unitid ~= 2) then
-              local unit = mmf.newObject(unitid)
-              unitname = getname(unit)
-              local x = unit.values[XPOS] + data[2]
-              local y = unit.values[YPOS] + data[3]
-              local slides = findfeatureat(nil,"is","slide",x,y) and true or (hasfeature("empty","is","slide",2,x,y) and #findobstacle(x,y) == 0)
-              if slides then
-                --no multiplicative cascades in slide - only start sliding if we're not already sliding
-                local alreadysliding = false
-                for _,other in ipairs(still_moving) do
-                  if other.unitid == unitid and other.reason == "slide" then
-                    alreadysliding = true
-                    break
-                  end
-                end
-                if not alreadysliding then
-                  table.insert(still_moving, {unitid = unitid, reason = "slide", state = 0, moves = 1, dir = unit.values[DIR], xpos = unit.values[XPOS], ypos = unit.values[YPOS]})
-                end
-              end
-            end
-          end
+						unitid = data[1]
+						
+						--implement SLIDE
+						if (unitid ~= 2) then
+							local unit = mmf.newObject(unitid)
+							unitname = getname(unit)
+							local x = unit.values[XPOS] + data[2]
+							local y = unit.values[YPOS] + data[3]
+							local slides = findfeatureat(nil,"is","slide",x,y) and true or (hasfeature("empty","is","slide",2,x,y) and #findobstacle(x,y) == 0)
+							if slides then
+								--no multiplicative cascades in slide - only start sliding if we're not already sliding
+								local alreadysliding = false
+								for _,other in ipairs(still_moving) do
+									if other.unitid == unitid and other.reason == "slide" then
+										alreadysliding = true
+										break
+									end
+								end
+								if not alreadysliding then
+									table.insert(still_moving, {unitid = unitid, reason = "slide", state = 0, moves = 1, dir = unit.values[DIR], xpos = unit.values[XPOS], ypos = unit.values[YPOS]})
+								end
+							end
+						end
+					end
 				end
 			end
 			
@@ -743,13 +743,13 @@ function check(unitid,x,y,dir,pulling_,reason)
 	else
 		name = "empty"
 	end
-  
-  emptystop = emptystop or hasfeature(name,"hates","empty",unitid,x,y)
-  emptystop = emptystop or hasfeature("empty","is","sidekick",2,x+ox,y+oy)
-  
-  if (hasfeature(name,"hates","level",unitid,x,y)) then
-    return {-1},{-1},specials
-  end
+	
+	emptystop = emptystop or hasfeature(name,"hates","empty",unitid,x,y)
+	emptystop = emptystop or hasfeature("empty","is","sidekick",2,x+ox,y+oy)
+	
+	if (hasfeature(name,"hates","level",unitid,x,y)) then
+		return {-1},{-1},specials
+	end
 	
 	local lockpartner = ""
 	local open = hasfeature(name,"is","open",unitid,x,y)
@@ -763,55 +763,55 @@ function check(unitid,x,y,dir,pulling_,reason)
 	end
 	
 	local obs = findobstacle(x+ox,y+oy)
-  
-  --likes: if we like stuff and there are no units in the destination that we like AND there's no units at our feet that would be moving there to carry us, we can't go
-  local likes = hasfeature(name,"likes",nil,unitid,x,y)
-  if (likes ~= nil) then
-    local success = false
-    if (#obs > 0) then
-      for i,id in ipairs(obs) do
-        if (id ~= -1) then
-          local obsunit = mmf.newObject(id)
-          local obsname = getname(obsunit)
-          if hasfeature(name,"likes",obsname,unitid,x,y) then
-            success = true
-            break
-          end
-        end
-      end
-    else
-      success = hasfeature(name,"likes","empty",unitid,x,y)
-    end
-    if (not success) then
-      local carry = findobstacle(x,y)
-      if (#carry > 0) then
-        for i,id in ipairs(carry) do
-          if (id ~= -1) then
-            local obsunit = mmf.newObject(id)
-            local obsname = getname(obsunit)
-            local alreadymoving = findupdate(id,"update")
-            if (#alreadymoving > 0) then
-              for a,b in ipairs(alreadymoving) do
-                local nx,ny = b[3],b[4]
-                if (nx == x+ox and ny == y+oy) then
-                  if hasfeature(name,"likes",obsname,unitid,x,y) then
-                    success = true
-                    break
-                  end
-                end
-              end
-            end
-          end
-          if (success) then
-            break
-          end
-        end
-      end
-    end
-    if (not success) then
-      return {-1},{-1},specials
-    end
-  end
+	
+	--likes: if we like stuff and there are no units in the destination that we like AND there's no units at our feet that would be moving there to carry us, we can't go
+	local likes = hasfeature(name,"likes",nil,unitid,x,y)
+	if (likes ~= nil) then
+		local success = false
+		if (#obs > 0) then
+			for i,id in ipairs(obs) do
+				if (id ~= -1) then
+					local obsunit = mmf.newObject(id)
+					local obsname = getname(obsunit)
+					if hasfeature(name,"likes",obsname,unitid,x,y) then
+						success = true
+						break
+					end
+				end
+			end
+		else
+			success = hasfeature(name,"likes","empty",unitid,x,y)
+		end
+		if (not success) then
+			local carry = findobstacle(x,y)
+			if (#carry > 0) then
+				for i,id in ipairs(carry) do
+					if (id ~= -1) then
+						local obsunit = mmf.newObject(id)
+						local obsname = getname(obsunit)
+						local alreadymoving = findupdate(id,"update")
+						if (#alreadymoving > 0) then
+							for a,b in ipairs(alreadymoving) do
+								local nx,ny = b[3],b[4]
+								if (nx == x+ox and ny == y+oy) then
+									if hasfeature(name,"likes",obsname,unitid,x,y) then
+										success = true
+										break
+									end
+								end
+							end
+						end
+					end
+					if (success) then
+						break
+					end
+				end
+			end
+		end
+		if (not success) then
+			return {-1},{-1},specials
+		end
+	end
 	
 	if (#obs > 0) then
 		for i,id in ipairs(obs) do
@@ -873,7 +873,7 @@ function check(unitid,x,y,dir,pulling_,reason)
 					--MF_alert("checking for solidity for " .. obsname .. " by " .. name .. " at " .. tostring(x) .. ", " .. tostring(y))
 					
 					local isstop = hasfeature(obsname,"is","stop",id) or hasfeature(obsname,"is","sidekick",id) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,id,x,y)) or (hasfeature(obsname,"is","oneway",id) and dir == rotate(obsunit.values[DIR]))
-          if (not isstop) then isstop = nil end
+					if (not isstop) then isstop = nil end
 					local ispush = hasfeature(obsname,"is","push",id)
 					local ispull = hasfeature(obsname,"is","pull",id)
 					local isswap = hasfeature(obsname,"is","swap",id)
@@ -993,16 +993,16 @@ function trypush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 		y = y_
 		name = "empty"
 	end
-  
-  if (activemod.very_drunk) then
+	
+	if (activemod.very_drunk) then
 		dir, ox, oy = apply_moonwalk(unitid,x,y,dir,ox,oy,false)
 	end
 	
 	local pulling = pulling_ or false
 	
 	local weak = hasfeature(name,"is","weak",unitid,x_,y_)
-  
-  local pushername = "empty";
+	
+	local pushername = "empty";
 	if (pusherid > 2) then
 		local pusherunit = mmf.newObject(pusherid);
 		pushername = getname(pusherunit);
@@ -1018,7 +1018,7 @@ function trypush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 			local done = false
 			
 			while (done == false) do
-        if (lazypusher) then
+				if (lazypusher) then
 					return 1
 				elseif (hm == 0) then
 					result = math.max(0, result)
@@ -1066,19 +1066,19 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 		y = y_
 		name = "empty"
 	end
-  
-  if (activemod.very_drunk) then
+	
+	if (activemod.very_drunk) then
 		dir, ox, oy = apply_moonwalk(unitid,x,y,dir,ox,oy,false) 
 	end
 	
-  local pushername = "empty";
+	local pushername = "empty";
 	if (pusherid > 2) then
 		local pusherunit = mmf.newObject(pusherid);
 		pushername = getname(pusherunit);
 	end
 	local lazypusher = hasfeature(pushername,"is","lazy",pusherid,x,y) ~= nil
 	local lazyid = hasfeature(name,"is","lazy",unitid,x,y) ~= nil
-  
+	
 	local pulling = false
 	if (pulling_ ~= nil) then
 		pulling = pulling_
@@ -1226,8 +1226,8 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 		end
 		
 		if pulling and (HACK_MOVES < 10000) then
-      if (lazypusher) then
-        return 1
+			if (lazypusher) then
+				return 1
 			end
 			hmlist,hms,specials = check(unitid,x,y,dir,pulling,reason)
 			hm = 0
@@ -1252,7 +1252,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 					end
 				end
 			end
-    end
+		end
 		
 		if pushsound and (generaldata2.strings[TURNSOUND] == "") then
 			setsoundname("turn",5)
@@ -1267,7 +1267,7 @@ end
 function move(unitid,ox,oy,dir,specials_,instant_,simulate_)
 	local instant = instant_ or false
 	local simulate = simulate_ or false
-  local success = false
+	local success = false
 	
 	if (unitid ~= 2) then
 		local unit = mmf.newObject(unitid)
@@ -1383,8 +1383,8 @@ function move(unitid,ox,oy,dir,specials_,instant_,simulate_)
 		end
 		
 		if (gone == false) and (simulate == false) then
-      success = true
-      dir = apply_moonwalk(unitid, x, y, dir, nil, nil, true)
+			success = true
+			dir = apply_moonwalk(unitid, x, y, dir, nil, nil, true)
 			if instant then
 				update(unitid,x+ox,y+oy,dir)
 				MF_alert("Instant movement on " .. tostring(unitid))
@@ -1465,9 +1465,9 @@ function add_moving_units(rule,newdata,data,been_seen,empty_)
 	for i,v in ipairs(newdata) do
 		local sleeping = false
 		
-    if (rule == "slip") then
+		if (rule == "slip") then
 			--slip can't be stopped by sleeping/slipping
-    elseif (slipped[v] ~= nil) then
+		elseif (slipped[v] ~= nil) then
 			sleeping = true
 		elseif (v ~= 2) then
 			local unit = mmf.newObject(v)
@@ -1527,52 +1527,52 @@ function add_moving_units(rule,newdata,data,been_seen,empty_)
 end
 
 function find_copys(unitid,dir)
-  --fast track
-  if featureindex["copy"] == nil then return {} end
-  local result = {}
-  local unit = mmf.newObject(unitid)
-  local unitname = getname(unit)
-  local iscopy = findallfeature(nil,"copy",unitname,true)
-  for _,copyid in ipairs(iscopy) do
-    local copyunit = mmf.newObject(copyid)
-    local copyname = getname(copyunit)
-    if not hasfeature(copyname,"is","sleep",copyid) then
-      table.insert(result, copyid)
-    end
-  end
-  return result;
+	--fast track
+	if featureindex["copy"] == nil then return {} end
+	local result = {}
+	local unit = mmf.newObject(unitid)
+	local unitname = getname(unit)
+	local iscopy = findallfeature(nil,"copy",unitname,true)
+	for _,copyid in ipairs(iscopy) do
+		local copyunit = mmf.newObject(copyid)
+		local copyname = getname(copyunit)
+		if not hasfeature(copyname,"is","sleep",copyid) then
+			table.insert(result, copyid)
+		end
+	end
+	return result;
 end
 
 function find_sidekicks(unitid,dir)
-  --fast track
-  if featureindex["sidekick"] == nil then return {} end
-  local result = {}
-  local unit = mmf.newObject(unitid)
-  local unitname = getname(unit)
-  local lazy = hasfeature(unitname,"is","lazy",unitid)
-  if lazy ~= nil then
-    return result;
-  end
-  local x,y = unit.values[XPOS],unit.values[YPOS]
-  local dir90 = (dir+1) % 4;
-  for i = 1,2 do
-    local curdir = (dir90+2*i) % 4;
-    local curdx = ndirs[curdir+1][1];
-    local curdy = ndirs[curdir+1][2];
-    local curx = x+curdx;
-    local cury = y+curdy;
-    local obs = findobstacle(curx,cury);
-    for i,id in ipairs(obs) do
-      if (id ~= -1) then
-        local obsunit = mmf.newObject(id)
-        local obsname = getname(obsunit)
-        if hasfeature(obsname,"is","sidekick",id) then
-          table.insert(result, id);
-        end
-      end
-    end
-  end
-  return result;
+	--fast track
+	if featureindex["sidekick"] == nil then return {} end
+	local result = {}
+	local unit = mmf.newObject(unitid)
+	local unitname = getname(unit)
+	local lazy = hasfeature(unitname,"is","lazy",unitid)
+	if lazy ~= nil then
+		return result;
+	end
+	local x,y = unit.values[XPOS],unit.values[YPOS]
+	local dir90 = (dir+1) % 4;
+	for i = 1,2 do
+		local curdir = (dir90+2*i) % 4;
+		local curdx = ndirs[curdir+1][1];
+		local curdy = ndirs[curdir+1][2];
+		local curx = x+curdx;
+		local cury = y+curdy;
+		local obs = findobstacle(curx,cury);
+		for i,id in ipairs(obs) do
+			if (id ~= -1) then
+				local obsunit = mmf.newObject(id)
+				local obsname = getname(obsunit)
+				if hasfeature(obsname,"is","sidekick",id) then
+					table.insert(result, id);
+				end
+			end
+		end
+	end
+	return result;
 end
 
 function apply_moonwalk(unitid, x, y, dir, ox, oy, reverse)
@@ -1668,27 +1668,27 @@ function trunc(num)
 end
 
 function queue_move(unitid,ox,oy,dir,specials,reason)
-  table.insert(movelist, {unitid,ox,oy,dir,specials,reason})
-  
-  --implement SIDEKICK
-  if (unitid ~= 2) then
-    local unit = mmf.newObject(unitid)
-    unitname = getname(unit)
-    local sidekicks = find_sidekicks(unitid, dir);
-    for _,sidekickid in ipairs(sidekicks) do
-      --no multiplicative cascades in sidekick - only start sidekicking if we're not already sidekicking
-      local sidekick = mmf.newObject(sidekickid)
-      local alreadysidekicking = false
-      for _,other in ipairs(moving_units) do
-        if other.unitid == sidekickid then
-          alreadysidekicking = true
-          break
-        end
-      end
-      if not alreadysidekicking then
-        updatedir(sidekickid, dir)
-        table.insert(moving_units, {unitid = sidekickid, reason = "sidekick", state = 0, moves = 1, dir = dir, xpos = sidekick.values[XPOS], ypos = sidekick.values[YPOS]})
-      end
-    end
-  end
+	table.insert(movelist, {unitid,ox,oy,dir,specials,reason})
+	
+	--implement SIDEKICK
+	if (unitid ~= 2) then
+		local unit = mmf.newObject(unitid)
+		unitname = getname(unit)
+		local sidekicks = find_sidekicks(unitid, dir);
+		for _,sidekickid in ipairs(sidekicks) do
+			--no multiplicative cascades in sidekick - only start sidekicking if we're not already sidekicking
+			local sidekick = mmf.newObject(sidekickid)
+			local alreadysidekicking = false
+			for _,other in ipairs(moving_units) do
+				if other.unitid == sidekickid then
+					alreadysidekicking = true
+					break
+				end
+			end
+			if not alreadysidekicking then
+				updatedir(sidekickid, dir)
+				table.insert(moving_units, {unitid = sidekickid, reason = "sidekick", state = 0, moves = 1, dir = dir, xpos = sidekick.values[XPOS], ypos = sidekick.values[YPOS]})
+			end
+		end
+	end
 end

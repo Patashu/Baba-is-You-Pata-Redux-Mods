@@ -43,7 +43,7 @@ function init(tilemapid,roomsizex_,roomsizey_,tilesize_,Xoffset_,Yoffset_,genera
 	memory = {}
 	memoryneeded = false
 	powered = false
-  backers_cache = {}
+	backers_cache = {}
 	
 	generaldata.values[CURRID] = 0
 	updatecode = 1
@@ -54,8 +54,8 @@ function init(tilemapid,roomsizex_,roomsizey_,tilesize_,Xoffset_,Yoffset_,genera
 	mapdir = 3
 	last_key = 0
 	levelconversions = {}
-  
-  doreset = false
+	
+	doreset = false
 	resetcount = 0
 	resetmoves = 0
 	
@@ -168,7 +168,7 @@ function clearunits()
 	memory = {}
 	memoryneeded = false
 	powered = false
-  backers_cache = {}
+	backers_cache = {}
 	
 	generaldata.values[CURRID] = 0
 	updateundo = true
@@ -222,8 +222,8 @@ function clear()
 	mapdir = 3
 	last_key = 0
 	powered = false
-  
-  doreset = false
+	
+	doreset = false
 	resetcount = 0
 	resetmoves = 0
 	
@@ -259,7 +259,7 @@ function command(key,player_)
 		
 		movecommand(ox,oy,dir,player)
 		MF_update()
-    if doreset then
+		if doreset then
 			resetlevel()
 			MF_update()
 		else

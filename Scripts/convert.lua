@@ -340,7 +340,7 @@ function doconvert(data,extrarule_)
 			addunit(newunitid)
 			addunitmap(newunitid,x,y,newunit.strings[UNITNAME])
 			dynamic(newunitid)
-      
+			
 			addundo({"create",newunit.strings[UNITNAME],ingameid,baseingameid,unitid,newunitid})
 
 			if (newunit.strings[UNITTYPE] == "text") then
@@ -410,8 +410,8 @@ function doconvert(data,extrarule_)
 		addunit(newunitid)
 		addunitmap(newunitid,i,j,newunit.strings[UNITNAME])
 		dynamic(newunitid)
-    
-    addundo({"create",newunit.strings[UNITNAME],id,nil,nil,newunitid})
+		
+		addundo({"create",newunit.strings[UNITNAME],id,nil,nil,newunitid})
 		
 		if (newunit.strings[UNITTYPE] == "text") then
 			updatecode = 1

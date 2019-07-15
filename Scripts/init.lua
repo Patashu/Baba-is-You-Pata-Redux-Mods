@@ -11,13 +11,13 @@ mod.tilecount = 0
 function mod.load(dir)
 	-- Load mod code
 	loadscript(dir .. "options")
-  loadscript(dir .. "blocks")
-  loadscript(dir .. "conditions")
-  loadscript(dir .. "movement")
-  loadscript(dir .. "tools")
-  loadscript(dir .. "undo")
-  loadscript(dir .. "syntax")
-  loadscript(dir .. "convert")
+	loadscript(dir .. "blocks")
+	loadscript(dir .. "conditions")
+	loadscript(dir .. "movement")
+	loadscript(dir .. "tools")
+	loadscript(dir .. "undo")
+	loadscript(dir .. "syntax")
+	loadscript(dir .. "convert")
 
 	-- Load mod tiles enabled in options.lua
 	for _,v in ipairs(mod.alltiles) do
@@ -31,37 +31,37 @@ end
 function mod.unload(dir)
 	-- Unload mod code
 	loadscript("Data/values")
-  loadscript("Data/blocks")
-  loadscript("Data/conditions")
-  loadscript("Data/movement")
-  loadscript("Data/tools")
-  loadscript("Data/undo")
-  loadscript("Data/syntax")
-  loadscript("Data/convert")
+	loadscript("Data/blocks")
+	loadscript("Data/conditions")
+	loadscript("Data/movement")
+	loadscript("Data/tools")
+	loadscript("Data/undo")
+	loadscript("Data/syntax")
+	loadscript("Data/convert")
 end
 
 mod.alltiles = {
 	"slip",
-  "slide",
-  "likes",
-  "hates",
-  "sidekick",
-  "lazy",
-  "lean",
-  "turn",
-  "spin",
-  "moonwalk",
-  "drunk",
-  "drunker",
-  "skip",
-  "oneway",
-  "tall",
-  "copy",
-  "stubborn",
-  "reset",
-  "persist",
-  "back",
-  "with"
+	"slide",
+	"likes",
+	"hates",
+	"sidekick",
+	"lazy",
+	"lean",
+	"turn",
+	"spin",
+	"moonwalk",
+	"drunk",
+	"drunker",
+	"skip",
+	"oneway",
+	"tall",
+	"copy",
+	"stubborn",
+	"reset",
+	"persist",
+	"back",
+	"with"
 }
 
 function mod.addblock(tile)
@@ -73,7 +73,7 @@ function mod.addblock(tile)
 	local tilename = "object" .. tileindex
 
 	tileslist[tilename] = tile
-  --+1 because of cursor
+	--+1 because of cursor
 	tileslist[tilename].grid = {11 + math.floor((mod.tilecount+1) / 11), (mod.tilecount+1) % 11}
 
 	mod.tilecount = mod.tilecount + 1

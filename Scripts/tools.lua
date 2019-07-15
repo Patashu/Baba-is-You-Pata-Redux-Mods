@@ -482,35 +482,35 @@ function simplecouldenter(unitid, x, y, ox, oy, name_is_wall, text_is_wall, chec
 		unit = nil
 		name = "empty"
 	end
-  
-  if (hasfeature(name,"hates","level",unitid,x,y)) then
-    return false
-  end
+	
+	if (hasfeature(name,"hates","level",unitid,x,y)) then
+		return false
+	end
 
 	local obs = findobstacle(x,y)
-  
-  --likes: if we like stuff and there are no units in the destination that we like, we can't go
-  local likes = hasfeature(name,"likes",nil,unitid,x,y)
-  if (likes ~= nil) then
-    local success = false
-    if (#obs > 0) then
-      for i,id in ipairs(obs) do
-        if (id ~= -1) then
-          local obsunit = mmf.newObject(id)
-          local obsname = getname(obsunit)
-          if hasfeature(name,"likes",obsname,unitid,x,y) then
-            success = true
-            break
-          end
-        end
-      end
-    else
-      success = hasfeature(name,"likes","empty",unitid,x,y)
-    end
-    if (not success) then
-      return false
-    end
-  end
+	
+	--likes: if we like stuff and there are no units in the destination that we like, we can't go
+	local likes = hasfeature(name,"likes",nil,unitid,x,y)
+	if (likes ~= nil) then
+		local success = false
+		if (#obs > 0) then
+			for i,id in ipairs(obs) do
+				if (id ~= -1) then
+					local obsunit = mmf.newObject(id)
+					local obsname = getname(obsunit)
+					if hasfeature(name,"likes",obsname,unitid,x,y) then
+						success = true
+						break
+					end
+				end
+			end
+		else
+			success = hasfeature(name,"likes","empty",unitid,x,y)
+		end
+		if (not success) then
+			return false
+		end
+	end
 	
 	if (#obs > 0) then
 		for a,b in ipairs(obs) do
@@ -524,10 +524,10 @@ function simplecouldenter(unitid, x, y, ox, oy, name_is_wall, text_is_wall, chec
 				if (obstype == "text") then
 					obsname = "text"
 				end
-        
-        local obsstop = hasfeature(obsname,"is","stop",b) or hasfeature(obsname,"is","sidekick",b) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,b,x,y)) or (hasfeature(obsname,"is","oneway",b) and oxoytodir(ox,oy) == rotate(bunit.values[DIR]))
+				
+				local obsstop = hasfeature(obsname,"is","stop",b) or hasfeature(obsname,"is","sidekick",b) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,b,x,y)) or (hasfeature(obsname,"is","oneway",b) and oxoytodir(ox,oy) == rotate(bunit.values[DIR]))
 				--local obsstop = hasfeature(obsname,"is","stop",b,x,y) or hasfeature(obsname,"is","sidekick",b,x,y)
-        if (not obsstop) then obsstop = nil end
+				if (not obsstop) then obsstop = nil end
 				local obspush = hasfeature(obsname,"is","push",b,x,y)
 				local obspull = hasfeature(obsname,"is","pull",b,x,y)
 				
@@ -700,8 +700,8 @@ function create(name,x,y,dir,oldx_,oldy_,float_,skipundo_)
 	addunit(newunitid)
 	addunitmap(newunitid,x,y,newunit.strings[UNITNAME])
 	dynamic(newunitid)
-  
-  local testname = getname(newunit)
+	
+	local testname = getname(newunit)
 	if (hasfeature(testname,"is","word",newunitid,x,y) ~= nil) then
 		updatecode = 1
 	end
@@ -1057,13 +1057,13 @@ function floating(id1,id2)
 	if (unit1.values[FLOAT] == unit2.values[FLOAT]) then
 		return true
 	end
-  
-  local name1 = getname(unit1)
+	
+	local name1 = getname(unit1)
 	local name2 = getname(unit2)
-  if (hasfeature(name1,"is","tall",id1) or hasfeature(name2,"is","tall",id2)) then
-    return true
-  end
-  
+	if (hasfeature(name1,"is","tall",id1) or hasfeature(name2,"is","tall",id2)) then
+		return true
+	end
+	
 	return false
 end
 
