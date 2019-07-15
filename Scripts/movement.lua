@@ -35,6 +35,27 @@ function movecommand(ox,oy,dir_,playerid_)
 		end
 	end
 	
+	local levelrevmove = findfeature("level","is","reverse you")
+	if (levelrevmove ~= nil) then
+		local valid = false
+		
+		for i,v in ipairs(levelrevmove) do
+			if (valid == false) and testcond(v[2],1) then
+				valid = true
+			end
+		end
+		
+		if valid then
+			local ndrs = ndirs[rotate(dir_) + 1]
+			local ox,oy = ndrs[1],ndrs[2]
+			
+			addundo({"levelupdate",Xoffset,Yoffset,Xoffset + ox * tilesize,Yoffset + oy * tilesize,mapdir,dir_})
+			MF_scrollroom(ox * tilesize,oy * tilesize)
+			mapdir = dir_
+			updateundo = true
+		end
+	end
+	
 	while (take <= takecount) or finaltake do
 		moving_units = {}
 		local been_seen = {}
@@ -71,6 +92,37 @@ function movecommand(ox,oy,dir_,playerid_)
 						end
 					end
 				end
+				
+				local revslipperys = findallfeature(nil,"is","reverse slip",true)
+				
+				for i,v in ipairs(revslipperys) do
+					if (v ~= 2) then
+						local unit = mmf.newObject(v)
+						
+						local x,y = unit.values[XPOS],unit.values[YPOS]
+						local tileid = x + y * roomsizex
+						
+						if (unitmap[tileid] ~= nil) then
+							if (#unitmap[tileid] > 1) then
+								for a,b in ipairs(unitmap[tileid]) do
+									if (b ~= v) and floating(b,v) then
+										local newunit = mmf.newObject(b)
+										local unitname = getname(newunit)
+
+										if (been_seen[b] == nil) then
+											table.insert(moving_units, {unitid = b, reason = "slip", state = 0, moves = 1, dir = rotate(unit.values[DIR]), xpos = x, ypos = y})
+											been_seen[b] = #moving_units
+										else
+											local id = been_seen[b]
+											local this = moving_units[id]
+											this.moves = this.moves + 1
+										end
+									end
+								end
+							end
+						end
+					end
+				end
 			end
 		
 			if (dir_ ~= 4) and (take == 1) then
@@ -84,11 +136,13 @@ function movecommand(ox,oy,dir_,playerid_)
 				
 				if (playerid == 1) then
 					players,empty = findallfeature(nil,"is","you")
+					revplayers,revempty = findallfeature(nil,"is","reverse you")
 				elseif (playerid == 2) then
 					players,empty = findallfeature(nil,"is","you2")
 					
 					if (#players == 0) then
 						players,empty = findallfeature(nil,"is","you")
+						revplayers,revempty = findallfeature(nil,"is","reverse you")
 					end
 				end
 				
@@ -150,11 +204,71 @@ function movecommand(ox,oy,dir_,playerid_)
 						end
 					end
 				end
+				
+				for i,v in ipairs(revplayers) do
+					local sleeping = false
+					
+					if (v ~= 2) then
+						local unit = mmf.newObject(v)
+						
+						local unitname = getname(unit)
+						local sleep = hasfeature(unitname,"is","sleep",v)
+						
+						if (sleep ~= nil) then
+							sleeping = true
+						else
+							updatedir(v, rotate(dir_))
+						end
+					else
+						local thisempty = revempty[i]
+						
+						for a,b in pairs(thisempty) do
+							local x = a % roomsizex
+							local y = math.floor(a / roomsizex)
+							
+							local sleep = hasfeature("empty","is","sleep",2,x,y)
+							
+							if (sleep ~= nil) then
+								thisempty[a] = nil
+							end
+						end
+					end
+					
+					if (sleeping == false) then
+						if (been_seen[v] == nil) then
+							local x,y = -1,-1
+							if (v ~= 2) then
+								local unit = mmf.newObject(v)
+								x,y = unit.values[XPOS],unit.values[YPOS]
+								
+								table.insert(moving_units, {unitid = v, reason = "you", state = 0, moves = 1, dir = rotate(dir_), xpos = x, ypos = y})
+								been_seen[v] = #moving_units
+							else
+								local thisempty = revempty[i]
+								
+								for a,b in pairs(thisempty) do
+									x = a % roomsizex
+									y = math.floor(a / roomsizex)
+								
+									table.insert(moving_units, {unitid = 2, reason = "you", state = 0, moves = 1, dir = rotate(dir_), xpos = x, ypos = y})
+									been_seen[v] = #moving_units
+								end
+							end
+						else
+							local id = been_seen[v]
+							local this = moving_units[id]
+							--this.moves = this.moves + 1
+						end
+					end
+				end
 			end
 			
 			if (take == 2) then
 				local movers,mempty = findallfeature(nil,"is","move")
 				moving_units,been_seen = add_moving_units("move",movers,moving_units,been_seen,mempty)
+				
+				local revmovers,revmempty = findallfeature(nil,"is","reverse move")
+				moving_units,been_seen = add_moving_units("reverse move",revmovers,moving_units,been_seen,revmempty)
 				
 				local chillers,cempty = findallfeature(nil,"is","chill")
 				moving_units,been_seen = add_moving_units("chill",chillers,moving_units,been_seen,cempty)
@@ -222,6 +336,7 @@ function movecommand(ox,oy,dir_,playerid_)
 				end
 			elseif (take == 3) then
 				local shifts = findallfeature(nil,"is","shift",true)
+				local revshifts = findallfeature(nil,"is","reverse shift",true)
 				
 				for i,v in ipairs(shifts) do
 					if (v ~= 2) then
@@ -255,7 +370,40 @@ function movecommand(ox,oy,dir_,playerid_)
 					end
 				end
 				
+				for i,v in ipairs(revshifts) do
+					if (v ~= 2) then
+						local affected = {}
+						local unit = mmf.newObject(v)
+						
+						local x,y = unit.values[XPOS],unit.values[YPOS]
+						local tileid = x + y * roomsizex
+						
+						if (unitmap[tileid] ~= nil) then
+							if (#unitmap[tileid] > 1) then
+								for a,b in ipairs(unitmap[tileid]) do
+									if (b ~= v) and floating(b,v) then
+										local newunit = mmf.newObject(b)
+										
+										updatedir(b, rotate(unit.values[DIR]))
+										--newunit.values[DIR] = unit.values[DIR]
+										
+										if (been_seen[b] == nil) then
+											table.insert(moving_units, {unitid = b, reason = "shift", state = 0, moves = 1, dir = rotate(unit.values[DIR]), xpos = x, ypos = y})
+											been_seen[b] = #moving_units
+										else
+											local id = been_seen[b]
+											local this = moving_units[id]
+											this.moves = this.moves + 1
+										end
+									end
+								end
+							end
+						end
+					end
+				end
+				
 				local levelshift = findfeature("level","is","shift")
+				local levelrevshift = findfeature("level","is","reverse shift")
 				
 				if (levelshift ~= nil) then
 					local leveldir = mapdir
@@ -266,6 +414,19 @@ function movecommand(ox,oy,dir_,playerid_)
 						if floating_level(unit.fixed) then
 							updatedir(unit.fixed, leveldir)
 							table.insert(moving_units, {unitid = unit.fixed, reason = "shift", state = 0, moves = 1, dir = unit.values[DIR], xpos = x, ypos = y})
+						end
+					end
+				end
+				
+				if (levelrevshift ~= nil) then
+					local leveldir = rotate(mapdir)
+						
+					for a,unit in ipairs(units) do
+						local x,y = unit.values[XPOS],unit.values[YPOS]
+						
+						if floating_level(unit.fixed) then
+							updatedir(unit.fixed, leveldir)
+							table.insert(moving_units, {unitid = unit.fixed, reason = "shift", state = 0, moves = 1, dir = rotate(unit.values[DIR]), xpos = x, ypos = y})
 						end
 					end
 				end
@@ -349,7 +510,7 @@ function movecommand(ox,oy,dir_,playerid_)
 								dir = math.random(0,3)
 							end
 						elseif (state == 3) then
-							if ((data.reason == "move") or (data.reason == "chill")) then
+							if ((data.reason == "move") or (data.reason == "chill") or (data.reason == "reverse move")) then
 								if (not hasfeature(name,"is","stubborn",data.unitid,x,y)) then
 									dir = rotate(dir)
 									
@@ -361,9 +522,15 @@ function movecommand(ox,oy,dir_,playerid_)
 							end
 						end
 						
+						local revmove = hasfeature(name,"is","reverse move",data.unitid,x,y)
+						
+						if (revmove ~= nil) then
+							dir = rotate(dir)
+						end
+						
 						local ndrs = ndirs[dir + 1]
 						local ox,oy = ndrs[1],ndrs[2]
-						if (activemod.very_drunk or (data.reason ~= "shift" and data.reason ~= "yeet")) then
+						if (activemod.very_drunk or (data.reason ~= "shift" and data.reason ~= "reverse shift" and data.reason ~= "yeet")) then
 							dir, ox, oy = apply_moonwalk(data.unitid,x,y,dir,ox,oy,false)
 						end
 						
@@ -646,6 +813,20 @@ function movecommand(ox,oy,dir_,playerid_)
 									table.insert(still_moving, {unitid = unitid, reason = "slide", state = 0, moves = 1, dir = unit.values[DIR], xpos = unit.values[XPOS], ypos = unit.values[YPOS]})
 								end
 							end
+							
+							local revslides = findfeatureat(nil,"is","reverse slide",x,y) and true or (hasfeature("empty","is"," reverse slide",2,x,y) and #findobstacle(x,y) == 0)
+							if revslides then
+								local alreadysliding = false
+								for _,other in ipairs(still_moving) do
+									if other.unitid == unitid and other.reason == "slide" then
+										alreadysliding = true
+										break
+									end
+								end
+								if not alreadysliding then
+									table.insert(still_moving, {unitid = unitid, reason = "slide", state = 0, moves = 1, dir = rotate(unit.values[DIR]), xpos = unit.values[XPOS], ypos = unit.values[YPOS]})
+								end
+							end
 						end
 					end
 				end
@@ -872,7 +1053,7 @@ function check(unitid,x,y,dir,pulling_,reason)
 				if valid then
 					--MF_alert("checking for solidity for " .. obsname .. " by " .. name .. " at " .. tostring(x) .. ", " .. tostring(y))
 					
-					local isstop = hasfeature(obsname,"is","stop",id) or hasfeature(obsname,"is","sidekick",id) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,id,x,y)) or (hasfeature(obsname,"is","oneway",id) and dir == rotate(obsunit.values[DIR]))
+					local isstop = hasfeature(obsname,"is","stop",id) or hasfeature(obsname,"is","sidekick",id) or hasfeature(obsname,"is","reverse sidekick",id) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,id,x,y)) or (hasfeature(obsname,"is","oneway",id) and dir == rotate(obsunit.values[DIR])) or (hasfeature(obsname,"is","reverse oneway",id) and dir == obsunit.values[DIR])
 					if (not isstop) then isstop = nil end
 					local ispush = hasfeature(obsname,"is","push",id)
 					local ispull = hasfeature(obsname,"is","pull",id)
@@ -1383,6 +1564,12 @@ function move(unitid,ox,oy,dir,specials_,instant_,simulate_)
 		end
 		
 		if (gone == false) and (simulate == false) then
+			local revmove = hasfeature(unitname,"is","reverse move",unitid,x,y)
+			
+			if (revmove ~= nil) then
+				dir = rotate(dir)
+			end
+			
 			success = true
 			dir = apply_moonwalk(unitid, x, y, dir, nil, nil, true)
 			if instant then
@@ -1575,6 +1762,37 @@ function find_sidekicks(unitid,dir)
 	return result;
 end
 
+function find_revsidekicks(unitid,dir)
+	if featureindex["reverse sidekick"] == nil then return {} end
+	local result = {}
+	local unit = mmf.newObject(unitid)
+	local unitname = getname(unit)
+	local lazy = hasfeature(unitname,"is","lazy",unitid)
+	if lazy ~= nil then
+		return result;
+	end
+	local x,y = unit.values[XPOS],unit.values[YPOS]
+	local dir90 = (dir+1) % 4;
+	for i = 1,2 do
+		local curdir = (dir90+2*i) % 4;
+		local curdx = ndirs[curdir+1][1];
+		local curdy = ndirs[curdir+1][2];
+		local curx = x+curdx;
+		local cury = y+curdy;
+		local obs = findobstacle(curx,cury);
+		for i,id in ipairs(obs) do
+			if (id ~= -1) then
+				local obsunit = mmf.newObject(id)
+				local obsname = getname(obsunit)
+				if hasfeature(obsname,"is","reverse sidekick",id) then
+					table.insert(result, id);
+				end
+			end
+		end
+	end
+	return result;
+end
+
 function apply_moonwalk(unitid, x, y, dir, ox, oy, reverse)
 	local name = "empty"
 	local sgn = reverse == true and -1 or 1
@@ -1587,7 +1805,7 @@ function apply_moonwalk(unitid, x, y, dir, ox, oy, reverse)
 	rotatedness = rotatedness + sgn*countfeature(name,"is","drunk",unitid,x,y);
 	rotatedness = rotatedness + sgn*countfeature(name,"is","drunker",unitid,x,y)*0.5;
 	local mag = 1;
-	mag = mag + countfeature(name,"is","skip",unitid,x,y);
+	mag = mag + countfeature(name,"is","skip",unitid,x,y) - countfeature(name,"is","reverse skip",unitid,x,y)
 	if (dir ~= nil and ox ~= nil and oy ~= nil) then
 		dir = (dir + trunc(rotatedness)) % 4
 		ox, oy = dirtooxoy(oxoytodir(ox, oy) + rotatedness)
@@ -1688,6 +1906,22 @@ function queue_move(unitid,ox,oy,dir,specials,reason)
 			if not alreadysidekicking then
 				updatedir(sidekickid, dir)
 				table.insert(moving_units, {unitid = sidekickid, reason = "sidekick", state = 0, moves = 1, dir = dir, xpos = sidekick.values[XPOS], ypos = sidekick.values[YPOS]})
+			end
+		end
+		
+		local revsidekicks = find_revsidekicks(unitid, dir);
+		for _,sidekickid in ipairs(revsidekicks) do
+			local sidekick = mmf.newObject(sidekickid)
+			local alreadysidekicking = false
+			for _,other in ipairs(moving_units) do
+				if other.unitid == sidekickid then
+					alreadysidekicking = true
+					break
+				end
+			end
+			if not alreadysidekicking then
+				updatedir(sidekickid, rotate(dir))
+				table.insert(moving_units, {unitid = sidekickid, reason = "sidekick", state = 0, moves = 1, dir = rotate(dir), xpos = sidekick.values[XPOS], ypos = sidekick.values[YPOS]})
 			end
 		end
 	end

@@ -701,11 +701,6 @@ function create(name,x,y,dir,oldx_,oldy_,float_,skipundo_)
 	addunitmap(newunitid,x,y,newunit.strings[UNITNAME])
 	dynamic(newunitid)
 	
-	local testname = getname(newunit)
-	if (hasfeature(testname,"is","word",newunitid,x,y) ~= nil) then
-		updatecode = 1
-	end
-	
 	return newunit.fixed
 end
 

@@ -100,11 +100,16 @@ end
 
 function moveblock()
 	local isshift = findallfeature(nil,"is","shift",true)
+	local isrevshift = findallfeature(nil,"is","reverse shift",true)
 	local istele = findallfeature(nil,"is","tele",true)
+	local isrevtele = findallfeature(nil,"is","reverse tele",true)
 	local isfollow = findfeature(nil,"follow",nil,true)
 	local isspin = findallfeature(nil,"is","spin",true)
+	local isrevspin = findallfeature(nil,"is","reverse spin",true)
 	local islean = findallfeature(nil,"is","lean",true)
+	local isrevlean = findallfeature(nil,"is","reverse lean",true)
 	local isturn = findallfeature(nil,"is","turn",true)
+	local isrevturn = findallfeature(nil,"is","reverse turn",true)
 	
 	local doned = {}
 	
@@ -430,6 +435,23 @@ function moveblock()
 		end
 	end
 	
+	for a,unitid in ipairs(isrevtele) do
+		local unit = mmf.newObject(unitid)
+		local name = getname(unit)
+		local x,y = unit.values[XPOS],unit.values[YPOS]
+		
+		local tx,ty = math.random(1,roomsizex-2),math.random(1,roomsizey-2)
+		
+		if (issafe(unitid) == false) then
+			update(unitid,tx,ty)
+			
+			local pmult,sound = checkeffecthistory("tele")
+			MF_particles("glow",x,y,5 * pmult,1,4,1,1)
+			MF_particles("glow",tx,ty,5 * pmult,1,4,1,1)
+			setsoundname("turn",6,sound)
+		end
+	end
+	
 	for a,unitid in ipairs(isshift) do
 		if (unitid ~= 2) and (unitid ~= 1) then
 			local unit = mmf.newObject(unitid)
@@ -451,11 +473,40 @@ function moveblock()
 		end
 	end
 	
+	for a,unitid in ipairs(isrevshift) do
+		if (unitid ~= 2) and (unitid ~= 1) then
+			local unit = mmf.newObject(unitid)
+			local x,y,dir = unit.values[XPOS],unit.values[YPOS],rotate(unit.values[DIR])
+			
+			local things = findallhere(x,y,unitid)
+			
+			if (#things > 0) and (isgone(unitid) == false) then
+				for e,f in ipairs(things) do
+					if floating(unitid,f) then
+						local newunit = mmf.newObject(f)
+						local name = newunit.strings[UNITNAME] 
+						
+						addundo({"update",name,x,y,newunit.values[DIR],x,y,rotate(unit.values[DIR]),newunit.values[ID]})
+						newunit.values[DIR] = unit.values[DIR]
+					end
+				end
+			end
+		end
+	end
+	
 	for a,unitid in ipairs(isspin) do
 		if (unitid ~= 2) and (unitid ~= 1) then
 			local unit = mmf.newObject(unitid)
 			local x,y,dir = unit.values[XPOS],unit.values[YPOS],unit.values[DIR]
 			updatedir(unitid,(dir+3)%4);
+		end
+	end
+	
+	for a,unitid in ipairs(isrevspin) do
+		if (unitid ~= 2) and (unitid ~= 1) then
+			local unit = mmf.newObject(unitid)
+			local x,y,dir = unit.values[XPOS],unit.values[YPOS],unit.values[DIR]
+			updatedir(unitid,(dir+1)%4);
 		end
 	end
 	
@@ -470,10 +521,32 @@ function moveblock()
 		end
 	end
 	
+	for a,unitid in ipairs(isrevlean) do
+		if (unitid ~= 2) and (unitid ~= 1) then
+			local unit = mmf.newObject(unitid)
+			local fwd = rotate(unit.values[DIR])
+			local right = (fwd+3)%4
+			local bwd = (fwd+2)%4
+			local left = (fwd+1)%4
+			local result = changeDirIfFree(unitid, right) or changeDirIfFree(unitid, fwd) or changeDirIfFree(unitid, left) or changeDirIfFree(unitid, bwd);
+		end
+	end
+	
 	for a,unitid in ipairs(isturn) do
 		if (unitid ~= 2) and (unitid ~= 1) then
 			local unit = mmf.newObject(unitid)
 			local fwd = unit.values[DIR]
+			local right = (fwd+3)%4
+			local bwd = (fwd+2)%4
+			local left = (fwd+1)%4
+			local result = changeDirIfFree(unitid, fwd) or changeDirIfFree(unitid, right) or changeDirIfFree(unitid, left) or changeDirIfFree(unitid, bwd);
+		end
+	end
+	
+	for a,unitid in ipairs(isturn) do
+		if (unitid ~= 2) and (unitid ~= 1) then
+			local unit = mmf.newObject(unitid)
+			local fwd = rotate(unit.values[DIR])
 			local right = (fwd+3)%4
 			local bwd = (fwd+2)%4
 			local left = (fwd+1)%4
@@ -516,12 +589,28 @@ end
 
 function fallblock(things)
 	local checks = {}
+	local fallcount = {}
+	local vallcount = {}
 	
 	if (things == nil) then
 		local isfall = findallfeature(nil,"is","fall",true)
+		local isvall = findallfeature(nil,"is","vall",true)
 
 		for a,unitid in ipairs(isfall) do
+			if not fallcount[unitid] then
+				fallcount[unitid] = 1
+			else
+				fallcount[unitid] = fallcount[unitid] + 1
+			end
 			table.insert(checks, unitid)
+		end
+		
+		for a,unitid in ipairs(isvall) do
+			if not vallcount[unitid] then
+				vallcount[unitid] = 1
+			else
+				vallcount[unitid] = vallcount[unitid] + 1
+			end
 		end
 	else
 		for a,unitid in ipairs(things) do
@@ -545,6 +634,13 @@ function fallblock(things)
 					local below,below_,specials = check(unitid,x,y,3,false,"fall")
 					
 					local result = 0
+					
+					local falls = fallcount[unitid] or 0
+					local valls = vallcount[unitid] or 0
+					if falls <= valls then
+						result = 1
+					end
+					
 					for c,d in pairs(below) do
 						if (d ~= 0) then
 							result = 1
@@ -588,6 +684,130 @@ function fallblock(things)
 							else
 								--[[
 								local stillgoing = hasfeature(name,"is","fall",unitid,x,y)
+								if (stillgoing == nil) then
+									onground = true
+									table.remove(checks, a)
+								end
+								]]--
+							end
+						else
+							onground = true
+							settled = true
+						end
+					else
+						onground = true
+					end
+				end
+			end
+			
+			if settled then
+				done = true
+			end
+		else
+			done = true
+		end
+	end
+	
+	vallblock(things)
+end
+
+function vallblock(things)
+	local checks = {}
+	local vallcount = {}
+	local fallcount = {}
+	
+	if (things == nil) then
+		local isvall = findallfeature(nil,"is","vall",true)
+		local isfall = findallfeature(nil,"is","fall",true)
+
+		for a,unitid in ipairs(isvall) do
+			if not vallcount[unitid] then
+				vallcount[unitid] = 1
+			else
+				vallcount[unitid] = vallcount[unitid] + 1
+			end
+			table.insert(checks, unitid)
+		end
+		
+		for a,unitid in ipairs(isfall) do
+			if not fallcount[unitid] then
+				fallcount[unitid] = 1
+			else
+				fallcount[unitid] = fallcount[unitid] + 1
+			end
+		end
+	else
+		for a,unitid in ipairs(things) do
+			table.insert(checks, unitid)
+		end
+	end
+	
+	local done = false
+	
+	while (done == false) do
+		local settled = true
+		
+		if (#checks > 0) then
+			for a,unitid in pairs(checks) do
+				local unit = mmf.newObject(unitid)
+				local x,y,dir = unit.values[XPOS],unit.values[YPOS],unit.values[DIR]
+				local name = getname(unit)
+				local onground = false
+				
+				while (onground == false) do
+					local below,below_,specials = check(unitid,x,y,1,false,"vall")
+					
+					local result = 0
+					
+					local valls = vallcount[unitid] or 0
+					local falls = fallcount[unitid] or 0
+					if valls <= falls then
+						result = 1
+					end
+					
+					for c,d in pairs(below) do
+						if (d ~= 0) then
+							result = 1
+						else
+							if (below_[c] ~= 0) and (result ~= 1) then
+								if (result ~= 0) then
+									result = 2
+								else
+									for e,f in ipairs(specials) do
+										if (f[1] == below_[c]) then
+											result = 2
+										end
+									end
+								end
+							end
+						end
+						
+						--MF_alert(tostring(y) .. " -- " .. tostring(d) .. " (" .. tostring(below_[c]) .. ")")
+					end
+					
+					--MF_alert(tostring(y) .. " -- result: " .. tostring(result))
+					
+					if (result ~= 1) then
+						local gone = false
+						
+						if (result == 0) then
+							update(unitid,x,y-1)
+						elseif (result == 2) then
+							gone = move(unitid,0,1,rotate(dir),specials,true,true)
+						end
+						
+						-- Poista tästä kommenttimerkit jos haluat, että vall tsekkaa juttuja per pudottu tile
+						if (gone == false) then
+							y = y - 1
+							--block({unitid},true)
+							settled = false
+							
+							if unit.flags[DEAD] then
+								onground = true
+								table.remove(checks, a)
+							else
+								--[[
+								local stillgoing = hasfeature(name,"is","vall",unitid,x,y)
 								if (stillgoing == nil) then
 									onground = true
 									table.remove(checks, a)
@@ -674,22 +894,86 @@ function block(small_)
 			end
 		end
 		
-		local ismore = getunitswitheffect("more",delthese)
+		local ismore = findallfeature(nil,"is","more")
+		local isless = findallfeature(nil,"is","reverse more")
 		
-		for id,unit in ipairs(ismore) do
+		local ismoreness = {}
+		local anythingness = {}
+		
+		for i,unit in ipairs(ismore) do
+			id = unit
+			if (id > 2) then
+				anythingness[id] = true
+				if (ismoreness[id] == nil) then
+					ismoreness[id] = 1
+				else
+					ismoreness[id] = ismoreness[id] + 1
+				end
+			end
+		end
+		
+		for i,unit in ipairs(isless) do
+			id = unit
+			if (id > 2) then
+				anythingness[id] = true
+				if (ismoreness[id] == nil) then
+					ismoreness[id] = -1
+				else
+					ismoreness[id] = ismoreness[id] - 1
+				end
+			end
+		end
+		
+		delthese = {}
+		
+		for id,dummy in pairs(anythingness) do
+			local unit = mmf.newObject(id)
 			local x,y = unit.values[XPOS],unit.values[YPOS]
 			local name = unit.strings[UNITNAME]
-			local doblocks = {}
+			local moreness = ismoreness[id]
+			--print(tostring(moreness)..","..tostring(multness))
 			
-			for i=1,4 do
-				local drs = ndirs[i]
-				ox = drs[1]
-				oy = drs[2]
+			--handle MORE
+			while (moreness > 0) do
+				moreness = moreness - 1
 				
-				local valid = simplecouldenter(unit.fixed, x, y, ox, oy, true, false, true)
+				for i=1,4 do
+					local drs = dirs_diagonals[i]
+					ox = drs[1]
+					oy = drs[2]
+					
+					local valid = simplecouldenter(unit.fixed, x, y, ox, oy, true, true, activemod.more_checks_empty)
+					
+					if valid then
+						local newunit = copy(unit.fixed,x+ox,y+oy)
+					end
+				end
+			end
+			
+			--handle LESS
+			while (moreness < 0) do
+				moreness = moreness + 1
+				if (issafe(unit.fixed) == false) then	
+					local could_grow = false
+					
+					for i=1,4 do
+						local drs = dirs_diagonals[i]
+						ox = drs[1]
+						oy = drs[2]
+						
+						local valid = simplecouldenter(unit.fixed, x, y, ox, oy, true, true, activemod.more_checks_empty)
+						
+						if valid then
+							could_grow = true
+							break
+						end
+					end
 				
-				if valid then
-					local newunit = copy(unit.fixed,x+ox,y+oy)
+					if (could_grow) then
+						local pmult,sound = checkeffecthistory("defeat")
+						MF_particles("destroy",x,y,5 * pmult,0,3,1,1)
+						table.insert(delthese, unit.fixed)
+					end
 				end
 			end
 		end
@@ -703,12 +987,13 @@ function block(small_)
 		
 		if (unitmap[tileid] ~= nil) then
 			local water = findallhere(x,y)
+			local boat = findfeatureat(nil,"is","reverse sink",x,y)
 			local sunk = false
 			
 			if (#water > 0) then
 				for a,b in ipairs(water) do
 					if floating(b,unit.fixed) then
-						if (issafe(b) == false) and (b ~= unit.fixed) then
+						if (issafe(b) == false) and (b ~= unit.fixed) and (boat == nil) then
 							local dosink = true
 							
 							for c,d in ipairs(delthese) do
@@ -771,6 +1056,31 @@ function block(small_)
 		end
 	end
 	
+	local isstrong = getunitswitheffect("reverse weak",delthese)
+	
+	for id,unit in ipairs(isstrong) do
+		local x,y = unit.values[XPOS],unit.values[YPOS]
+		local stuff = findallhere(x,y)
+		
+		if (#stuff > 0) then
+			for i,v in ipairs(stuff) do
+				if floating(v,unit.fixed) and not issafe(v) then
+					local vunit = mmf.newObject(v)
+					local thistype = vunit.strings[UNITTYPE]
+					if (v ~= unit.fixed) then
+						local pmult,sound = checkeffecthistory("strong")
+						MF_particles("destroy",x,y,5 * pmult,0,3,1,1)
+						removalshort = sound
+						removalsound = 1
+						generaldata.values[SHAKE] = 4
+						table.insert(delthese, v)
+						break
+					end
+				end
+			end
+		end
+	end
+	
 	delthese,doremovalsound = handledels(delthese,doremovalsound)
 	
 	local ismelt = getunitswitheffect("melt",delthese)
@@ -804,8 +1114,13 @@ function block(small_)
 	
 	local isyou = getunitswitheffect("you",delthese)
 	local isyou2 = getunitswitheffect("you2",delthese)
+	local isrevyou = getunitswitheffect("reverse you",delthese)
 	
 	for i,v in ipairs(isyou2) do
+		table.insert(isyou, v)
+	end
+	
+	for i,v in ipairs(isrevyou) do
 		table.insert(isyou, v)
 	end
 	
@@ -966,8 +1281,13 @@ function block(small_)
 	
 	isyou = getunitswitheffect("you",delthese)
 	isyou2 = getunitswitheffect("you2",delthese)
+	isrevyou = getunitswitheffect("reverse you",delthese)
 	
 	for i,v in ipairs(isyou2) do
+		table.insert(isyou, v)
+	end
+	
+	for i,v in ipairs(isrevyou) do
 		table.insert(isyou, v)
 	end
 	
@@ -1432,9 +1752,7 @@ function levelblock()
 				if (unitmap[tileid] == nil) or (#unitmap[tileid] == 0) then
 					--MF_alert(tostring(i) .. ", " .. tostring(j))
 					local keypair = ""
-					local winpair = ""
 					local unlock = false
-					local victory = false
 					
 					for a,rules in ipairs(emptythings) do
 						local rule = rules[1]
@@ -1453,20 +1771,6 @@ function levelblock()
 								unlock = true
 							end
 						end
-						
-						if (rule[3] == "win") and testcond(conds,2,i,j) then
-							if (string.len(winpair) == 0) then
-								winpair = "you"
-							elseif (winpair == "win") then
-								victory = true
-							end
-						elseif (rule[3] == "you") and testcond(conds,2,i,j) then
-							if (string.len(winpair) == 0) then
-								winpair = "win"
-							elseif (winpair == "you") then
-								victory = true
-							end
-						end
 					end
 					
 					if unlock then
@@ -1477,10 +1781,6 @@ function levelblock()
 						end
 						
 						delete(2,i,j)
-					end
-					
-					if victory then
-						MF_win()
 					end
 				end
 			end
@@ -1498,6 +1798,7 @@ function levelblock()
 				if (action == "reset" or action == "win") then
 					local yous = findfeature(nil,"is","you")
 					local yous2 = findfeature(nil,"is","you2")
+					local revyous = findfeature(nil,"is","reverse you")
 					
 					if (yous == nil) then
 						yous = {}
@@ -1505,6 +1806,12 @@ function levelblock()
 					
 					if (yous2 ~= nil) then
 						for i,v in ipairs(yous2) do
+							table.insert(yous, v)
+						end
+					end
+					
+					if (revyous ~= nil) then
+						for i,v in ipairs(revyous) do
 							table.insert(yous, v)
 						end
 					end
@@ -1545,6 +1852,7 @@ function levelblock()
 				elseif (action == "defeat") then
 					local yous = findfeature(nil,"is","you")
 					local yous2 = findfeature(nil,"is","you2")
+					local revyous = findfeature(nil,"is","reverse you")
 					
 					if (yous == nil) then
 						yous = {}
@@ -1552,6 +1860,12 @@ function levelblock()
 					
 					if (yous2 ~= nil) then
 						for i,v in ipairs(yous2) do
+							table.insert(yous, v)
+						end
+					end
+					
+					if (revyous ~= nil) then
+						for i,v in ipairs(revyous) do
 							table.insert(yous, v)
 						end
 					end
@@ -1611,6 +1925,25 @@ function levelblock()
 								end
 							end
 						end
+					end
+				elseif (action == "reverse weak") then
+					if (units ~= nil) then
+						delthese = {}
+						doremovalsound = true
+						for a,b in ipairs(units) do
+							print(b)
+							if (issafe(b.fixed) == false) and floating_level(b.fixed) then
+								local unit = b
+								local pmult,sound = checkeffecthistory("weak")
+								local x,y = unit.values[XPOS],unit.values[YPOS]
+								MF_particles("destroy",x,y,5 * pmult,0,3,1,1)
+								removalshort = sound
+								removalsound = 1
+								generaldata.values[SHAKE] = 4
+								table.insert(delthese, unit.fixed)
+							end
+						end
+						delthese,doremovalsound = handledels(delthese,doremovalsound)
 					end
 				elseif (action == "melt") then
 					local hots = findfeature(nil,"is","hot")
@@ -1695,7 +2028,7 @@ function levelblock()
 							destroylevel()
 						end
 					end
-				elseif (action == "tele") then
+				elseif (action == "tele") or (action == "reverse tele") then
 					for a,unit in ipairs(units) do
 						local x,y = unit.values[XPOS],unit.values[YPOS]
 						
@@ -1719,9 +2052,25 @@ function levelblock()
 					addundo({"levelupdate",Xoffset,Yoffset,Xoffset + ox * tilesize,Yoffset + oy * tilesize,dir,dir})
 					MF_scrollroom(ox * tilesize,oy * tilesize)
 					updateundo = true
+				elseif (action == "reverse move") then
+					local dir = rotate(mapdir)
+					
+					local drs = rotate(ndirs[dir + 1])
+					local ox,oy = drs[1],drs[2]
+					
+					addundo({"levelupdate",Xoffset,Yoffset,Xoffset + ox * tilesize,Yoffset + oy * tilesize,dir,dir})
+					MF_scrollroom(ox * tilesize,oy * tilesize)
+					updateundo = true
 				elseif (action == "fall") then
 					local drop = 20
 					local dir = mapdir
+					
+					addundo({"levelupdate",Xoffset,Yoffset,Xoffset,Yoffset + tilesize * drop,dir,dir})
+					MF_scrollroom(0,tilesize * drop)
+					updateundo = true
+				elseif (action == "vall") then
+					local drop = 20
+					local dir = rotate(mapdir)
 					
 					addundo({"levelupdate",Xoffset,Yoffset,Xoffset,Yoffset + tilesize * drop,dir,dir})
 					MF_scrollroom(0,tilesize * drop)
@@ -1829,7 +2178,7 @@ end
 function findplayer()
 	local playerfound = false
 	
-	local players = findfeature(nil,"is","you") or findfeature(nil,"is","you2")
+	local players = findfeature(nil,"is","you") or findfeature(nil,"is","you2") or findfeature(nil,"is","reverse you")
 	
 	if (players ~= nil) then
 		for i,v in ipairs(players) do
