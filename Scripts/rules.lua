@@ -32,36 +32,6 @@ function code(alreadyrun_)
 			addbaserule("level","is","stop")
 			addbaserule("cursor","is","select")
 			
-			local vitleveltable = {
-				"94level",
-				"96level",
-			}
-			
-			local vitlevel = false
-			
-			for i,v in ipairs(vitleveltable) do
-				if generaldata.strings[CURRLEVEL] == v then
-					vitlevel = true
-					break
-				else
-					vitlevel = false
-				end
-			end
-			
-			if vitlevel then
-				addbaserule("baba","is","you")
-				addbaserule("wall","is","stop")
-				addbaserule("flag","is","win")
-				addbaserule("rock","is","push")
-				addbaserule("skull","is","defeat")
-				addbaserule("water","is","sink")
-				addbaserule("keke","is","move")
-				addbaserule("box","is","pull")
-				addbaserule("belt","is","shift")
-				addbaserule("key","is","open")
-				addbaserule("door","is","shut")
-			end
-			
 			if (#codeunits > 0) then
 				for i,v in ipairs(codeunits) do
 					table.insert(checkthese, v)
@@ -291,8 +261,6 @@ function docode(firstwords)
 								
 								if (tiletype == 5) then
 									letterword = letterword .. tilename
-									
-									letterword = letterword.gsub(letterword,"vv","w")
 									
 									local lword,ltype,found,secondaryfound = findword(letterword,nexts,tilename)
 									
