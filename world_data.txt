@@ -2,6 +2,7 @@
 levelid=10
 
 [general]
+mods=1
 name=pataredux
 start=3level
 firstlevel=3level
