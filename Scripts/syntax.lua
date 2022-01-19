@@ -1,81 +1,12 @@
-function init(tilemapid,roomsizex_,roomsizey_,tilesize_,Xoffset_,Yoffset_,generaldataid,generaldataid2,generaldataid4,spritedataid,screenw_,screenh_)
-	map = TileMap.new(tilemapid)
-	generaldata = mmf.newObject(generaldataid)
-	generaldata2 = mmf.newObject(generaldataid2)
-	generaldata4 = mmf.newObject(generaldataid4)
-	spritedata = mmf.newObject(spritedataid)
-	
-	roomsizex = roomsizex_
-	roomsizey = roomsizey_
-	tilesize = tilesize_
-	f_tilesize = spritedata.values[FIXEDTILESIZE]
-	Xoffset = Xoffset_
-	Yoffset = Yoffset_
-	
-	screenw = screenw_
-	screenh = screenh_
-	
-	features = {}
-	visualfeatures = {}
-	featureindex = {}
-	objectdata = {}
-	units = {}
-	tiledunits = {}
-	codeunits = {}
-	unitlists = {}
-	objectlist = {}
-	undobuffer = {}
-	animunits = {}
-	unitmap = {}
-	unittypeshere = {}
-	deleted = {}
-	ruleids = {}
-	updatelist = {}
-	objectcolours = {}
-	wordunits = {}
-	paths = {}
-	paradox = {}
-	movelist = {}
-	effecthistory = {}
-	notfeatures = {}
-	pushedunits = {}
-	customobjects = {}
-	memory = {}
-	memoryneeded = false
-	powered = false
-	backers_cache = {}
-	
-	generaldata.values[CURRID] = 0
-	updatecode = 1
-	doundo = true
-	updateundo = true
-	ruledebug = false
-	maprotation = 0
-	mapdir = 3
-	last_key = 0
-	levelconversions = {}
-	
-	doreset = false
-	resetcount = 0
-	resetmoves = 0
-	
-	HACK_MOVES = 0
-	HACK_INFINITY = 0
-	
-	generatetiles()
-end
-
-if (fixed_to_str == nil) then
-	fixed_to_str = tostring
-end
-
-function addunit(id,undoing_)
+function addunit(id,undoing_,levelstart_)
 	local unitid = #units + 1
 	
 	units[unitid] = {}
 	units[unitid] = mmf.newObject(id)
 	
 	local unit = units[unitid]
+	local undoing = undoing_ or false
+	local levelstart = levelstart_ or false
 	
 	getmetadata(unit)
 	
@@ -103,6 +34,7 @@ function addunit(id,undoing_)
 	
 	local name = getname(unit)
 	local name_ = unit.strings[NAME]
+	unit.originalname = unit.strings[UNITNAME]
 	
 	if (unitlists[name] == nil) then
 		unitlists[name] = {}
@@ -123,116 +55,65 @@ function addunit(id,undoing_)
 			if (unitlists[matname] == nil) then
 				unitlists[matname] = {}
 			end
+		elseif (unit.values[TYPE] == 5) then
+			table.insert(letterunits, unit.fixed)
 		end
 	end
 	
-	if (unit.strings[UNITNAME] ~= "level") then
-		setcolour(unit.fixed)
+	unit.colour = {}
+	
+	if (unit.strings[UNITNAME] ~= "level") and (unit.className ~= "specialobject") then
+		local cc1,cc2 = setcolour(unit.fixed)
+		unit.colour = {cc1,cc2}
 	end
 	
-	local undoing = undoing_ or false
+	unit.back_init = 0
+	unit.broken = 0
 	
-	if (unit.className ~= "path") then
+	if (unit.className ~= "path") and (unit.className ~= "specialobject") then
 		statusblock({id},undoing)
 		MF_animframe(id,math.random(0,2))
 	end
 	
-	if (unit.strings[UNITNAME] == "text_back") then
-		memoryneeded = true
+	unit.active = false
+	unit.new = true
+	unit.colours = {}
+	unit.currcolour = 0
+	unit.followed = -1
+	unit.holder = 0
+	unit.xpos = unit.values[XPOS]
+	unit.ypos = unit.values[YPOS]
+	
+	if (spritedata.values[VISION] == 1) and (undoing == false) then
+		local hasvision = hasfeature(name,"is","3d",id,unit.values[XPOS],unit.values[YPOS])
+		if (hasvision ~= nil) then
+			table.insert(visiontargets, id)
+		elseif (spritedata.values[CAMTARGET] == unit.values[ID]) then
+			visionmode(0,0,nil,{unit.values[XPOS],unit.values[YPOS],unit.values[DIR]})
+		end
+	end
+	
+	if (spritedata.values[VISION] == 1) and (spritedata.values[CAMTARGET] ~= unit.values[ID]) then
+		if (unit.values[ZLAYER] <= 15) then
+			if (unit.values[ZLAYER] > 10) then
+				setupvision_wall(unit.fixed)
+			end
+			
+			MF_setupvision_single(unit.fixed)
+		end
+	end
+	
+	if generaldata.flags[LOGGING] and (generaldata.flags[RESTARTED] == false) then
+		if levelstart then
+			dolog("init_object","event",unit.strings[UNITNAME] .. ":" .. tostring(unit.values[XPOS]) .. ":" .. tostring(unit.values[YPOS]))
+		elseif (undoing == false) then
+			dolog("new_object","event",unit.strings[UNITNAME] .. ":" .. tostring(unit.values[XPOS]) .. ":" .. tostring(unit.values[YPOS]))
+		end
 	end
 end
 
-function clearunits()
-	units = {}
-	tiledunits = {}
-	codeunits = {}
-	animunits = {}
-	unitlists = {}
-	undobuffer = {}
-	unitmap = {}
-	unittypeshere = {}
-	prevunitmap = {}
-	ruleids = {}
-	objectlist = {}
-	updatelist = {}
-	objectcolours = {}
-	wordunits = {}
-	paths = {}
-	paradox = {}
-	movelist = {}
-	deleted = {}
-	effecthistory = {}
-	notfeatures = {}
-	pushedunits = {}
-	customobjects = {}
-	memory = {}
-	memoryneeded = false
-	powered = false
-	backers_cache = {}
-	
-	generaldata.values[CURRID] = 0
-	updateundo = true
-	hiddenmap = nil
-	levelconversions = {}
-	last_key = 0
-	
-	HACK_MOVES = 0
-	HACK_INFINITY = 0
-	
-	newundo()
-	
-	print("clearunits")
-	
-	restoredefaults()
-end
-
-function smallclear()
-	objectdata = {}
-	deleted = {}
-	updatelist = {}
-	movelist = {}
-	pushedunits = {}
-	levelconversions = {}
-	
-	HACK_MOVES = 0
-	HACK_INFINITY = 0
-end
-
-function clear()
-	features = {}
-	featureindex = {}
-	visualfeatures = {}
-	objectdata = {}
-	deleted = {}
-	ruleids = {}
-	updatelist = {}
-	wordunits = {}
-	paradox = {}
-	movelist = {}
-	effecthistory = {}
-	notfeatures = {}
-	pushedunits = {}
-	memory = {}
-	
-	updatecode = 1
-	updateundo = false
-	hiddenmap = nil
-	levelconversions = {}
-	maprotation = 0
-	mapdir = 3
-	last_key = 0
-	powered = false
-	
-	doreset = false
-	resetcount = 0
-	resetmoves = 0
-	
-	HACK_MOVES = 0
-	HACK_INFINITY = 0
-	
-	print("clear")
-	
-	collectgarbage()
+function cleanup()
+	emptydata = {}
 end
 
 function command(key,player_)
@@ -249,45 +130,132 @@ function command(key,player_)
 		player = player_
 	end
 	
+	do_mod_hook("command_given", {key,player})
+	
 	if (keyid <= 4) then
-		local drs = ndirs[keyid+1]
-		local ox = drs[1]
-		local oy = drs[2]
-		local dir = keyid
-		
-		last_key = keyid
-		
-		movecommand(ox,oy,dir,player)
-		MF_update()
-		if doreset then
-			resetlevel()
-			MF_update()
+		if (generaldata5.values[AUTO_ON] == 0) then
+			local drs = ndirs[keyid+1]
+			local ox = drs[1]
+			local oy = drs[2]
+			local dir = keyid
+			
+			last_key = keyid
+			
+			if (auto_dir[player] == nil) then
+				auto_dir[player] = 4
+			end
+			
+			auto_dir[player] = keyid
+			
+			if (spritedata.values[VISION] == 1) and (dir == 3) then
+				if (#units > 0) then
+					changevisiontarget()
+				end
+				movecommand(ox,oy,dir,player,nil,true)
+				MF_update()
+			else
+				movecommand(ox,oy,dir,player)
+				MF_update()
+			end
 		else
-			resetmoves = math.max(0, resetmoves - 1)
+			if (auto_dir[player] == nil) then
+				auto_dir[player] = 4
+			end
+			
+			auto_dir[player] = keyid
+			
+			if (auto_dir[1] == nil) and (featureindex["you2"] == nil) then
+				auto_dir[1] = keyid
+			end
 		end
 	end
 	
 	if (keyid == 5) then
-		MF_restart()
+		MF_restart(false)
+		do_mod_hook("level_restart", {})
+	elseif (keyid == 8) then
+		MF_restart(true)
+		do_mod_hook("level_restart", {})
 	end
 	
 	dolog(key)
 end
 
-function dolog(key)
-	MF_log(key)
+function command_auto()
+	local moving = false
+	local firstp = -1
+	local secondp = -1
+	
+	if (auto_dir[1] ~= nil) then
+		firstp = auto_dir[1]
+		moving = true
+	else
+		firstp = 4
+		moving = true
+	end
+	
+	if (auto_dir[2] ~= nil) then
+		secondp = auto_dir[2]
+		moving = true
+	else
+		secondp = 4
+		moving = true
+	end
+	
+	do_mod_hook("turn_auto", {firstp,secondp,moving})
+	
+	if moving and (generaldata5.values[AUTO_ON] > 0) then
+		for i=1,generaldata5.values[AUTO_ON] do
+			if (firstp ~= 4) then
+				last_key = firstp
+			elseif (secondp ~= 4) then
+				last_key = secondp
+			else
+				last_key = 4
+			end
+			
+			local drs = ndirs[firstp+1]
+			local ox = drs[1]
+			local oy = drs[2]
+			local dir = firstp
+			
+			if (spritedata.values[VISION] == 1) and (dir == 3) then
+				if (#units > 0) then
+					changevisiontarget()
+				end
+				movecommand(ox,oy,dir,3,secondp,true)
+			else
+				movecommand(ox,oy,dir,3,secondp)
+			end
+		end
+		
+		MF_update()
+	end
+	
+	auto_dir = {}
 end
 
-function createall(matdata,x_,y_,id_,dolevels_)
+function dolog(key,etype,details_)
+	if generaldata.flags[LOGGING] then
+		local event = etype or "input"
+		local details = details_ or ""
+		
+		MF_log(event,key,details)
+	end
+end
+
+function createall(matdata,x_,y_,id_,dolevels_,leveldata_)
 	local all = {}
 	local empty = false
 	local dolevels = dolevels_ or false
 	
+	local leveldata = leveldata_ or {}
+	
 	if (x_ == nil) and (y_ == nil) and (id_ == nil) then
-		if (matdata[1] ~= "empty") and (matdata[1] ~= "level") and (matdata[1] ~= "group") then
+		if (matdata[1] ~= "empty") and (findnoun(matdata[1],nlist.brief) == false) then
 			all = findall(matdata)
 		elseif (matdata[1] == "empty") then
-			all = findempty()
+			all = findempty(matdata[2])
 			empty = true
 		end
 	end
@@ -311,70 +279,106 @@ function createall(matdata,x_,y_,id_,dolevels_)
 		end
 	end
 	
-	if (#test > 0) then
-		for i,v in ipairs(test) do
-			if (empty == false) then
-				local vunit = mmf.newObject(v)
-				local x,y,dir = vunit.values[XPOS],vunit.values[YPOS],vunit.values[DIR],vunit.values[MOVED]
-				
-				for b,unit in pairs(objectlist) do
-					if (b ~= "empty") and (b ~= "all") and (b ~= "level") and (b ~= "group") and (b ~= matdata[1]) then
-						local protect = hasfeature(matdata[1],"is","not " .. b,v,x,y)
-						
-						if (protect == nil) then
-							local mat = findtype({b},x,y,v)
-							local tmat = findtext(x,y)
-							
-							if (#mat == 0) then
-								create(b,x,y,dir)
+	if (dolevels == false) then
+		local delthese = {}
+		
+		if (#test > 0) then
+			for i,v in ipairs(test) do
+				if (empty == false) then
+					local vunit = mmf.newObject(v)
+					local x,y,dir = vunit.values[XPOS],vunit.values[YPOS],vunit.values[DIR]
+					
+					if (vunit.flags[CONVERTED] == false) then
+						for b,unit in pairs(objectlist) do
+							if (findnoun(b) == false) and (b ~= matdata[1]) then
+								local protect = hasfeature(matdata[1],"is","not " .. b,v,x,y)
 								
-								if (matdata[1] == "text") and (#tmat > 0) then
-									for c,d in ipairs(tmat) do
-										local tunit = mmf.newObject(d)
+								if (protect == nil) then
+									local mat = findtype({b},x,y,v)
+									--local tmat = findtext(x,y)
+									
+									if (#mat == 0) then
+										local nunitid,ningameid = create(b,x,y,dir,nil,nil,nil,nil,leveldata)
+										addundo({"convert",matdata[1],mat,ningameid,vunit.values[ID],x,y,dir})
 										
-										if (tunit.strings[UNITNAME] == "text_" .. b) then
-											delete(d)
+										if (matdata[1] == "text") or (matdata[1] == "level") then
+											table.insert(delthese, v)
 										end
 									end
 								end
 							end
 						end
 					end
-				end
-			else
-				local x = v % roomsizex
-				local y = math.floor(v / roomsizex)
-				local dir = 4
-				
-				for b,mat in pairs(objectlist) do
-					if (b ~= "empty") and (b ~= "all") and (b ~= "level") and (b ~= "group") then
-						local protect = hasfeature(matdata[1],"is","not " .. b,2,x,y)
+				else
+					local x = v % roomsizex
+					local y = math.floor(v / roomsizex)
+					local dir = 4
+					
+					local blocked = {}
+					
+					local valid = true
+					if (emptydata[v] ~= nil) then
+						if (emptydata[v]["conv"] ~= nil) and emptydata[v]["conv"] then
+							valid = false
+						end
+					end
+					
+					if valid then
+						if (featureindex["empty"] ~= nil) then
+							for i,rules in ipairs(featureindex["empty"]) do
+								local rule = rules[1]
+								local conds = rules[2]
+								
+								if (rule[1] == "empty") and (rule[2] == "is") and (string.sub(rule[3], 1, 4) == "not ") then
+									if testcond(conds,1,x,y) then
+										local target = string.sub(rule[3], 5)
+										blocked[target] = 1
+									end
+								end
+							end
+						end
 						
-						if (protect == nil) then
-							create(b,x,y,dir)
+						if (blocked["all"] == nil) then
+							for b,mat in pairs(objectlist) do
+								if (findnoun(b) == false) and (blocked[target] == nil)  then
+									local nunitid,ningameid = create(b,x,y,dir,nil,nil,nil,nil,leveldata)
+									addundo({"convert",matdata[1],mat,ningameid,2,x,y,dir})
+								end
+							end
 						end
 					end
 				end
 			end
 		end
+		
+		for a,b in ipairs(delthese) do
+			delete(b)
+		end
 	end
 	
 	if (matdata[1] == "level") and dolevels then
-		local levelmats = {}
+		local blocked = {}
 		
-		for b,unit in pairs(objectlist) do
-			if (b ~= "empty") and (b ~= "all") and (b ~= "level") and (b ~= "group") and (b ~= matdata[1]) then
-				local protect = hasfeature(matdata[1],"is","not " .. b,v,x,y)
+		if (featureindex["level"] ~= nil) then
+			for i,rules in ipairs(featureindex["level"]) do
+				local rule = rules[1]
+				local conds = rules[2]
 				
-				if (protect == nil) then
-					table.insert(levelmats, {b, {}})
+				if (rule[1] == "level") and (rule[2] == "is") and (string.sub(rule[3], 1, 4) == "not ") then
+					if testcond(conds,1,x,y) then
+						local target = string.sub(rule[3], 5)
+						blocked[target] = 1
+					end
 				end
 			end
 		end
 		
-		if (#levelmats > 0) then
-			table.insert(levelconversions, levelmats)
-			dolevelconversions()
+		if (blocked["all"] == nil) and ((matdata[2] == nil) or testcond(matdata[2],1)) then
+			for b,unit in pairs(objectlist) do
+				if (findnoun(b,nlist.brief) == false) and (b ~= "empty") and (b ~= "level") and (blocked[target] == nil) then
+					table.insert(levelconversions, {b, {}})
+				end
+			end
 		end
 	end
 end
@@ -388,6 +392,10 @@ function setunitmap()
 		
 	if (generaldata.strings[WORLD] == generaldata.strings[BASEWORLD]) and ((generaldata.strings[CURRLEVEL] == "89level") or (generaldata.strings[CURRLEVEL] == "33level")) then
 		limit = 3
+	end
+	
+	if (generaldata.strings[WORLD] == "baba_m") and ((generaldata.strings[CURRLEVEL] == "89level") or (generaldata.strings[CURRLEVEL] == "33level")) then
+		limit = 2
 	end
 	
 	for i,unit in ipairs(units) do
@@ -422,7 +430,7 @@ function setunitmap()
 	
 	for i,unit in ipairs(delthese) do
 		local x,y,dir,unitname = unit.values[XPOS],unit.values[YPOS],unit.values[DIR],unit.strings[UNITNAME]
-		addundo({"remove",unitname,x,y,dir,unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],false,unit.fixed})
+		addundo({"remove",unitname,x,y,dir,unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],unit.followed,unit.back_init,unit.originalname})
 		delunit(unit.fixed)
 		MF_remove(unit.fixed)
 	end
@@ -448,36 +456,42 @@ end
 function poscorrect(unitid,rotation,zoom,offset)
 	local unit = mmf.newObject(unitid)
 	
-	local midpointx = roomsizex * tilesize * 0.5 * spritedata.values[TILEMULT]
-	local midtilex = math.floor(roomsizex * 0.5) - 0.5
-	
-	if (roomsizex % 2 == 1) then
-		midtilex = math.floor(roomsizex * 0.5)
-	end
-	
-	local midpointy = roomsizey * tilesize * 0.5 * spritedata.values[TILEMULT]
-	local midtiley = math.floor(roomsizey * 0.5) - 0.5
-	
-	if (roomsizey % 2 == 1) then
-		midtiley = math.floor(roomsizey * 0.5)
-	end
-	
-	local x,y = unit.values[XPOS],unit.values[YPOS]
-	local dx = x - midtilex
-	local dy = y - midtiley
-	
-	local dir = 0 - math.atan2(dy,dx) + math.rad(rotation)
-	local dist = math.sqrt((dy)^2 + (dx)^2)
-	
-	local newx = Xoffset + midpointx + math.cos(dir) * dist * zoom * tilesize * spritedata.values[TILEMULT]
-	local newy = Yoffset + midpointy - math.sin(dir) * dist * zoom * tilesize * spritedata.values[TILEMULT]
-	
-	if (unit.values[FLOAT] == 0) then
-		unit.x = newx
-		unit.y = newy + offset * spritedata.values[TILEMULT]
-	elseif (unit.values[FLOAT] == 1) then
-		unit.x = newx
-		--unit.y = newy + offset * spritedata.values[TILEMULT]
+	if (spritedata.values[VISION] == 0) or (unit.values[ZLAYER] >= 21) and (spritedata.values[DOPOSCORRECT] == 0) then
+		if (unit ~= nil) then
+			local midpointx = roomsizex * tilesize * 0.5 * spritedata.values[TILEMULT]
+			local midtilex = math.floor(roomsizex * 0.5) - 0.5
+			
+			if (roomsizex % 2 == 1) then
+				midtilex = math.floor(roomsizex * 0.5)
+			end
+			
+			local midpointy = roomsizey * tilesize * 0.5 * spritedata.values[TILEMULT]
+			local midtiley = math.floor(roomsizey * 0.5) - 0.5
+			
+			if (roomsizey % 2 == 1) then
+				midtiley = math.floor(roomsizey * 0.5)
+			end
+			
+			local x,y = unit.values[XPOS],unit.values[YPOS]
+			local dx = x - midtilex
+			local dy = y - midtiley
+			
+			local dir = 0 - math.atan2(dy,dx) + math.rad(rotation)
+			local dist = math.sqrt((dy)^2 + (dx)^2)
+			
+			local newx = Xoffset + midpointx + math.cos(dir) * dist * zoom * tilesize * spritedata.values[TILEMULT]
+			local newy = Yoffset + midpointy - math.sin(dir) * dist * zoom * tilesize * spritedata.values[TILEMULT]
+			
+			if (unit.values[FLOAT] == 0) then
+				unit.x = newx
+				unit.y = newy + offset * spritedata.values[TILEMULT]
+			elseif (unit.values[FLOAT] == 1) then
+				unit.x = newx
+				--unit.y = newy + offset * spritedata.values[TILEMULT]
+			end
+		else
+			MF_alert("Poscorrect: unitid " .. tostring(unitid) .. " isn't valid!")
+		end
 	end
 end
 
@@ -494,7 +508,7 @@ function stringintable(this,data)
 end
 
 function levelborder(absolute_,ox_,oy_)
-	local edgetiles = {}
+	edgetiles = {}
 	local l = map[0]
 	
 	local absolute = absolute_ or false
@@ -557,6 +571,8 @@ function updateroomsize(tilesize_,roomsizex_,roomsizey_)
 	for i,unit in pairs(units) do
 		if (unit.values[XPOS] >= roomsizex - 1) or (unit.values[YPOS] >= roomsizey - 1) then
 			table.insert(delthese, unit.fixed)
+		else
+			MF_setsublayer(0,unit.values[XPOS],unit.values[YPOS],unit.values[LAYER],unit.values[DIR])
 		end
 	end
 	
@@ -571,4 +587,193 @@ function updateroomsize(tilesize_,roomsizex_,roomsizey_)
 	end
 	
 	setunitmap()
+end
+
+function checkerasesafety(text_)
+	local text = string.sub(text_, 2, string.len(text_) - 1)
+	
+	local delete = true
+	
+	MF_alert(text_ .. ", " .. text)
+	
+	if ((string.sub(text, 1, 5) == "baba_") or (string.sub(text, 1, 8) == "new_adv_") or (string.sub(text, 1, 7) == "museum_")) and (string.sub(text, -8) == "_convert") and (string.len(text) > 13) then
+		delete = false
+	end
+	
+	local sparethese =
+	{
+		baba = 1,
+		baba_prize = 2,
+		baba_clears = 3,
+		baba_bonus = 4,
+		baba_complete = 5,
+		baba_converts = 6,
+		baba_converts_single = 7,
+		baba_end_single = 8,
+		baba_done_single = 9,
+		
+		baba_m = 1,
+		baba_m_prize = 2,
+		baba_m_clears = 3,
+		baba_m_bonus = 4,
+		baba_m_complete = 5,
+		baba_m_converts = 6,
+		baba_m_converts_single = 7,
+		baba_m_end_single = 8,
+		baba_m_done_single = 9,
+		
+		new_adv = 1,
+		new_adv_prize = 2,
+		new_adv_clears = 3,
+		new_adv_bonus = 4,
+		new_adv_complete = 5,
+		new_adv_converts = 6,
+		new_adv_converts_single = 7,
+		new_adv_end_single = 8,
+		new_adv_done_single = 9,
+		
+		museum = 1,
+		museum_prize = 2,
+		museum_clears = 3,
+		museum_bonus = 4,
+		museum_complete = 5,
+		museum_converts = 6,
+		museum_converts_single = 7,
+		museum_end_single = 8,
+		museum_done_single = 9,
+	}
+	
+	if (sparethese[text] ~= nil) then
+		delete = false
+	end
+	
+	return delete,text
+end
+
+function fixedrandom(low,high)
+	if (Seedingtype > 0) then
+		Seed = math.random(0, 0x7FFFFFFF)
+		math.randomseed(Fixedseed)
+	end
+	
+	local result = math.random(low, high)
+	
+	if (Seedingtype > 0) then
+		Fixedseed = math.random(0, 0x7FFFFFFF)
+		math.randomseed(Seed)
+	end
+	
+	return result
+end
+
+function setfixedrandom(text)
+	if (Seedingtype == 2) then
+		Fixedseed = string.len(text) * #units
+	elseif (Seedingtype == 1) then
+		Fixedseed = MF_random(1, 0x7FFFFFFF)
+	end
+end
+
+function overrideundoseeding()
+	local undob = undobuffer[1]
+	undob.fixedseed = Fixedseed
+end
+
+function setseedingtype(t)
+	Seedingtype = t
+end
+
+function generatefreqs()
+	local notes = {"c","csharp","d","dsharp","e","f","fsharp","g","gsharp","a","asharp","b"}
+	local octaves = 3
+	local base = base_octave
+	local step = 2 ^ (1/12)
+	local basefreq = 24000 * (step ^ 3)
+	local freq = basefreq
+	local prev = "b"
+	
+	for i,v in ipairs(notes) do
+		play_data.freqs[v] = math.floor(freq)
+		
+		freq = freq * step
+	end
+	
+	freq = basefreq
+	
+	play_data.freqs["aflat"] = freq / step
+	
+	for i,v in ipairs(notes) do
+		if (string.sub(v, -5) ~= "sharp") then
+			local name = v .. "flat"
+			local pair = prev .. "sharp"
+			
+			if (string.sub(name, 1, 1) == "c") or (string.sub(name, 1, 1) == "f") then
+				pair = prev
+			end
+				
+			
+			if (play_data.freqs[pair] ~= nil) then
+				play_data.freqs[name] = play_data.freqs[pair]
+			end
+			
+			--MF_alert(name .. " = " .. pair)
+			
+			prev = v
+		end
+	end
+	
+	play_data.freqs["bsharp"] = play_data.freqs["c"]
+	play_data.freqs["esharp"] = play_data.freqs["f"]
+	
+	freq = basefreq
+	
+	for j_=1,octaves do
+		local j = base + (j_-1)
+		freq = (basefreq * 0.5) * 2 ^ j_
+		prev = "b"
+		
+		for i,v in ipairs(notes) do
+			local name = v .. tostring(j)
+			play_data.freqs[name] = math.floor(freq * 0.5)
+			
+			freq = freq * step
+		end
+		
+		freq = (basefreq * 0.5) * 2 ^ j_
+		
+		local aflat = "aflat" .. tostring(j)
+		play_data.freqs[aflat] = freq / step
+		
+		for i,v in ipairs(notes) do
+			if (string.sub(v, -5) ~= "sharp") then
+				local name = v .. "flat" .. tostring(j)
+				local pair = prev .. "sharp" .. tostring(j)
+				
+				if (play_data.freqs[pair] ~= nil) then
+					play_data.freqs[name] = play_data.freqs[pair]
+				end
+				
+				--MF_alert(name .. " = " .. pair)
+				
+				prev = v
+			end
+		end
+	end
+	
+	play_data.freqs["bsharp4"] = play_data.freqs["c4"]
+	play_data.freqs["esharp4"] = play_data.freqs["f4"]
+	play_data.freqs["bsharp5"] = play_data.freqs["c5"]
+	play_data.freqs["esharp5"] = play_data.freqs["f5"]
+	play_data.freqs["esharp6"] = play_data.freqs["f6"]
+end
+
+function setupnounlists()
+	nlist.full = {"group","all","text","empty","level"}
+	nlist.short = {"group","all","text","empty"}
+	nlist.brief = {"group","all"}
+	nlist.objects = {"text","empty"}
+end
+
+function update_cleanup()
+	HACK_INFINITY = 0
 end

@@ -49,9 +49,9 @@ mod.alltiles = {
 	"hates",
 	"sidekick",
 	"lazy",
-	"lean",
-	"turn",
-	"spin",
+	--"lean",
+	--"turn",
+	--"spin",
 	"moonwalk",
 	"drunk",
 	"drunker",
@@ -59,13 +59,13 @@ mod.alltiles = {
 	"oneway",
 	"tall",
 	"copy",
-	"stubborn",
+	--"stubborn",
 	"reset",
 	"persist",
-	"back",
-	"with",
-	"reverse",
-	"vall"
+	--"back",
+	--"with",
+	--"reverse",
+	--"vall"
 }
 
 function mod.addblock(tile)
