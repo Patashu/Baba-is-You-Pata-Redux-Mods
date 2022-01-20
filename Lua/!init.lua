@@ -20,6 +20,8 @@ mod.enabled["persist"] = true
 --If true, MOONWALK and related properties (DRUNK, DRUNKER, SKIP) apply to PUSH, PULL, SHIFT and YEET in addition to basically everything else. Defaults to true.
 activemod.very_drunk = true]]
 
+print("hi")
+
 table.insert(editor_objlist_order, "slip")
 
 editor_objlist["slip"] = {
