@@ -3,9 +3,10 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 	movelist = {}
 	local debug_moves = 0
 	
-	local take = 1
+	local take = 0
 	local takecount = 8
 	local finaltake = false
+	local slipped = {}
 	local no3d = no3d_ or false
 	local playerid = playerid_ or 1
 	
@@ -90,6 +91,38 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 		local skiptake = false
 		
 		if (finaltake == false) then
+			if (take == 0) then
+				local slipperys = findallfeature(nil,"is","slip",true)
+
+				for i,v in ipairs(slipperys) do
+					if (v ~= 2) then
+						local unit = mmf.newObject(v)
+
+						local x,y = unit.values[XPOS],unit.values[YPOS]
+						local tileid = x + y * roomsizex
+
+						if (unitmap[tileid] ~= nil) then
+							if (#unitmap[tileid] > 1) then
+								for a,b in ipairs(unitmap[tileid]) do
+									if (b ~= v) and floating(b,v) then
+										local newunit = mmf.newObject(b)
+										local unitname = getname(newunit)
+
+										if (been_seen[b] == nil) then
+											table.insert(moving_units, {unitid = b, reason = "slip", state = 0, moves = 1, dir = unit.values[DIR], xpos = x, ypos = y})
+											been_seen[b] = #moving_units
+										else
+											local id = been_seen[b]
+											local this = moving_units[id]
+											this.moves = this.moves + 1
+										end
+									end
+								end
+							end
+						end
+					end
+				end
+			end
 			if (take == 1) then
 				local players = {}
 				local players2 = {}
@@ -132,7 +165,9 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 						end
 					end
 					
-					if (v ~= 2) then
+					if (slipped[v] ~= nil) then
+						sleeping = true
+					elseif (v ~= 2) then
 						local unit = mmf.newObject(v)
 						
 						local unitname = getname(unit)
@@ -684,7 +719,7 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 										end
 									end
 									
-									table.insert(movelist, {data.unitid,ox,oy,olddir,specials,x,y})
+									table.insert(movelist, {data.unitid,ox,oy,olddir,specials,x,y,data.reason})
 									--move(data.unitid,ox,oy,dir,specials)
 									
 									local swapped = {}
@@ -867,7 +902,12 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 			
 			if (#movelist > 0) then
 				for i,data in ipairs(movelist) do
-					move(data[1],data[2],data[3],data[4],data[5],nil,nil,data[6],data[7])
+					local success = move(data[1],data[2],data[3],data[4],data[5],nil,nil,data[6],data[7])
+					if (success) then
+						if (data[8] == "slip") then
+							slipped[data[1]] = true
+						end
+					end
 				end
 			end
 			
@@ -1418,7 +1458,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 		
 		while (finaldone == false) and (HACK_MOVES < 10000) do
 			if (result == 0) then
-				table.insert(movelist, {unitid,ox,oy,dir,specials,x,y})
+				table.insert(movelist, {unitid,ox,oy,dir,specials,x,y,data.reason})
 				--move(unitid,ox,oy,dir,specials)
 				pushsound = true
 				finaldone = true
@@ -1428,7 +1468,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 					for i,obs in ipairs(pullhmlist) do
 						if (obs < -1) or (obs > 1) and (obs ~= pusherid) then
 							if (obs ~= 2) then
-								table.insert(movelist, {obs,ox,oy,dir,pullspecials,x,y})
+								table.insert(movelist, {obs,ox,oy,dir,pullspecials,x,y,data.reason})
 								pushsound = true
 								--move(obs,ox,oy,dir,specials)
 							end
@@ -1494,7 +1534,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 				for i,obs in pairs(hmlist) do
 					if (obs < -1) or (obs > 1) then
 						if (obs ~= 2) then
-							table.insert(movelist, {obs,ox,oy,dir,specials,x,y})
+							table.insert(movelist, {obs,ox,oy,dir,specials,x,y,data.reason})
 							pushsound = true
 						end
 						
@@ -1526,6 +1566,7 @@ end
 function move(unitid,ox,oy,dir,specials_,instant_,simulate_,x_,y_)
 	local instant = instant_ or false
 	local simulate = simulate_ or false
+	local success = false
 	
 	local x,y = 0,0
 	local unit = {}
@@ -1651,6 +1692,7 @@ function move(unitid,ox,oy,dir,specials_,instant_,simulate_,x_,y_)
 	end
 	
 	if (gone == false) and (simulate == false) and (unitid ~= 2) then
+		success = true
 		if instant then
 			update(unitid,x+ox,y+oy,dir)
 			MF_alert("Instant movement on " .. tostring(unitid))
@@ -1732,7 +1774,7 @@ function move(unitid,ox,oy,dir,specials_,instant_,simulate_,x_,y_)
 		end
 	end
 	
-	return gone
+	return success
 end
 
 function add_moving_units(rule,newdata,data,been_seen,empty_)
@@ -1769,7 +1811,8 @@ function add_moving_units(rule,newdata,data,been_seen,empty_)
 			
 			local still = cantmove(unitname,v,dir)
 			
-			if (sleep ~= nil) or still then
+			if (sleep ~= nil and rule ~= "slip") or still or slipped[v] ~= nil then
+			sleeping = true then --sleeping things still slip
 				sleeping = true
 			end
 		else
