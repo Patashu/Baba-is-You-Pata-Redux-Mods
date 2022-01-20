@@ -907,6 +907,28 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 						if (data[8] == "slip") then
 							slipped[data[1]] = true
 						end
+						unitid = movelist[i][1]
+						local unit = nil
+						if (unitid ~= 2) then
+							unit = mmf.newObject(unitid)
+							unitname = getname(unit)
+							local x = unit.values[XPOS] + movelist[i][2]
+							local y = unit.values[YPOS] + movelist[i][3]
+							local slides = findfeatureat(nil,"is","slide",x,y)
+							if (slides ~= nil and #slides > 0) then
+								--no multiplicative cascades in slide - only start sliding if we're not already sliding
+								local alreadysliding = false
+								for _,other in ipairs(still_moving) do
+									if other.unitid == unitid and other.reason == "slide" then
+										alreadysliding = true
+										break
+									end
+								end
+								if not alreadysliding then
+									table.insert(still_moving, {unitid = unitid, reason = "slide", state = 0, moves = 1, dir = unit.values[DIR], xpos = unit.values[XPOS], ypos = unit.values[YPOS]})
+								end
+							end
+						end
 					end
 				end
 			end
