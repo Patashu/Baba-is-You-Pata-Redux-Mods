@@ -1207,7 +1207,7 @@ function isgone(unitid)
 end
 
 function floating(id1,id2,x1_,y1_,x2_,y2_)
-  print("in floating")
+	print("in floating")
 	local empty1,empty2 = false,false
 	local x1 = x1_ or 0
 	local y1 = y1_ or 0
@@ -1219,10 +1219,10 @@ function floating(id1,id2,x1_,y1_,x2_,y2_)
 	if (id1 ~= 2) then
 		local unit1 = mmf.newObject(id1)
 		float1 = unit1.values[FLOAT]
-    local name1 = getname(unit1)
-    if (hasfeature(name1,"is","tall",id1)) then
-      float1 = 2
-    end
+		local name1 = getname(unit1)
+		if (hasfeature(name1,"is","tall",id1)) then
+			float1 = 2
+		end
 	else
 		local emptyfloat = hasfeature("empty","is","float",2,x1,y1)
 		if (emptyfloat ~= nil) then
@@ -1230,18 +1230,18 @@ function floating(id1,id2,x1_,y1_,x2_,y2_)
 		else
 			float1 = 0
 		end
-    if hasfeature("empty","is","tall",2,x1,y1) then
-      float1 = 2
-    end
+		if hasfeature("empty","is","tall",2,x1,y1) then
+			float1 = 2
+		end
 	end
 	
 	if (id2 ~= 2) then
 		local unit2 = mmf.newObject(id2)
 		float2 = unit2.values[FLOAT]
-    local name2 = getname(unit2)
-    if (hasfeature(name2,"is","tall",id2)) then
-      float2 = 2
-    end
+		local name2 = getname(unit2)
+		if (hasfeature(name2,"is","tall",id2)) then
+			float2 = 2
+		end
 	else
 		local emptyfloat = hasfeature("empty","is","float",2,x2,y2)
 		if (emptyfloat ~= nil) then
@@ -1249,9 +1249,9 @@ function floating(id1,id2,x1_,y1_,x2_,y2_)
 		else
 			float2 = 0
 		end
-    if hasfeature("empty","is","tall",2,x2,y2) then
-      float2 = 2
-    end
+		if hasfeature("empty","is","tall",2,x2,y2) then
+			float2 = 2
+		end
 	end
 	
 	if (float1 == float2 or float1 == 2 or float2 == 2) then

@@ -8,7 +8,7 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 	local take = 0
 	local takecount = 8
 	local finaltake = false
-	local slipped = {}
+	slipped = {}
 	local no3d = no3d_ or false
 	local playerid = playerid_ or 1
 	
@@ -628,10 +628,13 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 						end
 						
 						local ox,oy = ndrs[1],ndrs[2]
+						if (very_drunk or (data.reason ~= "shift" and data.reason ~= "yeet")) then
+							dir, ox, oy = apply_moonwalk(data.unitid,x,y,dir,ox,oy,false)
+						end
 						local pushobslist = {}
 						
-						local obslist,allobs,specials = check(data.unitid,x,y,dir,false,data.reason)
-						local pullobs,pullallobs,pullspecials = check(data.unitid,x,y,dir,true,data.reason)
+						local obslist,allobs,specials = check(data.unitid,x,y,dir,false,data.reason,ox,oy)
+						local pullobs,pullallobs,pullspecials = check(data.unitid,x,y,dir,true,data.reason,ox,oy)
 						
 						if returnolddir then
 							dir = olddir
@@ -1026,7 +1029,7 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 	end
 end
 
-function check(unitid,x,y,dir,pulling_,reason)
+function check(unitid,x,y,dir,pulling_,reason,ox,oy)
 	local pulling = false
 	if (pulling_ ~= nil) then
 		pulling = pulling_
@@ -1035,10 +1038,16 @@ function check(unitid,x,y,dir,pulling_,reason)
 	local dir_ = dir
 	if pulling then
 		dir_ = rotate(dir)
+    if (ox ~= nil) then
+      ox = -ox
+      oy = -oy
+    end
 	end
 	
 	local ndrs = ndirs[dir_ + 1]
-	local ox,oy = ndrs[1],ndrs[2]
+  if (ox == nil) then
+    ox,oy = ndrs[1],ndrs[2]
+  end
 	
 	local result = {}
 	local results = {}
@@ -1365,6 +1374,10 @@ function trypush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 	
 	local movedata = movemap[moveid]
 	
+	if (very_drunk) then
+		dir, ox, oy = apply_moonwalk(unitid,x,y,dir,ox,oy,false)
+	end
+	
 	local pulling = pulling_ or false
 	
 	local weak = hasfeature(name,"is","weak",unitid,x_,y_)
@@ -1380,7 +1393,7 @@ function trypush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 		local result = 0
 		
 		if (movedata.tryresult == 0) then
-			local hmlist,hms,specials = check(unitid,x,y,dir,false,reason)
+			local hmlist,hms,specials = check(unitid,x,y,dir,false,reason,ox,oy)
 			
 			for i,hm in pairs(hmlist) do
 				local done = false
@@ -1438,6 +1451,10 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 		x = x_
 		y = y_
 		name = "empty"
+	end
+	
+	if (very_drunk) then
+		dir, ox, oy = apply_moonwalk(unitid,x,y,dir,ox,oy,false) 
 	end
 	
 	local pushername = "empty";
@@ -1513,8 +1530,8 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 	local movedata = movemap[moveid]
 	
 	if (HACK_MOVES < 10000) then
-		local hmlist,hms,specials = check(unitid,x,y,dir,false,reason)
-		local pullhmlist,pullhms,pullspecials = check(unitid,x,y,dir,true,reason)
+		local hmlist,hms,specials = check(unitid,x,y,dir,false,reason,ox,oy)
+		local pullhmlist,pullhms,pullspecials = check(unitid,x,y,dir,true,reason,ox,oy)
 		local result = 0
 		
 		local weak = hasfeature(name,"is","weak",unitid,x_,y_)
@@ -1631,7 +1648,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 				return 1
 			end
 			if (movedata.pull == 0) then
-				hmlist,hms,specials = check(unitid,x,y,dir,pulling,reason)
+				hmlist,hms,specials = check(unitid,x,y,dir,pulling,reason,ox,oy)
 				hm = 0
 			
 				for i,obs in pairs(hmlist) do
@@ -1801,6 +1818,7 @@ function move(unitid,ox,oy,dir,specials_,instant_,simulate_,x_,y_)
 	
 	if (gone == false) and (simulate == false) and (unitid ~= 2) then
 		success = true
+		dir = apply_moonwalk(unitid, x, y, dir, nil, nil, true)
 		if instant then
 			update(unitid,x+ox,y+oy,dir)
 			MF_alert("Instant movement on " .. tostring(unitid))
@@ -2016,6 +2034,78 @@ function find_sidekicks(unitid,dir)
 		end
 	end
 	return result;
+end
+
+function apply_moonwalk(unitid, x, y, dir, ox, oy, reverse)
+	local name = "empty"
+	local sgn = reverse == true and -1 or 1
+	if (unitid ~= 2) then
+		local unit = mmf.newObject(unitid)
+		name = getname(unit)
+	end
+	local rotatedness = 0;
+	rotatedness = rotatedness + sgn*hasfeature_count(name,"is","moonwalk",unitid,x,y)*2;
+	rotatedness = rotatedness + sgn*hasfeature_count(name,"is","drunk",unitid,x,y);
+	rotatedness = rotatedness + sgn*hasfeature_count(name,"is","drunker",unitid,x,y)*0.5;
+	local mag = 1;
+	mag = mag + hasfeature_count(name,"is","skip",unitid,x,y);
+	if (dir ~= nil and ox ~= nil and oy ~= nil) then
+		dir = (dir + trunc(rotatedness)) % 4
+		ox, oy = dirtooxoy(oxoytodir(ox, oy) + rotatedness)
+		ox = ox * mag;
+		oy = oy * mag;
+		return dir, ox, oy
+	elseif (dir ~= nil) then
+		dir = (dir + trunc(rotatedness)) % 4
+		return dir
+	elseif (ox ~= nil and oy ~= nil) then
+		ox, oy = dirtooxoy(oxoytodir(ox, oy) + rotatedness)
+		ox = ox * mag;
+		oy = oy * mag;
+		return ox, oy
+	else
+		return nil
+	end
+end
+
+function oxoytodir(ox, oy)
+	ox = sign(ox)
+	oy = sign(oy)
+	if ox == 1 and oy == 0 then
+		return 0
+	elseif ox == 1 and oy == -1 then
+		return 0.5
+	elseif ox == 0 and oy == -1 then
+		return 1
+	elseif ox == -1 and oy == -1 then
+		return 1.5
+	elseif ox == -1 and oy == 0 then
+		return 2
+	elseif ox == -1 and oy == 1 then
+		return 2.5
+	elseif ox == 0 and oy == 1 then
+		return 3
+	elseif ox == 1 and oy == 1 then
+		return 3.5
+	end
+	return nil
+end
+
+function dirtooxoy(dir)
+	dir = dir % 4
+	if dir == math.floor(dir) then
+		local result = ndirs[dir+1]
+		return result[1], result[2]
+	elseif dir == 0.5 then
+		return 1, -1
+	elseif dir == 1.5 then
+		return -1, -1
+	elseif dir == 2.5 then
+		return -1, 1
+	elseif dir == 3.5 then
+		return 1, 1
+	end
+	return 0, 0
 end
 
 function sign(num)
