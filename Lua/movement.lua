@@ -1,3 +1,5 @@
+moving_units = {}
+
 function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 	statusblock(nil,nil,true)
 	movelist = {}
@@ -86,7 +88,7 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 	end
 	
 	while (take <= takecount) or finaltake do
-		local moving_units = {}
+		moving_units = {}
 		local been_seen = {}
 		local skiptake = false
 		
@@ -719,7 +721,7 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 										end
 									end
 									
-									table.insert(movelist, {data.unitid,ox,oy,olddir,specials,x,y,data.reason})
+									queue_move(data.unitid,ox,oy,olddir,specials,x,y,data.reason)
 									--move(data.unitid,ox,oy,dir,specials)
 									
 									local swapped = {}
@@ -907,15 +909,16 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 						if (data[8] == "slip") then
 							slipped[data[1]] = true
 						end
-						unitid = movelist[i][1]
-						local unit = nil
+						unitid = data[1]
+
+						--implement SLIDE
 						if (unitid ~= 2) then
-							unit = mmf.newObject(unitid)
+							local unit = mmf.newObject(unitid)
 							unitname = getname(unit)
-							local x = unit.values[XPOS] + movelist[i][2]
-							local y = unit.values[YPOS] + movelist[i][3]
-							local slides = findfeatureat(nil,"is","slide",x,y)
-							if (slides ~= nil and #slides > 0) then
+							local x = unit.values[XPOS] + data[2]
+							local y = unit.values[YPOS] + data[3]
+							local slides = findfeatureat(nil,"is","slide",x,y) and true or (hasfeature("empty","is","slide",2,x,y) and #findobstacle(x,y) == 0)
+							if slides then
 								--no multiplicative cascades in slide - only start sliding if we're not already sliding
 								local alreadysliding = false
 								for _,other in ipairs(still_moving) do
@@ -1180,7 +1183,7 @@ function check(unitid,x,y,dir,pulling_,reason)
 				if valid then
 					--MF_alert("checking for solidity for " .. obsname .. " by " .. name .. " at " .. tostring(x) .. ", " .. tostring(y))
 					
-					local isstop = hasfeature(obsname,"is","stop",id,x+ox,y+oy) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,id,x,y))
+					local isstop = hasfeature(obsname,"is","stop",id,x+ox,y+oy) or hasfeature(obsname,"is","sidekick",id) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,id,x,y))
 					if (not isstop) then isstop = nil end
 					local ispush = hasfeature(obsname,"is","push",id,x+ox,y+oy)
 					local ispull = hasfeature(obsname,"is","pull",id,x+ox,y+oy)
@@ -1241,6 +1244,7 @@ function check(unitid,x,y,dir,pulling_,reason)
 	elseif (phantom == nil) then
 		local emptystop = hasfeature("empty","is","stop",2,x+ox,y+oy)
 		emptystop = emptystop or hasfeature(name,"hates","empty",unitid,x,y)
+		emptystop = emptystop or hasfeature("empty","is","sidekick",2,x+ox,y+oy)
 		local emptypush = hasfeature("empty","is","push",2,x+ox,y+oy)
 		local emptypull = hasfeature("empty","is","pull",2,x+ox,y+oy)
 		local emptyswap = hasfeature("empty","is","swap",2,x+ox,y+oy)
@@ -1535,7 +1539,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 		
 		while (finaldone == false) and (HACK_MOVES < 10000) do
 			if (result == 0) then
-				table.insert(movelist, {unitid,ox,oy,dir,specials,x,y,reason})
+				queue_move(unitid,ox,oy,dir,specials,x,y,reason)
 				--move(unitid,ox,oy,dir,specials)
 				pushsound = true
 				finaldone = true
@@ -1545,7 +1549,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 					for i,obs in ipairs(pullhmlist) do
 						if (obs < -1) or (obs > 1) and (obs ~= pusherid) then
 							if (obs ~= 2) then
-								table.insert(movelist, {obs,ox,oy,dir,pullspecials,x,y,reason})
+								queue_move(obs,ox,oy,dir,pullspecials,x,y,reason)
 								pushsound = true
 								--move(obs,ox,oy,dir,specials)
 							end
@@ -1611,7 +1615,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 				for i,obs in pairs(hmlist) do
 					if (obs < -1) or (obs > 1) then
 						if (obs ~= 2) then
-							table.insert(movelist, {obs,ox,oy,dir,specials,x,y,reason})
+							queue_move(obs,ox,oy,dir,specials,x,y,reason)
 							pushsound = true
 						end
 						
@@ -1951,4 +1955,65 @@ function add_moving_units(rule,newdata,data,been_seen,empty_)
 	end
 	
 	return result,seen
+end
+
+function find_sidekicks(unitid,dir)
+	--fast track
+	if featureindex["sidekick"] == nil then return {} end
+	local result = {}
+	local unit = mmf.newObject(unitid)
+	local unitname = getname(unit)
+	local lazy = hasfeature(unitname,"is","lazy",unitid)
+	if lazy ~= nil then
+		return result;
+	end
+	local x,y = unit.values[XPOS],unit.values[YPOS]
+	print("find_sidekicks",x,y,dir)
+	local dir90 = (dir+1) % 4;
+	for i = 1,2 do
+		local curdir = (dir90+2*i) % 4;
+		local curdx = ndirs[curdir+1][1];
+		local curdy = ndirs[curdir+1][2];
+		local curx = x+curdx;
+		local cury = y+curdy;
+		print("find_sidekicks is checking",curx,cury)
+		local obs = findobstacle(curx,cury);
+		for i,id in ipairs(obs) do
+			if (id ~= -1) then
+				local obsunit = mmf.newObject(id)
+				local obsname = getname(obsunit)
+				if hasfeature(obsname,"is","sidekick",id) then
+					table.insert(result, id);
+				end
+			end
+		end
+	end
+	return result;
+end
+
+function queue_move(unitid,ox,oy,dir,specials,reason)
+	table.insert(movelist, {unitid,ox,oy,dir,specials,reason})
+
+	--implement SIDEKICK
+	if (unitid ~= 2) then
+		local unit = mmf.newObject(unitid)
+		unitname = getname(unit)
+		local sidekicks = find_sidekicks(unitid, dir);
+		for _,sidekickid in ipairs(sidekicks) do
+			--no multiplicative cascades in sidekick - only start sidekicking if we're not already sidekicking
+			local sidekick = mmf.newObject(sidekickid)
+			local alreadysidekicking = false
+			for _,other in ipairs(moving_units) do
+				if other.unitid == sidekickid then
+					alreadysidekicking = true
+					break
+				end
+			end
+			if not alreadysidekicking then
+				updatedir(sidekickid, dir)
+				print("adding to moving_units",unitid,getname(sidekick))
+				table.insert(moving_units, {unitid = sidekickid, reason = "sidekick", state = 0, moves = 1, dir = dir, xpos = sidekick.values[XPOS], ypos = sidekick.values[YPOS]})
+			end
+		end
+	end
 end
