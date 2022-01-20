@@ -906,6 +906,33 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 			end
 			
 			if (#movelist > 0) then
+				if featureindex["copy"] ~= nil then
+					for i,data in ipairs(movelist) do
+						unitid = data[1]
+						--implement COPY
+						if (unitid ~= 2) then
+							local unit = mmf.newObject(unitid)
+							unitname = getname(unit)
+							local copys = find_copys(unitid, data[4]);
+							for _,copyid in ipairs(copys) do
+								--no multiplicative cascades in copy - only start copying if we're not already copying
+								local copy = mmf.newObject(copyid)
+								local alreadycopying = false
+								for _,other in ipairs(still_moving) do
+									if other.unitid == copyid then
+										alreadycopying = true
+										break
+									end
+								end
+								if not alreadycopying then
+									updatedir(copyid, data[4])
+									table.insert(still_moving, {unitid = copyid, reason = "copy", state = 0, moves = 1, dir = data[4], xpos = copy.values[XPOS], ypos = copy.values[YPOS]})
+								end
+							end
+						end
+					end
+				end
+			
 				for i,data in ipairs(movelist) do
 					local success = move(data[1],data[2],data[3],data[4],data[5],nil,nil,data[6],data[7])
 					if (success) then
@@ -2000,6 +2027,23 @@ function add_moving_units(rule,newdata,data,been_seen,empty_)
 	end
 	
 	return result,seen
+end
+
+function find_copys(unitid,dir)
+	--fast track
+	if featureindex["copy"] == nil then return {} end
+	local result = {}
+	local unit = mmf.newObject(unitid)
+	local unitname = getname(unit)
+	local iscopy = findallfeature(nil,"copy",unitname,true)
+	for _,copyid in ipairs(iscopy) do
+		local copyunit = mmf.newObject(copyid)
+		local copyname = getname(copyunit)
+		if not hasfeature(copyname,"is","sleep",copyid) then
+			table.insert(result, copyid)
+		end
+	end
+	return result;
 end
 
 function find_sidekicks(unitid,dir)

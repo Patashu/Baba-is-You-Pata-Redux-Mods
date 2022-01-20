@@ -148,7 +148,6 @@ editor_objlist["text_tall"] = {
 	colour_active = {0, 1},
 }
 
-
 table.insert(editor_objlist_order, "text_oneway")
 editor_objlist["text_oneway"] = {
 	name = "text_oneway",
@@ -162,21 +161,21 @@ editor_objlist["text_oneway"] = {
 	colour_active = {1, 4},
 }
 
---[[editor_objlist["copy"] = {
+table.insert(editor_objlist_order, "text_copy")
+editor_objlist["text_copy"] = {
 	name = "text_copy",
-	sprite = "text_copy",
 	sprite_in_root = false,
 	unittype = "text",
+	tags = {"patashu"},
 	tiling = -1,
 	type = 1,
+	layer = 20,
 	operatortype = "verb",
 	colour = {2, 1},
 	active = {2, 2},
-	tile = {96, 17},
-	layer = 20,
 }
 
-editor_objlist["reset"] = {
+--[[editor_objlist["reset"] = {
 	name = "text_reset",
 	sprite = "text_reset",
 	sprite_in_root = false,
