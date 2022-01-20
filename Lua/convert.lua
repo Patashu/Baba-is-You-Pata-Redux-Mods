@@ -350,8 +350,8 @@ function doconvert(data,extrarule_)
 			
 			cdata[2] = mat2
 			
-			addundo({"convert",cdata[1],cdata[2],ingameid,baseingameid,x,y,dir})
-			addundo({"create",mat2,ingameid,baseingameid,"convert",x,y,dir})
+			addundo({"convert",cdata[1],cdata[2],ingameid,baseingameid,x,y,dir,unitid,newunitid})
+			addundo({"create",mat2,ingameid,baseingameid,"convert",x,y,dir,unitid,newunitid})
 			
 			addunit(newunitid)
 			addunitmap(newunitid,x,y,newunit.strings[UNITNAME])
@@ -422,8 +422,8 @@ function doconvert(data,extrarule_)
 			delthis = true
 		elseif (mat2 == "empty") then
 			if testcond(conds,unit.fixed) then
-				addundo({"convert",cdata[1],"empty",ingameid,baseingameid,x,y,dir})
-				updateunitmap(unitid,x,y,x,y,unit.strings[UNITNAME])
+				addundo({"convert",cdata[1],"empty",ingameid,baseingameid,x,y,dir,unitid,newunitid})
+				updateunitmap(unitid,x,y,x,y,unit.strings[UNITNAME],true,unit.fixed)
 				delthis = true
 				
 				local tileid = x + y * roomsizex
@@ -436,7 +436,7 @@ function doconvert(data,extrarule_)
 		end
 		
 		if delthis and (unit.flags[DEAD] == false) then
-			addundo({"remove",unit.strings[UNITNAME],unit.values[XPOS],unit.values[YPOS],unit.values[DIR],unit.values[ID],baseingameid,unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],unit.followed,unit.back_init,unit.originalname})
+			addundo({"remove",unit.strings[UNITNAME],unit.values[XPOS],unit.values[YPOS],unit.values[DIR],unit.values[ID],baseingameid,unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],unit.followed,unit.back_init,unit.originalname,true,unit.fixed})
 			
 			if (unit.strings[UNITTYPE] == "text") then
 				updatecode = 1
@@ -472,8 +472,8 @@ function doconvert(data,extrarule_)
 		newunit.flags[CONVERTED] = true
 		
 		cdata[2] = mat2
-		addundo({"convert",cdata[1],cdata[2],id,id,i,j,dir})
-		addundo({"create",mat2,id,-1,"emptyconvert",i,j,dir})
+		addundo({"convert",cdata[1],cdata[2],id,id,i,j,dir,nil,newunitid})
+		addundo({"create",mat2,id,-1,"emptyconvert",i,j,dir,nil,newunitid})
 		
 		addunit(newunitid)
 		addunitmap(newunitid,i,j,newunit.strings[UNITNAME])

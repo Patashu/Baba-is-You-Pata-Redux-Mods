@@ -168,6 +168,12 @@ function command(key,player_)
 				auto_dir[1] = keyid
 			end
 		end
+		if doreset then
+			resetlevel()
+			MF_update()
+		else
+			resetmoves = math.max(0, resetmoves - 1)
+		end
 	end
 	
 	if (keyid == 5) then
@@ -340,7 +346,7 @@ function createall(matdata,x_,y_,id_,dolevels_,leveldata_)
 						
 						if (blocked["all"] == nil) then
 							for b,mat in pairs(objectlist) do
-								if (findnoun(b) == false) and (blocked[target] == nil)  then
+								if (findnoun(b) == false) and (blocked[target] == nil)	then
 									local nunitid,ningameid = create(b,x,y,dir,nil,nil,nil,nil,leveldata)
 									addundo({"convert",matdata[1],mat,ningameid,2,x,y,dir})
 								end
@@ -430,7 +436,7 @@ function setunitmap()
 	
 	for i,unit in ipairs(delthese) do
 		local x,y,dir,unitname = unit.values[XPOS],unit.values[YPOS],unit.values[DIR],unit.strings[UNITNAME]
-		addundo({"remove",unitname,x,y,dir,unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],unit.followed,unit.back_init,unit.originalname})
+		addundo({"remove",unitname,x,y,dir,unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],unit.followed,unit.back_init,unit.originalname,false,unit.fixed})
 		delunit(unit.fixed)
 		MF_remove(unit.fixed)
 	end

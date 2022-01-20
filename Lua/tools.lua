@@ -537,7 +537,7 @@ function delete(unitid,x_,y_,total_,noinside_)
 				changevisiontarget(unit.fixed)
 			end
 			
-			addundo({"remove",unitname,x,y,dir,unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],unit.followed,unit.back_init,unit.originalname},unitid)
+			addundo({"remove",unitname,x,y,dir,unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],unit.followed,unit.back_init,unit.originalname,false,unitid},unitid)
 			unit = {}
 			delunit(unitid)
 			MF_remove(unitid)
@@ -1207,7 +1207,6 @@ function isgone(unitid)
 end
 
 function floating(id1,id2,x1_,y1_,x2_,y2_)
-	print("in floating")
 	local empty1,empty2 = false,false
 	local x1 = x1_ or 0
 	local y1 = y1_ or 0
@@ -1644,6 +1643,9 @@ function append(t1,t2)
 end
 
 function getname(unit)
+  if (unit == nil) then
+    print(debug.traceback())
+  end
 	local result = unit.strings[UNITNAME]
 	
 	if (unit.strings[UNITTYPE] == "text") then

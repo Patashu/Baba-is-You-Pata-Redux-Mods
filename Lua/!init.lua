@@ -1,7 +1,7 @@
 --If true, MOONWALK and related properties (DRUNK, DRUNKER, SKIP) apply to PUSH, PULL, SHIFT and YEET in addition to basically everything else. Defaults to true.
 very_drunk = true
 
-print("hi")
+print("Start of !init.lua")
 
 table.insert(editor_objlist_order, "text_slip")
 editor_objlist["text_slip"] = {
@@ -172,33 +172,36 @@ editor_objlist["text_copy"] = {
 	layer = 20,
 	operatortype = "verb",
 	colour = {2, 1},
-	active = {2, 2},
+	colour_active = {2, 2},
 }
 
---[[editor_objlist["reset"] = {
+table.insert(editor_objlist_order, "text_reset")
+editor_objlist["text_reset"] = {
 	name = "text_reset",
-	sprite = "text_reset",
 	sprite_in_root = false,
 	unittype = "text",
+	tags = {"patashu"},
 	tiling = -1,
 	type = 2,
+	layer = 20,
 	colour = {3, 0},
-	active = {3, 1},
-	tile = {96, 18},
+	colour_active = {3, 1},
 	layer = 20,
 }
 
-editor_objlist["persist"] = {
+table.insert(editor_objlist_order, "text_persist")
+editor_objlist["text_persist"] = {
 	name = "text_persist",
-	sprite = "text_persist",
 	sprite_in_root = false,
 	unittype = "text",
+	tags = {"patashu"},
 	tiling = -1,
 	type = 2,
-	colour = {0, 2},
-	active = {0, 3},
-	tile = {96, 19},
 	layer = 20,
-}]]--
+	colour = {0, 2},
+	colour_active = {0, 3},
+}
 
 formatobjlist()
+
+print("End of !init.lua")

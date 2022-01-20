@@ -1,8 +1,8 @@
 # Baba Is You Pata Redux Mods
 
-Special thanks to JumboDS64 for initial LEAN implementation, lily for modloader and initial COPY/WITH/PERSIST/RESET implementation.
+Special thanks to lily for initial COPY/PERSIST/RESET implementation.
 
-To install: Copy modloader.lua until Baba Is You/Data/Lua folder. Copy the rest into the World folder that you wish to use this mod.
+To install: Copy everything in Lua and Sprites to the world folder you want to use this mod. Edit the world folder's world_data.txt. Add mods=1 under [general] (like it is for the one in this repository).
 
 **SLIP** - __Property__ Once per turn, objects standing on something SLIP will involuntarily move in the direction they're facing. If they did, voluntary movement (YOU, MOVE, COPY) is prevented that turn.
 
@@ -16,14 +16,6 @@ To install: Copy modloader.lua until Baba Is You/Data/Lua folder. Copy the rest 
 
 **LAZY** - __Property__ Something that is LAZY can't push or pull. ROCK IS PUSH AND LAZY gives you sokoban style 'max 1' pushing. KEKE IS MOVE AND LAZY gives you moving actors that don't shive things around with them.
 
-**STUBBORN** - __Property__ Something that is MOVE and STUBBORN doesn't turn around when it hits a wall.
-
-**SPIN** - __Property__ Turns 90 degrees to the right at the end of each turn. Stacks!
-
-**LEAN** - __Property__ At end of turn, faces the first direction it could move in: (right, forward, left, back). In general, follows the right wall.
-
-**TURN** - __Property__ At end of turn, faces the first direction it could move in: (forward, right, left, back). In general, turns right when it hits a wall.
-
 **MOONWALK / DRUNK / DRUNKER / SKIP** - __Property__ Causes movement (YOU/MOVE/PUSH/PULL/SHIFT/SLIDE/SLIP/SIDEKICK/COPY) to be 180, 90 or 45 degrees 'wrong' respectively. SKIP makes movements go 2 tiles instead of 1! All 4 stack with each other and themselves!
 
 **TALL** - __Property__ This unit is considered to be both float levels simultaneously.
@@ -32,13 +24,9 @@ To install: Copy modloader.lua until Baba Is You/Data/Lua folder. Copy the rest 
 
 **COPY** - __Verb__ If x COPY y, whenever y moves, x will try to move the same way.
 
-**WITH** - __Infix Condition__ True if the unit has the specified property.
-
 **RESET** - __Property__ If YOU touches RESET, the game is undone back to the starting state. However, anything that is currently PERSIST will remain as-is.
 
-**PERSIST** - __Property__ PERSIST units are unaffected by undoing. Edge cases: If a PERSIST unit is created by conversion, the thing that converted into it does not come back. If a PERSIST unit is destroyed, it does not come back when you undo.If a unit is currently PERSIST, it will remain unchanged when YOU RESET, even if it used to not be PERSIST.
-
-**BACK** - __Property__ BACK units retrace their history in reverse, undoing their movements. Edge cases; If an BACK unit undoes a conversion, the old unit will re-appear. Units that no longer exist can't be BACK, so they won't re-appear by waiting. NOTE: There are some non-deterministic bugs involving using BACK and destroying units then undoing their destruction. If you can help me track them down, let me know!
+**PERSIST** - __Property__ PERSIST units are unaffected by undoing. Edge cases: If a PERSIST unit is created by conversion, the thing that converted into it does not come back. If a PERSIST unit is destroyed, it does not come back when you undo. If a unit is currently PERSIST, it will remain unchanged when YOU RESET, even if it used to not be PERSIST.
 
 Baba is You Discord server: https://discord.gg/GGbUUse
 
