@@ -89,20 +89,20 @@ editor_objlist["text_sidekick"] = {
 	colour_active = {6, 1},
 }
 
---[[editor_objlist["lazy"] = {
+table.insert(editor_objlist_order, "text_lazy")
+editor_objlist["text_lazy"] = {
 	name = "text_lazy",
-	sprite = "text_lazy",
 	sprite_in_root = false,
 	unittype = "text",
+	tags = {"patashu"},
 	tiling = -1,
 	type = 2,
-	colour = {6, 1},
-	active = {6, 2},
-	tile = {96, 6},
 	layer = 20,
+	colour = {6, 1},
+	colour_active = {6, 2},
 }
 
-editor_objlist["moonwalk"] = {
+--[[editor_objlist["moonwalk"] = {
 	name = "text_moonwalk",
 	sprite = "text_moonwalk",
 	sprite_in_root = false,

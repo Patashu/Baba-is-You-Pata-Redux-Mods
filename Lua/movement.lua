@@ -801,9 +801,9 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 										for c,pushobs in ipairs(pushobslist) do
 											local hm = 0
 											if (pushobs ~= 2) then
-												hm = trypush(pushobs,ox,oy,dir,false,x,y,data.reason)
+												hm = trypush(pushobs,ox,oy,dir,false,x,y,data.reason,data.unitid)
 											else
-												hm = trypush(pushobs,ox,oy,dir,false,x+ox,y+oy,data.reason)
+												hm = trypush(pushobs,ox,oy,dir,false,x+ox,y+oy,data.reason,data.unitid)
 											end
 											
 											if (hm == 0) then
@@ -821,9 +821,9 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 												pushedunits = {}
 												
 												if (pushobs ~= 2) then
-													dopush(pushobs,ox,oy,dir,false,x,y,data.reason)
+													dopush(pushobs,ox,oy,dir,false,x,y,data.reason,data.unitid)
 												else
-													dopush(pushobs,ox,oy,dir,false,x+ox,y+oy,data.reason)
+													dopush(pushobs,ox,oy,dir,false,x+ox,y+oy,data.reason,data.unitid)
 												end
 											end
 											result = 0
@@ -1368,6 +1368,13 @@ function trypush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 	local pulling = pulling_ or false
 	
 	local weak = hasfeature(name,"is","weak",unitid,x_,y_)
+	
+	local pushername = "empty";
+	if (pusherid > 2) then
+		local pusherunit = mmf.newObject(pusherid);
+		pushername = getname(pusherunit);
+	end
+	local lazypusher = hasfeature(pushername,"is","lazy",pusherid,x,y) ~= nil
 
 	if (weak == nil) or pulling or ((weak ~= nil) and issafe(unitid,x_,y_)) then
 		local result = 0
@@ -1379,7 +1386,9 @@ function trypush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 				local done = false
 				
 				while (done == false) do
-					if (hm == 0) then
+					if (lazypusher) then
+						return 1
+					elseif (hm == 0) then
 						result = math.max(0, result)
 						done = true
 					elseif (hm == 1) or (hm == -1) then
@@ -1430,6 +1439,14 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 		y = y_
 		name = "empty"
 	end
+	
+	local pushername = "empty";
+	if (pusherid > 2) then
+		local pusherunit = mmf.newObject(pusherid);
+		pushername = getname(pusherunit);
+	end
+	local lazypusher = hasfeature(pushername,"is","lazy",pusherid,x,y) ~= nil
+	local lazyid = hasfeature(name,"is","lazy",unitid,x,y) ~= nil
 	
 	local pulling = false
 	if (pulling_ ~= nil) then
@@ -1506,7 +1523,9 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 			for i,obs in pairs(hmlist) do
 				local done = false
 				while (done == false) do
-					if (obs == 0) then
+					if (lazypusher) then
+						return 1
+					elseif (obs == 0) then
 						result = math.max(0, result)
 						done = true
 					elseif (obs == 1) or (obs == -1) then
@@ -1608,22 +1627,30 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 		end
 		
 		if pulling and (HACK_MOVES < 10000) then
+			if (lazypusher) then
+				return 1
+			end
 			if (movedata.pull == 0) then
 				hmlist,hms,specials = check(unitid,x,y,dir,pulling,reason)
 				hm = 0
 			
 				for i,obs in pairs(hmlist) do
 					if (obs < -1) or (obs > 1) then
-						if (obs ~= 2) then
-							queue_move(obs,ox,oy,dir,specials,x,y,reason)
-							pushsound = true
-						end
-						
-						local pid = tostring(x - ox + (y - oy) * roomsizex) .. tostring(obs)
-						
-						if (pushedunits[pid] == nil) then
-							pushedunits[pid] = 1
-							hm = dopush(obs,ox,oy,dir,pulling,x-ox,y-oy,reason,unitid)
+						if (not lazyid) then
+							--Mostly the lazypusher stuff is self-explanatory - don't do a push if we're lazy.
+							--But in the case of pulling, the item one ahead of us does a pull 'early', so we have to stop it in advance.
+							if (obs ~= 2) then
+								table.insert(movelist, {obs,ox,oy,dir,specials,1,reason}) --TODO: it's intended that this reverted from being a queue_move or?
+								pushsound = true
+								--move(obs,ox,oy,dir,specials)
+							end
+
+							local pid = tostring(x-ox + (y-oy) * roomsizex) .. tostring(obs)
+
+							if (pushedunits[pid] == nil) then
+								pushedunits[pid] = 1
+								hm = dopush(obs,ox,oy,dir,pulling,x-ox,y-oy,reason,unitid)
+							end
 						end
 					end
 				end
