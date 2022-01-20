@@ -1458,7 +1458,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 		
 		while (finaldone == false) and (HACK_MOVES < 10000) do
 			if (result == 0) then
-				table.insert(movelist, {unitid,ox,oy,dir,specials,x,y,data.reason})
+				table.insert(movelist, {unitid,ox,oy,dir,specials,x,y,reason})
 				--move(unitid,ox,oy,dir,specials)
 				pushsound = true
 				finaldone = true
@@ -1468,7 +1468,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 					for i,obs in ipairs(pullhmlist) do
 						if (obs < -1) or (obs > 1) and (obs ~= pusherid) then
 							if (obs ~= 2) then
-								table.insert(movelist, {obs,ox,oy,dir,pullspecials,x,y,data.reason})
+								table.insert(movelist, {obs,ox,oy,dir,pullspecials,x,y,reason})
 								pushsound = true
 								--move(obs,ox,oy,dir,specials)
 							end
@@ -1534,7 +1534,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 				for i,obs in pairs(hmlist) do
 					if (obs < -1) or (obs > 1) then
 						if (obs ~= 2) then
-							table.insert(movelist, {obs,ox,oy,dir,specials,x,y,data.reason})
+							table.insert(movelist, {obs,ox,oy,dir,specials,x,y,reason})
 							pushsound = true
 						end
 						
@@ -1812,8 +1812,7 @@ function add_moving_units(rule,newdata,data,been_seen,empty_)
 			local still = cantmove(unitname,v,dir)
 			
 			if (sleep ~= nil and rule ~= "slip") or still or slipped[v] ~= nil then
-			sleeping = true then --sleeping things still slip
-				sleeping = true
+				sleeping = true --sleeping and not slipping, still OR slipped
 			end
 		else
 			local thisempty = empty[i]

@@ -22,19 +22,18 @@ activemod.very_drunk = true]]
 
 print("hi")
 
-table.insert(editor_objlist_order, "slip")
+table.insert(editor_objlist_order, "text_slip")
 
-editor_objlist["slip"] = {
+editor_objlist["text_slip"] = {
 	name = "text_slip",
-	sprite = "text_slip",
 	sprite_in_root = false,
 	unittype = "text",
+	tags = {"patashu"},
 	tiling = -1,
 	type = 2,
-	colour = {1, 3},
-	active = {1, 4},
-	tile = {96, 1},
 	layer = 20,
+	colour = {1, 3},
+	colour_active = {1, 4},
 }
 
 --[[editor_objlist["slide"] = {
