@@ -2018,6 +2018,25 @@ function find_sidekicks(unitid,dir)
 	return result;
 end
 
+function sign(num)
+	if num > 0 then
+		return 1
+	elseif num < 0 then
+		return -1
+	else
+		return 0
+	end
+end
+function trunc(num)
+	if num > 0 then
+		return math.floor(num)
+	elseif num < 0 then
+		return math.ceil(num)
+	else
+		return 0
+	end
+end
+
 function queue_move(unitid,ox,oy,dir,specials,reason)
 	table.insert(movelist, {unitid,ox,oy,dir,specials,reason})
 

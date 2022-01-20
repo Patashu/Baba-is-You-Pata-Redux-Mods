@@ -1,24 +1,5 @@
---[[local mod = activemod
-
--- Properties
-mod.enabled["slip"] = true
-mod.enabled["slide"] = true
-mod.enabled["likes"] = true
-mod.enabled["hates"] = true
-mod.enabled["sidekick"] = true
-mod.enabled["lazy"] = true
-mod.enabled["moonwalk"] = true
-mod.enabled["drunk"] = true
-mod.enabled["drunker"] = true
-mod.enabled["skip"] = true
-mod.enabled["oneway"] = true
-mod.enabled["tall"] = true
-mod.enabled["copy"] = true
-mod.enabled["reset"] = true
-mod.enabled["persist"] = true
-
 --If true, MOONWALK and related properties (DRUNK, DRUNKER, SKIP) apply to PUSH, PULL, SHIFT and YEET in addition to basically everything else. Defaults to true.
-activemod.very_drunk = true]]
+very_drunk = true
 
 print("hi")
 
@@ -102,58 +83,72 @@ editor_objlist["text_lazy"] = {
 	colour_active = {6, 2},
 }
 
---[[editor_objlist["moonwalk"] = {
+table.insert(editor_objlist_order, "text_moonwalk")
+editor_objlist["text_moonwalk"] = {
 	name = "text_moonwalk",
-	sprite = "text_moonwalk",
 	sprite_in_root = false,
 	unittype = "text",
+	tags = {"patashu"},
 	tiling = -1,
 	type = 2,
-	colour = {1, 3},
-	active = {1, 4},
-	tile = {96, 10},
 	layer = 20,
+	colour = {1, 3},
+	colour_active = {1, 4},
 }
 
-editor_objlist["drunk"] = {
+table.insert(editor_objlist_order, "text_drunk")
+editor_objlist["text_drunk"] = {
 	name = "text_drunk",
-	sprite = "text_drunk",
 	sprite_in_root = false,
 	unittype = "text",
+	tags = {"patashu"},
 	tiling = -1,
 	type = 2,
-	colour = {1, 3},
-	active = {1, 4},
-	tile = {96, 11},
 	layer = 20,
+	colour = {1, 3},
+	colour_active = {1, 4},
 }
 
-editor_objlist["drunker"] = {
+table.insert(editor_objlist_order, "text_drunker")
+editor_objlist["text_drunker"] = {
 	name = "text_drunker",
-	sprite = "text_drunker",
 	sprite_in_root = false,
 	unittype = "text",
+	tags = {"patashu"},
 	tiling = -1,
 	type = 2,
-	colour = {1, 3},
-	active = {1, 4},
-	tile = {96, 12},
 	layer = 20,
+	colour = {1, 3},
+	colour_active = {1, 4},
 }
 
-editor_objlist["skip"] = {
+table.insert(editor_objlist_order, "text_skip")
+editor_objlist["text_skip"] = {
 	name = "text_skip",
-	sprite = "text_skip",
 	sprite_in_root = false,
 	unittype = "text",
+	tags = {"patashu"},
 	tiling = -1,
 	type = 2,
-	colour = {1, 3},
-	active = {1, 4},
-	tile = {96, 13},
 	layer = 20,
+	colour = {1, 3},
+	colour_active = {1, 4},
 }
 
+table.insert(editor_objlist_order, "text_tall")
+editor_objlist["text_tall"] = {
+	name = "text_tall",
+	sprite_in_root = false,
+	unittype = "text",
+	tags = {"patashu"},
+	tiling = -1,
+	type = 2,
+	layer = 20,
+	colour = {0, 0},
+	colour_active = {0, 1},
+}
+
+--[[
 editor_objlist["oneway"] = {
 	name = "text_oneway",
 	sprite = "text_oneway",
@@ -164,19 +159,6 @@ editor_objlist["oneway"] = {
 	colour = {1, 3},
 	active = {1, 4},
 	tile = {96, 14},
-	layer = 20,
-}
-
-editor_objlist["tall"] = {
-	name = "text_tall",
-	sprite = "text_tall",
-	sprite_in_root = false,
-	unittype = "text",
-	tiling = -1,
-	type = 2,
-	colour = {0, 0},
-	active = {0, 1},
-	tile = {96, 15},
 	layer = 20,
 }
 
