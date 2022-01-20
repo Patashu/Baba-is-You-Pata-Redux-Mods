@@ -1049,6 +1049,10 @@ function check(unitid,x,y,dir,pulling_,reason)
 	else
 		name = "empty"
 	end
+
+	if (hasfeature(name,"hates","level",unitid,x,y)) then
+		return {-1},{-1},specials
+	end
 	
 	local lockpartner = ""
 	local open = hasfeature(name,"is","open",unitid,x,y)
@@ -1127,7 +1131,8 @@ function check(unitid,x,y,dir,pulling_,reason)
 				if valid then
 					--MF_alert("checking for solidity for " .. obsname .. " by " .. name .. " at " .. tostring(x) .. ", " .. tostring(y))
 					
-					local isstop = hasfeature(obsname,"is","stop",id,x+ox,y+oy)
+					local isstop = hasfeature(obsname,"is","stop",id,x+ox,y+oy) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,id,x,y))
+					if (not isstop) then isstop = nil end
 					local ispush = hasfeature(obsname,"is","push",id,x+ox,y+oy)
 					local ispull = hasfeature(obsname,"is","pull",id,x+ox,y+oy)
 					local isswap = hasfeature(obsname,"is","swap",id,x+ox,y+oy)
@@ -1186,6 +1191,7 @@ function check(unitid,x,y,dir,pulling_,reason)
 		end
 	elseif (phantom == nil) then
 		local emptystop = hasfeature("empty","is","stop",2,x+ox,y+oy)
+		emptystop = emptystop or hasfeature(name,"hates","empty",unitid,x,y)
 		local emptypush = hasfeature("empty","is","push",2,x+ox,y+oy)
 		local emptypull = hasfeature("empty","is","pull",2,x+ox,y+oy)
 		local emptyswap = hasfeature("empty","is","swap",2,x+ox,y+oy)

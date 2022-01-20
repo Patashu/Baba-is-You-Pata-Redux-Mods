@@ -48,6 +48,20 @@ editor_objlist["text_slide"] = {
 	colour_active = {1, 4},
 }
 
+table.insert(editor_objlist_order, "text_hates")
+editor_objlist["text_hates"] = {
+	name = "text_hates",
+	sprite_in_root = false,
+	unittype = "text",
+  tags = {"patashu"},
+	tiling = -1,
+	type = 1,
+  layer = 20,
+	operatortype = "verb",
+	colour = {5, 0},
+	colour_active = {5, 1},
+}
+
 --[[editor_objlist["likes"] = {
 	name = "text_likes",
 	sprite = "text_likes",
@@ -59,20 +73,6 @@ editor_objlist["text_slide"] = {
 	colour = {5, 0},
 	active = {5, 1},
 	tile = {96, 3},
-	layer = 20,
-}
-
-editor_objlist["hates"] = {
-	name = "text_hates",
-	sprite = "text_hates",
-	sprite_in_root = false,
-	unittype = "text",
-	tiling = -1,
-	type = 1,
-	operatortype = "verb",
-	colour = {5, 0},
-	active = {5, 1},
-	tile = {96, 4},
 	layer = 20,
 }
 
