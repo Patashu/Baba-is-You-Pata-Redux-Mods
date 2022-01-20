@@ -259,7 +259,7 @@ function undo()
 							end
 
 							--If the unit was actually a destroyed 'PERSIST', oops. Don't actually bring it back. It's dead, Jim.
-							if (hasfeature(getname(unit),"is","persist",unitid)) then
+							if (not convert and hasfeature(getname(unit),"is","persist",unitid)) then
 								unit = {}
 								delunit(unitid)
 								MF_remove(unitid)
@@ -283,12 +283,12 @@ function undo()
             local x,y = nil,nil
             local unittype = nil
             if (unit ~= nil) then
-              local unitname = unit.strings[UNITNAME]
-              local x,y = unit.values[XPOS],unit.values[YPOS]
-              local unittype = unit.strings[UNITTYPE]
+              unitname = unit.strings[UNITNAME]
+              x,y = unit.values[XPOS],unit.values[YPOS]
+              unittype = unit.strings[UNITTYPE]
             end
 						
-						if unit ~= nil and not hasfeature(getname(unit),"is","persist",unitid) then
+						if (unit ~= nil) and (not hasfeature(getname(unit),"is","persist",unitid)) then
 							unit = {}
 							delunit(unitid)
 							MF_remove(unitid)
