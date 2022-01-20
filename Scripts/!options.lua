@@ -1,4 +1,4 @@
-local mod = activemod
+--[[local mod = activemod
 
 -- Properties
 mod.enabled["slip"] = true
@@ -18,7 +18,9 @@ mod.enabled["reset"] = true
 mod.enabled["persist"] = true
 
 --If true, MOONWALK and related properties (DRUNK, DRUNKER, SKIP) apply to PUSH, PULL, SHIFT and YEET in addition to basically everything else. Defaults to true.
-activemod.very_drunk = true
+activemod.very_drunk = true]]
+
+table.insert(editor_objlist_order, "slip")
 
 editor_objlist["slip"] = {
 	name = "text_slip",
@@ -33,7 +35,7 @@ editor_objlist["slip"] = {
 	layer = 20,
 }
 
-editor_objlist["slide"] = {
+--[[editor_objlist["slide"] = {
 	name = "text_slide",
 	sprite = "text_slide",
 	sprite_in_root = false,
@@ -216,6 +218,6 @@ editor_objlist["persist"] = {
 	active = {0, 3},
 	tile = {96, 19},
 	layer = 20,
-}
+}]]--
 
 formatobjlist()
