@@ -1072,6 +1072,55 @@ function check(unitid,x,y,dir,pulling_,reason)
 	
 	local obs = findobstacle(x+ox,y+oy)
 	
+	--likes: if we like stuff and there are no units in the destination that we like AND there's no units at our feet that would be moving there to carry us, we can't go
+	local likes = hasfeature(name,"likes",nil,unitid,x,y)
+	if (likes ~= nil) then
+		local success = false
+		if (#obs > 0) then
+			for i,id in ipairs(obs) do
+				if (id ~= -1) then
+					local obsunit = mmf.newObject(id)
+					local obsname = getname(obsunit)
+					if hasfeature(name,"likes",obsname,unitid,x,y) then
+						success = true
+						break
+					end
+				end
+			end
+		else
+			success = hasfeature(name,"likes","empty",unitid,x,y)
+		end
+		if (not success) then
+			local carry = findobstacle(x,y)
+			if (#carry > 0) then
+				for i,id in ipairs(carry) do
+					if (id ~= -1) then
+						local obsunit = mmf.newObject(id)
+						local obsname = getname(obsunit)
+						local alreadymoving = findupdate(id,"update")
+						if (#alreadymoving > 0) then
+							for a,b in ipairs(alreadymoving) do
+								local nx,ny = b[3],b[4]
+								if (nx == x+ox and ny == y+oy) then
+									if hasfeature(name,"likes",obsname,unitid,x,y) then
+										success = true
+										break
+									end
+								end
+							end
+						end
+					end
+					if (success) then
+						break
+					end
+				end
+			end
+		end
+		if (not success) then
+			return {-1},{-1},specials
+		end
+	end
+	
 	if (#obs > 0) and (phantom == nil) then
 		for i,id in ipairs(obs) do
 			if (id == -1) then
