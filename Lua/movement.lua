@@ -1038,16 +1038,16 @@ function check(unitid,x,y,dir,pulling_,reason,ox,oy)
 	local dir_ = dir
 	if pulling then
 		dir_ = rotate(dir)
-    if (ox ~= nil) then
-      ox = -ox
-      oy = -oy
-    end
+		if (ox ~= nil) then
+			ox = -ox
+			oy = -oy
+		end
 	end
 	
 	local ndrs = ndirs[dir_ + 1]
-  if (ox == nil) then
-    ox,oy = ndrs[1],ndrs[2]
-  end
+	if (ox == nil) then
+		ox,oy = ndrs[1],ndrs[2]
+	end
 	
 	local result = {}
 	local results = {}
@@ -1192,7 +1192,7 @@ function check(unitid,x,y,dir,pulling_,reason,ox,oy)
 				if valid then
 					--MF_alert("checking for solidity for " .. obsname .. " by " .. name .. " at " .. tostring(x) .. ", " .. tostring(y))
 					
-					local isstop = hasfeature(obsname,"is","stop",id,x+ox,y+oy) or hasfeature(obsname,"is","sidekick",id) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,id,x,y))
+					local isstop = hasfeature(obsname,"is","stop",id,x+ox,y+oy) or hasfeature(obsname,"is","sidekick",id) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,id,x,y)) or (hasfeature(obsname,"is","oneway",id) and dir == rotate(obsunit.values[DIR]))
 					if (not isstop) then isstop = nil end
 					local ispush = hasfeature(obsname,"is","push",id,x+ox,y+oy)
 					local ispull = hasfeature(obsname,"is","pull",id,x+ox,y+oy)

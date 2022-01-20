@@ -2468,13 +2468,25 @@ function simplecheck(x,y,noempty_,checkc)
 			else
 				local obsunit = mmf.newObject(id)
 				local obsname = getname(obsunit)
-				if ((hasfeature(obsname,"is","stop",id,x,y,checkc) ~= nil) or (hasfeature(obsname,"is","push",id,x,y,checkc) ~= nil) or (hasfeature(obsname,"is","pull",id,x,y,checkc) ~= nil)) and (hasfeature(obsname,"is","hide",id,x,y,checkc) == nil) and (hasfeature(obsname,"is","phantom",id,x,y,checkc) == nil) then
+				if ((hasfeature(obsname,"is","stop",id,x,y,checkc) ~= nil)
+				or (hasfeature(obsname,"is","push",id,x,y,checkc) ~= nil)
+				or (hasfeature(obsname,"is","pull",id,x,y,checkc) ~= nil)
+				or (hasfeature(obsname,"is","sidekick",id,x,y,checkc) ~= nil)
+				)
+				and (hasfeature(obsname,"is","hide",id,x,y,checkc) == nil)
+				and (hasfeature(obsname,"is","phantom",id,x,y,checkc) == nil) then
 					return 1
 				end
 			end
 		end
 	elseif (noempty == false) then
-		if ((hasfeature("empty","is","stop",2,x,y,checkc) ~= nil) or (hasfeature("empty","is","push",2,x,y,checkc) ~= nil) or (hasfeature("empty","is","pull",2,x,y,checkc) ~= nil)) and (hasfeature("empty","is","phantom",2,x,y,checkc) == nil) and (hasfeature("empty","is","hide",2,x,y,checkc) == nil) then
+		if ((hasfeature("empty","is","stop",2,x,y,checkc) ~= nil)
+		or (hasfeature("empty","is","push",2,x,y,checkc) ~= nil)
+		or (hasfeature("empty","is","pull",2,x,y,checkc) ~= nil)
+		or (hasfeature("empty","is","sidekick",2,x,y,checkc) ~= nil)
+		)
+		and (hasfeature("empty","is","phantom",2,x,y,checkc) == nil)
+		and (hasfeature("empty","is","hide",2,x,y,checkc) == nil) then
 			return 2
 		end
 	end

@@ -1192,7 +1192,10 @@ function block(small_)
 							local bunit = mmf.newObject(b)
 							local obsname = getname(bunit)
 							
-							local obsstop = hasfeature(obsname,"is","stop",b,x+ox,y+oy)
+							local obsstop = hasfeature(obsname,"is","stop",b,x+ox,y+oy) or hasfeature(obsname,"is","sidekick",b,x+ox,y+oy) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,b,x,y)) or (hasfeature(obsname,"is","oneway",b) and oxoytodir(ox,oy) == rotate(bunit.values[DIR]))
+							 if (obsstop == false) then
+						obsstop = nil
+					end
 							local obspush = hasfeature(obsname,"is","push",b,x+ox,y+oy)
 							local obspull = hasfeature(obsname,"is","pull",b,x+ox,y+oy)
 							
@@ -1203,7 +1206,10 @@ function block(small_)
 						end
 					end
 				else
-					local obsstop = hasfeature("empty","is","stop",2,x+ox,y+oy)
+					local obsstop = hasfeature("empty","is","stop",2,x+ox,y+oy) or hasfeature("empty","is","sidekick",2,x+ox,y+oy) or (featureindex["hates"] ~= nil and hasfeature(name,"hates","empty",2,x,y))
+					if (obsstop == false) then
+						obsstop = nil
+					end
 					local obspush = hasfeature("empty","is","push",2,x+ox,y+oy)
 					local obspull = hasfeature("empty","is","pull",2,x+ox,y+oy)
 					
