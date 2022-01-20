@@ -202,6 +202,146 @@ editor_objlist["text_persist"] = {
 	colour_active = {0, 3},
 }
 
+table.insert(editor_objlist_order, "text_stops")
+editor_objlist["text_stops"] = {
+	name = "text_stops",
+	sprite_in_root = false,
+	unittype = "text",
+	tags = {"patashu"},
+	tiling = -1,
+	type = 1,
+	layer = 20,
+	operatortype = "verb",
+	colour = {5, 0},
+	colour_active = {5, 1},
+}
+
+table.insert(editor_objlist_order, "text_pushes")
+editor_objlist["text_pushes"] = {
+	name = "text_pushes",
+	sprite_in_root = false,
+	unittype = "text",
+	tags = {"patashu"},
+	tiling = -1,
+	type = 1,
+	layer = 20,
+	operatortype = "verb",
+	colour = {6, 0},
+	colour_active = {6, 1},
+}
+
+table.insert(editor_objlist_order, "text_pulls")
+editor_objlist["text_pulls"] = {
+	name = "text_pulls",
+	sprite_in_root = false,
+	unittype = "text",
+	tags = {"patashu"},
+	tiling = -1,
+	type = 1,
+	layer = 20,
+	operatortype = "verb",
+	colour = {6, 1},
+	colour_active = {6, 2},
+}
+
+table.insert(editor_objlist_order, "text_sinks")
+editor_objlist["text_sinks"] = {
+	name = "text_sinks",
+	sprite_in_root = false,
+	unittype = "text",
+	tags = {"patashu"},
+	tiling = -1,
+	type = 1,
+	layer = 20,
+	operatortype = "verb",
+	colour = {1, 2},
+	colour_active = {1, 3},
+}
+
+table.insert(editor_objlist_order, "text_defeats")
+editor_objlist["text_defeats"] = {
+	name = "text_defeats",
+	sprite_in_root = false,
+	unittype = "text",
+	tags = {"patashu"},
+	tiling = -1,
+	type = 1,
+	layer = 20,
+	operatortype = "verb",
+	colour = {2, 0},
+	colour_active = {2, 1},
+}
+
+table.insert(editor_objlist_order, "text_opens")
+editor_objlist["text_opens"] = {
+	name = "text_opens",
+	sprite_in_root = false,
+	unittype = "text",
+	tags = {"patashu"},
+	tiling = -1,
+	type = 1,
+	layer = 20,
+	operatortype = "verb",
+	colour = {6, 1},
+	colour_active = {2, 4},
+}
+
+table.insert(editor_objlist_order, "text_shifts")
+editor_objlist["text_shifts"] = {
+	name = "text_shifts",
+	sprite_in_root = false,
+	unittype = "text",
+	tags = {"patashu"},
+	tiling = -1,
+	type = 1,
+	layer = 20,
+	operatortype = "verb",
+	colour = {1, 2},
+	colour_active = {1, 3},
+}
+
+table.insert(editor_objlist_order, "text_teles")
+editor_objlist["text_teles"] = {
+	name = "text_teles",
+	sprite_in_root = false,
+	unittype = "text",
+	tags = {"patashu"},
+	tiling = -1,
+	type = 1,
+	layer = 20,
+	operatortype = "verb",
+	colour = {1, 2},
+	colour_active = {1, 4},
+}
+
+table.insert(editor_objlist_order, "text_swaps")
+editor_objlist["text_swaps"] = {
+	name = "text_swaps",
+	sprite_in_root = false,
+	unittype = "text",
+	tags = {"patashu"},
+	tiling = -1,
+	type = 1,
+	layer = 20,
+	operatortype = "verb",
+	colour = {3, 0},
+	colour_active = {3, 1},
+}
+
+table.insert(editor_objlist_order, "text_melts")
+editor_objlist["text_melts"] = {
+	name = "text_melts",
+	sprite_in_root = false,
+	unittype = "text",
+	tags = {"patashu"},
+	tiling = -1,
+	type = 1,
+	layer = 20,
+	operatortype = "verb",
+	colour = {2, 2},
+	colour_active = {2, 3},
+}
+
 formatobjlist()
 
 print("End of !init.lua")
