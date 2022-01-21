@@ -1530,6 +1530,32 @@ function block(small_)
 		end
 	end
 	
+	local ismelts = getunitswithverb("melts",delthese)
+	
+	for id,ugroup in ipairs(ismelts) do
+		local v = ugroup[1]
+		
+		if (ugroup[3] ~= "empty") then
+			for a,unit in ipairs(ugroup[2]) do
+				local x,y = unit.values[XPOS],unit.values[YPOS]
+				local things = findtype({v,nil},x,y,0)
+				
+				if (#things > 0) then
+					for a,b in ipairs(things) do
+						if (issafe(b) == false) and floating(b,unit.fixed,x,y) then
+							local pmult,sound = checkeffecthistory("hot")
+							MF_particles("smoke",x,y,5 * pmult,0,1,1,1)
+							generaldata.values[SHAKE] = 5
+							removalshort = sound
+							removalsound = 9
+							table.insert(delthese, b)
+						end
+					end
+				end
+			end
+		end
+	end
+	
 	delthese,doremovalsound = handledels(delthese,doremovalsound,true)
 	
 	local isyou = getunitswitheffect("you",false,delthese)

@@ -1125,6 +1125,7 @@ function isgone(unitid)
 		local eat = findfeatureat(nil,"eat",name,x,y)
 		local sinks = findfeatureat(nil,"sinks",name,x,y)
 		local opens = findfeatureat(nil,"opens",name,x,y)
+		local melts = findfeatureat(nil,"melts",name,x,y)
 		
 		if (eat ~= nil) then
 			for i,v in ipairs(eat) do
@@ -1142,6 +1143,13 @@ function isgone(unitid)
 		end
 		if (opens ~= nil) then
 			for i,v in ipairs(opens) do
+				if (v ~= unitid) then
+					return true
+				end
+			end
+		end
+		if (meltss ~= nil) then
+			for i,v in ipairs(melts) do
 				if (v ~= unitid) then
 					return true
 				end

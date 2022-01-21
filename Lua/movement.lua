@@ -799,9 +799,9 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 												
 												if (obsstill == nil) then
 													if hasfeature(name,"swaps",swapname,data.unitid,x+ox,y+oy) then
-                            addaction(b,{"update",x,y,nil})
-                            swapped[b] = 1
-                          end
+														addaction(b,{"update",x,y,nil})
+														swapped[b] = 1
+													end
 												end
 											end
 										end
