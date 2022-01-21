@@ -1192,11 +1192,11 @@ function block(small_)
 							local bunit = mmf.newObject(b)
 							local obsname = getname(bunit)
 							
-							local obsstop = hasfeature(obsname,"is","stop",b,x+ox,y+oy) or hasfeature(obsname,"is","sidekick",b,x+ox,y+oy) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,b,x,y)) or (hasfeature(obsname,"is","oneway",b) and oxoytodir(ox,oy) == rotate(bunit.values[DIR]))
+							local obsstop = hasfeature(obsname,"is","stop",b,x+ox,y+oy) or hasfeature(obsname,"is","sidekick",b,x+ox,y+oy) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,id,x,y)) or (hasfeature(obsname,"is","oneway",b) and oxoytodir(ox,oy) == rotate(bunit.values[DIR]))
 							 if (obsstop == false) then
 						obsstop = nil
 					end
-							local obspush = hasfeature(obsname,"is","push",b,x+ox,y+oy)
+							local obspush = hasfeature(obsname,"is","push",b,x+ox,y+oy) or (featureindex["pushes"] ~= nil and hasfeature(name,"pushes",obsname,id,x,y))
 							local obspull = hasfeature(obsname,"is","pull",b,x+ox,y+oy)
 							
 							if (obsstop ~= nil) or (obspush ~= nil) or (obspull ~= nil) or (obsname == name) then
@@ -1206,11 +1206,11 @@ function block(small_)
 						end
 					end
 				else
-					local obsstop = hasfeature("empty","is","stop",2,x+ox,y+oy) or hasfeature("empty","is","sidekick",2,x+ox,y+oy) or (featureindex["hates"] ~= nil and hasfeature(name,"hates","empty",2,x,y))
+					local obsstop = hasfeature("empty","is","stop",2,x+ox,y+oy) or hasfeature("empty","is","sidekick",2,x+ox,y+oy) or (featureindex["hates"] ~= nil and hasfeature(name,"hates","empty",id,x,y))
 					if (obsstop == false) then
 						obsstop = nil
 					end
-					local obspush = hasfeature("empty","is","push",2,x+ox,y+oy)
+					local obspush = hasfeature("empty","is","push",2,x+ox,y+oy) or (featureindex["pushes"] ~= nil and hasfeature(name,"pushes","empty",id,x,y))
 					local obspull = hasfeature("empty","is","pull",2,x+ox,y+oy)
 					
 					if (obsstop ~= nil) or (obspush ~= nil) or (obspull ~= nil) then
