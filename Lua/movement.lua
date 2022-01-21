@@ -1237,8 +1237,11 @@ function check(unitid,x,y,dir,pulling_,reason,ox,oy)
 					local isstop = hasfeature(obsname,"is","stop",id,x+ox,y+oy) or hasfeature(obsname,"is","sidekick",id) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,unitid,x,y)) or (hasfeature(obsname,"is","oneway",id) and dir == rotate(obsunit.values[DIR]))
 					if (not isstop) then isstop = nil end
 					local ispush = hasfeature(obsname,"is","push",id,x+ox,y+oy) or (featureindex["pushes"] ~= nil and hasfeature(name,"pushes",obsname,unitid,x,y))
-					local ispull = hasfeature(obsname,"is","pull",id,x+ox,y+oy)
+          if (not ispush) then ispush = nil end
+					local ispull = hasfeature(obsname,"is","pull",id,x+ox,y+oy) or (featureindex["pulls"] ~= nil and hasfeature(name,"pulls",obsname,unitid,x,y))
+          if (not ispull) then ispull = nil end
 					local isswap = hasfeature(obsname,"is","swap",id,x+ox,y+oy)
+          if (not isswap) then iswap = nil end
 					local isstill = cantmove(obsname,id,dir,x+ox,y+oy)
 					
 					--MF_alert(obsname .. " -- stop: " .. tostring(isstop) .. ", push: " .. tostring(ispush))
@@ -1296,9 +1299,13 @@ function check(unitid,x,y,dir,pulling_,reason,ox,oy)
 		local emptystop = hasfeature("empty","is","stop",2,x+ox,y+oy)
 		emptystop = emptystop or hasfeature(name,"hates","empty",unitid,x,y)
 		emptystop = emptystop or hasfeature("empty","is","sidekick",2,x+ox,y+oy)
+    if (not emptystop) then emptystop = nil end
 		local emptypush = hasfeature("empty","is","push",2,x+ox,y+oy) or (featureindex["pushes"] ~= nil and hasfeature(name,"pushes","empty",unitid,x,y))
-		local emptypull = hasfeature("empty","is","pull",2,x+ox,y+oy)
+    if (not emptypush) then emptypush = nil end
+		local emptypull = hasfeature("empty","is","pull",2,x+ox,y+oy) or (featureindex["pulls"] ~= nil and hasfeature(name,"pulls","empty",unitid,x,y))
+    if (not emptypull) then emptypull = nil end
 		local emptyswap = hasfeature("empty","is","swap",2,x+ox,y+oy)
+    if (not emptyswap) then emptyswap = nil end
 		local emptystill = cantmove("empty",2,dir_,x+ox,y+oy)
 		
 		local localresult = 0

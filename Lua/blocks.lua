@@ -1197,7 +1197,7 @@ function block(small_)
 						obsstop = nil
 					end
 							local obspush = hasfeature(obsname,"is","push",b,x+ox,y+oy) or (featureindex["pushes"] ~= nil and hasfeature(name,"pushes",obsname,id,x,y))
-							local obspull = hasfeature(obsname,"is","pull",b,x+ox,y+oy)
+							local obspull = hasfeature(obsname,"is","pull",b,x+ox,y+oy) or (featureindex["pulls"] ~= nil and hasfeature(name,"pulls",obsname,id,x,y))
 							
 							if (obsstop ~= nil) or (obspush ~= nil) or (obspull ~= nil) or (obsname == name) then
 								valid = false
@@ -1211,7 +1211,7 @@ function block(small_)
 						obsstop = nil
 					end
 					local obspush = hasfeature("empty","is","push",2,x+ox,y+oy) or (featureindex["pushes"] ~= nil and hasfeature(name,"pushes","empty",id,x,y))
-					local obspull = hasfeature("empty","is","pull",2,x+ox,y+oy)
+					local obspull = hasfeature("empty","is","pull",2,x+ox,y+oy) or (featureindex["pulls"] ~= nil and hasfeature(name,"pulls","empty",id,x,y))
 					
 					if (obsstop ~= nil) or (obspush ~= nil) or (obspull ~= nil) then
 						valid = false
