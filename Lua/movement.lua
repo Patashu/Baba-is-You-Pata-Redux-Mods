@@ -452,6 +452,39 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 						end
 					end
 				end
+        
+        local isshifts = getunitswithverb("shifts")
+				
+				for id,ugroup in ipairs(isshifts) do
+					local v = ugroup[1]
+					
+					if (ugroup[3] ~= "empty") then
+						for a,unit in ipairs(ugroup[2]) do
+							local x,y = unit.values[XPOS],unit.values[YPOS]
+							local things = findtype({v,nil},x,y,unit.fixed)
+							
+							if (#things > 0) then
+								for a,b in ipairs(things) do
+									if floating(b,unit.fixed,x,y) and (b ~= unit.fixed) then
+										
+										--updatedir(b, unit.values[DIR])
+										
+										if (isstill_or_locked(b,x,y,unit.values[DIR]) == false) then
+											if (been_seen[b] == nil) then
+												table.insert(moving_units, {unitid = b, reason = "shift", state = 0, moves = 1, dir = unit.values[DIR], xpos = x, ypos = y})
+												been_seen[b] = #moving_units
+											else
+												local id = been_seen[b]
+												local this = moving_units[id]
+												this.moves = this.moves + 1
+											end
+										end
+									end
+								end
+							end
+						end
+					end
+				end
 				
 				local levelshift = findfeature("level","is","shift")
 				
