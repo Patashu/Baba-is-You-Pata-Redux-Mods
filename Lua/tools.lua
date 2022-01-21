@@ -1160,6 +1160,16 @@ function isgone(unitid)
 					end
 				end
 			end
+      
+      local isdefeats = findfeatureat(nil,"defeats",name,x,y)
+			
+			if (isdefeats ~= nil) then
+				for i,v in ipairs(isdefeats) do
+					if floating(v,unitid,x,y) then
+						return true
+					end
+				end
+			end
 		end
 		
 		if (ismelt ~= nil) then

@@ -1547,9 +1547,47 @@ function block(small_)
 	for id,unit in ipairs(isyou) do
 		local x,y = unit.values[XPOS],unit.values[YPOS]
 		local defeat = findfeature(nil,"is","defeat")
+    local defeats = findfeature(nil,"defeats",getname(unit));
 		
 		if (defeat ~= nil) then
 			for a,b in ipairs(defeat) do
+				if (b[1] ~= "empty") then
+					local skull = findtype(b,x,y,0)
+					
+					if (#skull > 0) and (issafe(unit.fixed) == false) then
+						for c,d in ipairs(skull) do
+							local doit = false
+							
+							if (d ~= unit.fixed) then
+								if floating(d,unit.fixed,x,y) then
+									local kunit = mmf.newObject(d)
+									local kname = getname(kunit)
+									
+									local weakskull = hasfeature(kname,"is","weak",d)
+									
+									if (weakskull == nil) or ((weakskull ~= nil) and issafe(d)) then
+										doit = true
+									end
+								end
+							else
+								doit = true
+							end
+							
+							if doit then
+								local pmult,sound = checkeffecthistory("defeat")
+								MF_particles("destroy",x,y,5 * pmult,0,3,1,1)
+								generaldata.values[SHAKE] = 5
+								removalshort = sound
+								removalsound = 1
+								table.insert(delthese, unit.fixed)
+							end
+						end
+					end
+				end
+			end
+		end
+    if (defeats ~= nil) then
+			for a,b in ipairs(defeats) do
 				if (b[1] ~= "empty") then
 					local skull = findtype(b,x,y,0)
 					

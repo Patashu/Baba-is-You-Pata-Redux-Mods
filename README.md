@@ -28,7 +28,7 @@ To install: Copy everything in Lua and Sprites to the world folder you want to u
 
 **PERSIST** - __Property__ PERSIST units are unaffected by undoing. Edge cases: If a PERSIST unit is created by conversion, the thing that converted into it does not come back. If a PERSIST unit is destroyed, it does not come back when you undo. If a unit is currently PERSIST, it will remain unchanged when YOU RESET, even if it used to not be PERSIST.
 
-**PUSHES, PULLS, STOPS, SINKS, DEFEATS, OPENS, SHIFTS, TELES, SWAPS, MELTS** - __Verb__ Conditional versions of common properties. x PUSHES y is like 'y is PUSH only when x is the pushee'. x PULLS y is like 'y is PULL only when x is the pushee'. x STOPS y is like 'x is STOP only when y is the pushee' (note that is is backwards from HATES - use that to match the rest of the patterning!). x SINKS y is like 'x is SINK only for y'. (TODO: defeats, opens, shifts, teles, swaps, melts)
+**PUSHES, PULLS, STOPS, SINKS, DEFEATS, OPENS, SHIFTS, TELES, SWAPS, MELTS** - __Verb__ Conditional versions of common properties. x PUSHES y is like 'y is PUSH only when x is the pushee'. x PULLS y is like 'y is PULL only when x is the pushee'. x STOPS y is like 'x is STOP only when y is the pushee' (note that is is backwards from HATES - use that to match the rest of the patterning!). x SINKS y is like 'x is SINK only for y'. x DEFEATS y is like 'x is DEFEAT only for y'. (TODO: opens, shifts, teles, swaps, melts)
 
 
 Baba is You Discord server: https://discord.gg/GGbUUse
