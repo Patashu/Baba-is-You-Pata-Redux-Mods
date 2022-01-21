@@ -944,12 +944,21 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 						unitid = data[1]
 
 						--implement SLIDE
-						if (unitid ~= 2) then
+						if (unitid ~= 2 and featureindex["slide"]) then
 							local unit = mmf.newObject(unitid)
 							unitname = getname(unit)
-							local x = unit.values[XPOS] + data[2]
-							local y = unit.values[YPOS] + data[3]
-							local slides = findfeatureat(nil,"is","slide",x,y) and true or (hasfeature("empty","is","slide",2,x,y) and #findobstacle(x,y) == 0)
+              --ugly hack: temporarily move the unit so we can check conditional rules at the destination (doesn't move until doupdate() later)
+              local oldx = unit.values[XPOS];
+              local oldy = unit.values[YPOS];
+              local olddir = unit.values[DIR];
+							local x = unit.values[XPOS] + data[2];
+							local y = unit.values[YPOS] + data[3];
+              local dir = data[4];
+              unit.values[XPOS] = x
+              unit.values[YPOS] = y
+              unit.values[DIR] = dir
+              updateunitmap(unitid,oldx,oldy,x,y,unit.strings[UNITNAME])
+							local slides = findfeatureat(nil,"is","slide",x,y) and true or (hasfeature("empty","is","slide",2,x,y) and #findobstacle(x,y) == 1)
 							if slides then
 								--no multiplicative cascades in slide - only start sliding if we're not already sliding
 								local alreadysliding = false
@@ -963,6 +972,10 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 									table.insert(still_moving, {unitid = unitid, reason = "slide", state = 0, moves = 1, dir = unit.values[DIR], xpos = unit.values[XPOS], ypos = unit.values[YPOS]})
 								end
 							end
+              unit.values[XPOS] = oldx
+              unit.values[YPOS] = oldy
+              unit.values[DIR] = olddir
+              updateunitmap(unitid,x,y,oldx,oldy,unit.strings[UNITNAME])
 						end
 					end
 				end
