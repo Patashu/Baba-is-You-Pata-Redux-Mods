@@ -947,17 +947,17 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 						if (unitid ~= 2 and featureindex["slide"]) then
 							local unit = mmf.newObject(unitid)
 							unitname = getname(unit)
-              --ugly hack: temporarily move the unit so we can check conditional rules at the destination (doesn't move until doupdate() later)
-              local oldx = unit.values[XPOS];
-              local oldy = unit.values[YPOS];
-              local olddir = unit.values[DIR];
+							--ugly hack: temporarily move the unit so we can check conditional rules at the destination (doesn't move until doupdate() later)
+							local oldx = unit.values[XPOS];
+							local oldy = unit.values[YPOS];
+							local olddir = unit.values[DIR];
 							local x = unit.values[XPOS] + data[2];
 							local y = unit.values[YPOS] + data[3];
-              local dir = data[4];
-              unit.values[XPOS] = x
-              unit.values[YPOS] = y
-              unit.values[DIR] = dir
-              updateunitmap(unitid,oldx,oldy,x,y,unit.strings[UNITNAME])
+							local dir = data[4];
+							unit.values[XPOS] = x
+							unit.values[YPOS] = y
+							unit.values[DIR] = dir
+							updateunitmap(unitid,oldx,oldy,x,y,unit.strings[UNITNAME])
 							local slides = findfeatureat(nil,"is","slide",x,y) and true or (hasfeature("empty","is","slide",2,x,y) and #findobstacle(x,y) == 1)
 							if slides then
 								--no multiplicative cascades in slide - only start sliding if we're not already sliding
@@ -972,10 +972,10 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 									table.insert(still_moving, {unitid = unitid, reason = "slide", state = 0, moves = 1, dir = unit.values[DIR], xpos = unit.values[XPOS], ypos = unit.values[YPOS]})
 								end
 							end
-              unit.values[XPOS] = oldx
-              unit.values[YPOS] = oldy
-              unit.values[DIR] = olddir
-              updateunitmap(unitid,x,y,oldx,oldy,unit.strings[UNITNAME])
+							unit.values[XPOS] = oldx
+							unit.values[YPOS] = oldy
+							unit.values[DIR] = olddir
+							updateunitmap(unitid,x,y,oldx,oldy,unit.strings[UNITNAME])
 						end
 					end
 				end
@@ -1234,14 +1234,14 @@ function check(unitid,x,y,dir,pulling_,reason,ox,oy)
 				if valid then
 					--MF_alert("checking for solidity for " .. obsname .. " by " .. name .. " at " .. tostring(x) .. ", " .. tostring(y))
 					
-					local isstop = hasfeature(obsname,"is","stop",id,x+ox,y+oy) or hasfeature(obsname,"is","sidekick",id) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,unitid,x,y)) or (hasfeature(obsname,"is","oneway",id) and dir == rotate(obsunit.values[DIR]))
+					local isstop = hasfeature(obsname,"is","stop",id,x+ox,y+oy) or (featureindex["stops"] ~= nil and hasfeature(obsname,"stops",name,id,x+ox,y+oy)) or hasfeature(obsname,"is","sidekick",id) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,unitid,x,y)) or (hasfeature(obsname,"is","oneway",id) and dir == rotate(obsunit.values[DIR]))
 					if (not isstop) then isstop = nil end
 					local ispush = hasfeature(obsname,"is","push",id,x+ox,y+oy) or (featureindex["pushes"] ~= nil and hasfeature(name,"pushes",obsname,unitid,x,y))
-          if (not ispush) then ispush = nil end
+					if (not ispush) then ispush = nil end
 					local ispull = hasfeature(obsname,"is","pull",id,x+ox,y+oy) or (featureindex["pulls"] ~= nil and hasfeature(name,"pulls",obsname,unitid,x,y))
-          if (not ispull) then ispull = nil end
+					if (not ispull) then ispull = nil end
 					local isswap = hasfeature(obsname,"is","swap",id,x+ox,y+oy)
-          if (not isswap) then iswap = nil end
+					if (not isswap) then iswap = nil end
 					local isstill = cantmove(obsname,id,dir,x+ox,y+oy)
 					
 					--MF_alert(obsname .. " -- stop: " .. tostring(isstop) .. ", push: " .. tostring(ispush))
@@ -1297,15 +1297,16 @@ function check(unitid,x,y,dir,pulling_,reason,ox,oy)
 		end
 	elseif (phantom == nil) then
 		local emptystop = hasfeature("empty","is","stop",2,x+ox,y+oy)
-		emptystop = emptystop or hasfeature(name,"hates","empty",unitid,x,y)
+    emptystop = emptystop or (featureindex["stops"] ~= nil and hasfeature("empty","stops",name,2,x+ox,y+oy))
+		emptystop = emptystop or (featureindex["hates"] ~= nil and hasfeature(name,"hates","empty",unitid,x,y))
 		emptystop = emptystop or hasfeature("empty","is","sidekick",2,x+ox,y+oy)
-    if (not emptystop) then emptystop = nil end
+		if (not emptystop) then emptystop = nil end
 		local emptypush = hasfeature("empty","is","push",2,x+ox,y+oy) or (featureindex["pushes"] ~= nil and hasfeature(name,"pushes","empty",unitid,x,y))
-    if (not emptypush) then emptypush = nil end
+		if (not emptypush) then emptypush = nil end
 		local emptypull = hasfeature("empty","is","pull",2,x+ox,y+oy) or (featureindex["pulls"] ~= nil and hasfeature(name,"pulls","empty",unitid,x,y))
-    if (not emptypull) then emptypull = nil end
+		if (not emptypull) then emptypull = nil end
 		local emptyswap = hasfeature("empty","is","swap",2,x+ox,y+oy)
-    if (not emptyswap) then emptyswap = nil end
+		if (not emptyswap) then emptyswap = nil end
 		local emptystill = cantmove("empty",2,dir_,x+ox,y+oy)
 		
 		local localresult = 0

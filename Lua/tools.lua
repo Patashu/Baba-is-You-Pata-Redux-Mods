@@ -1643,9 +1643,9 @@ function append(t1,t2)
 end
 
 function getname(unit)
-  if (unit == nil) then
-    print(debug.traceback())
-  end
+	if (unit == nil) then
+		print(debug.traceback())
+	end
 	local result = unit.strings[UNITNAME]
 	
 	if (unit.strings[UNITTYPE] == "text") then
