@@ -1666,6 +1666,46 @@ function block(small_)
 			end
 		end
 	end
+  
+  local isopens = getunitswithverb("opens",delthese)
+	
+	for id,ugroup in ipairs(isopens) do
+		local v = ugroup[1]
+		
+		if (ugroup[3] ~= "empty") then
+			for a,unit in ipairs(ugroup[2]) do
+				local x,y = unit.values[XPOS],unit.values[YPOS]
+				local things = findtype({v,nil},x,y,0)
+				local sunk = false
+				if (#things > 0) then
+          local doparts = false
+					for a,b in ipairs(things) do
+						if (b ~= 0) and floating(b,unit.fixed,x,y) then
+							if (issafe(unit.fixed) == false) then
+								generaldata.values[SHAKE] = 8
+								table.insert(delthese, unit.fixed)
+								doparts = true
+								online = false
+							end
+							
+							if (b ~= unit.fixed) and (issafe(b) == false) then
+								table.insert(delthese, b)
+								doparts = true
+							end
+							
+							if doparts then
+								local pmult,sound = checkeffecthistory("unlock")
+								setsoundname("turn",7,sound)
+								MF_particles("unlock",x,y,15 * pmult,2,4,1,1)
+							end
+							
+							break
+						end
+					end
+				end
+      end
+		end
+	end
 	
 	delthese,doremovalsound = handledels(delthese,doremovalsound)
 	

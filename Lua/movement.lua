@@ -1211,6 +1211,15 @@ function check(unitid,x,y,dir,pulling_,reason,ox,oy)
 						table.insert(specials, {id, "lock"})
 					end
 				end
+        
+        if (hasfeature(name,"opens",obsname,unitid,x+ox,y+oy) or hasfeature(obsname,"opens",name,id,x+ox,y+oy)) and (pulling == false) then
+					local partner = hasfeature(obsname,"is",lockpartner,id,x+ox,y+oy)
+					
+					if ((issafe(id,x+ox,y+oy) == false) or (issafe(unitid,x,y) == false)) and floating(id,unitid,x+ox,y+oy) then
+						valid = false
+						table.insert(specials, {id, "lock"})
+					end
+				end
 				
 				if (eat ~= nil) and (pulling == false) then
 					local eats = hasfeature(name,"eat",obsname,unitid,x+ox,y+oy)
