@@ -1358,6 +1358,40 @@ function block(small_)
 			end
 		end
 	end
+  
+  local issinks = getunitswithverb("sinks",delthese)
+	local issinksed = {}
+	
+	for id,ugroup in ipairs(issinks) do
+		local v = ugroup[1]
+		
+		if (ugroup[3] ~= "empty") then
+			for a,unit in ipairs(ugroup[2]) do
+				local x,y = unit.values[XPOS],unit.values[YPOS]
+				local things = findtype({v,nil},x,y,unit.fixed)
+				local sunk = false
+				if (#things > 0) then
+					for a,b in ipairs(things) do
+						if (issafe(b) == false) and floating(b,unit.fixed,x,y) and (b ~= unit.fixed) and (issinksed[b] == nil) then
+							generaldata.values[SHAKE] = 4
+							table.insert(delthese, b)
+							sunk = true
+							issinksed[b] = 1
+							
+              local pmult,sound = checkeffecthistory("sink")
+              removalshort = sound
+              removalsound = 3
+              local c1,c2 = getcolour(unit.fixed)
+              MF_particles("destroy",x,y,15 * pmult,c1,c2,1,1)
+						end
+					end
+				end
+        if sunk then
+          table.insert(delthese, unit.fixed)
+        end
+      end
+		end
+	end
 	
 	delthese,doremovalsound = handledels(delthese,doremovalsound)
 	
