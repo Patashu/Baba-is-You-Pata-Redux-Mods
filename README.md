@@ -30,7 +30,7 @@ To install: Copy everything in Lua and Sprites to the world folder you want to u
 
 **PUSHES, PULLS, STOPS, SINKS, DEFEATS, OPENS, SHIFTS, SWAPS, MELTS** - __Verb__ Conditional versions of common properties. x PUSHES y is like 'y is PUSH only when x is the pushee'. x PULLS y is like 'y is PULL only when x is the pushee'. x STOPS y is like 'x is STOP only when y is the pushee' (note that is is backwards from HATES - use that to match the rest of the patterning!). x SINKS y is like 'x is SINK only for y'. x DEFEATS y is like 'x is DEFEAT only for y'. x OPENS y is like 'x is OPEN/y is SHUT only for x/y'. x SHIFTS y is like 'x is SHIFT only for y'. x SWAPS y is like 'x is SWAP but only for moving onto y' (and not e.g. in the opposite case of y moving onto x!). x MELTS y is like 'x is HOT and y is MELT only for x/y'.
 
-(Potential future words: TELES, LAUNCH, YEET, LAUNCHES, SLIPS, SLIDES, SIDEKICKS, SEENBY)
+(Potential future words: TELES, LAUNCH (bab GOOOO), YEET (from bab), LAUNCHES, SLIPS, SLIDES, SIDEKICKS, SEENBY (reverse facing), SI (reverse IS))
 
 Baba is You Discord server: https://discord.gg/GGbUUse
 
