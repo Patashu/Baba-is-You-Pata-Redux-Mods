@@ -1193,15 +1193,15 @@ function block(small_)
 							local obsname = getname(bunit)
 							
 							local obsstop = hasfeature(obsname,"is","stop",b,x+ox,y+oy) or (featureindex["stops"] ~= nil and hasfeature(obsname,"stops",name,b,x+ox,y+oy)) or hasfeature(obsname,"is","sidekick",b,x+ox,y+oy) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,id,x,y)) or (hasfeature(obsname,"is","oneway",b) and oxoytodir(ox,oy) == rotate(bunit.values[DIR]))
-						  if (obsstop == false) then
+							if (obsstop == false) then
 								obsstop = nil
 							end
 							local obspush = hasfeature(obsname,"is","push",b,x+ox,y+oy) or (featureindex["pushes"] ~= nil and hasfeature(name,"pushes",obsname,id,x,y))
-              if (obspush == false) then
+							if (obspush == false) then
 								obspush = nil
 							end
 							local obspull = hasfeature(obsname,"is","pull",b,x+ox,y+oy) or (featureindex["pulls"] ~= nil and hasfeature(name,"pulls",obsname,id,x,y))
-              if (obspull == false) then
+							if (obspull == false) then
 								obspull = nil
 							end
 							
@@ -1217,13 +1217,13 @@ function block(small_)
 						obsstop = nil
 					end
 					local obspush = hasfeature("empty","is","push",2,x+ox,y+oy) or (featureindex["pushes"] ~= nil and hasfeature(name,"pushes","empty",id,x,y))
-          if (obspush == false) then
-            obspush = nil
-          end
+					if (obspush == false) then
+						obspush = nil
+					end
 					local obspull = hasfeature("empty","is","pull",2,x+ox,y+oy) or (featureindex["pulls"] ~= nil and hasfeature(name,"pulls","empty",id,x,y))
-          if (obspull == false) then
-            obspull = nil
-          end
+					if (obspull == false) then
+						obspull = nil
+					end
 					
 					if (obsstop ~= nil) or (obspush ~= nil) or (obspull ~= nil) then
 						valid = false
