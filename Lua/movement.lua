@@ -452,8 +452,8 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 						end
 					end
 				end
-        
-        local isshifts = getunitswithverb("shifts")
+				
+				local isshifts = getunitswithverb("shifts")
 				
 				for id,ugroup in ipairs(isshifts) do
 					local v = ugroup[1]
@@ -785,6 +785,24 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 										for a,b in ipairs(swaps) do
 											if (swapped[b] == nil) and (b ~= 2) then
 												addaction(b,{"update",x,y,nil})
+											end
+										end
+									end
+									
+									if (featureindex["swaps"] ~= nil) then
+										for a,b in ipairs(allobs) do
+											if (b ~= -1) and (b ~= 2) and (b ~= 0) then
+												local swapunit = mmf.newObject(b)
+												local swapname = getname(swapunit)
+												
+												local obsstill = hasfeature(swapname,"is","still",b,x+ox,y+oy)
+												
+												if (obsstill == nil) then
+													if hasfeature(name,"swaps",swapname,data.unitid,x+ox,y+oy) then
+                            addaction(b,{"update",x,y,nil})
+                            swapped[b] = 1
+                          end
+												end
 											end
 										end
 									end
@@ -1282,8 +1300,8 @@ function check(unitid,x,y,dir,pulling_,reason,ox,oy)
 					if (not ispush) then ispush = nil end
 					local ispull = hasfeature(obsname,"is","pull",id,x+ox,y+oy) or (featureindex["pulls"] ~= nil and hasfeature(name,"pulls",obsname,unitid,x,y))
 					if (not ispull) then ispull = nil end
-					local isswap = hasfeature(obsname,"is","swap",id,x+ox,y+oy)
-					if (not isswap) then iswap = nil end
+					local isswap = hasfeature(obsname,"is","swap",id,x+ox,y+oy) or (featureindex["swaps"] ~= nil and hasfeature(name,"swaps",obsname,unitid,x,y))
+					if (not isswap) then isswap = nil end
 					local isstill = cantmove(obsname,id,dir,x+ox,y+oy)
 					
 					--MF_alert(obsname .. " -- stop: " .. tostring(isstop) .. ", push: " .. tostring(ispush))
@@ -1347,7 +1365,7 @@ function check(unitid,x,y,dir,pulling_,reason,ox,oy)
 		if (not emptypush) then emptypush = nil end
 		local emptypull = hasfeature("empty","is","pull",2,x+ox,y+oy) or (featureindex["pulls"] ~= nil and hasfeature(name,"pulls","empty",unitid,x,y))
 		if (not emptypull) then emptypull = nil end
-		local emptyswap = hasfeature("empty","is","swap",2,x+ox,y+oy)
+		local emptyswap = hasfeature("empty","is","swap",2,x+ox,y+oy) or (featureindex["swaps"] ~= nil and hasfeature(name,"swaps","empty",unitid,x,y))
 		if (not emptyswap) then emptyswap = nil end
 		local emptystill = cantmove("empty",2,dir_,x+ox,y+oy)
 		
