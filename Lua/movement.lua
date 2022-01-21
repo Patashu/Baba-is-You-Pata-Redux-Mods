@@ -704,6 +704,9 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 											end
 										end
 									end
+									if hasfeature(name,"pushes","level",data.unitid,x,y) then
+										levelpush = dir
+									end
 								else
 									if (swap == nil) or still then
 										if (#allobs == 0) then
@@ -825,13 +828,15 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 											end
 										elseif (pobs == -1) then
 											local levelpull_ = findfeature("level","is","pull")
-										
 											if (levelpull_ ~= nil) then
 												for e,f in ipairs(levelpull_) do
 													if testcond(f[2],1) then
 														levelpull = dir
 													end
 												end
+											end
+											if hasfeature(name,"pulls","level",data.unitid,x,y) then
+												levelpull = dir
 											end
 										end
 									end
