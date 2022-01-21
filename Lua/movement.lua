@@ -762,7 +762,7 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 										end
 									end
 									
-									queue_move(data.unitid,ox,oy,olddir,specials,data.reason)
+									queue_move(data.unitid,ox,oy,olddir,specials,data.reason,x,y)
 									--move(data.unitid,ox,oy,dir,specials)
 									
 									local swapped = {}
@@ -992,7 +992,6 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 				end
 			
 				for i,data in ipairs(movelist) do
-					local success = move(data[1],data[2],data[3],data[4],data[5],nil,nil,data[6],data[7])
 					if (success) then
 						if (data[6] == "slip") then
 							slipped[data[1]] = true
@@ -1690,7 +1689,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 		
 		while (finaldone == false) and (HACK_MOVES < 10000) do
 			if (result == 0) then
-				queue_move(unitid,ox,oy,dir,specials,reason)
+				queue_move(unitid,ox,oy,dir,specials,reason,x,y)
 				--move(unitid,ox,oy,dir,specials)
 				pushsound = true
 				finaldone = true
@@ -1700,7 +1699,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 					for i,obs in ipairs(pullhmlist) do
 						if (obs < -1) or (obs > 1) and (obs ~= pusherid) then
 							if (obs ~= 2) then
-								queue_move(obs,ox,oy,dir,pullspecials,reason)
+								queue_move(obs,ox,oy,dir,pullspecials,reason,x,y)
 								pushsound = true
 								--move(obs,ox,oy,dir,specials)
 							end
@@ -1772,7 +1771,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 							--Mostly the lazypusher stuff is self-explanatory - don't do a push if we're lazy.
 							--But in the case of pulling, the item one ahead of us does a pull 'early', so we have to stop it in advance.
 							if (obs ~= 2) then
-								table.insert(movelist, {obs,ox,oy,dir,specials,1,reason}) --TODO: it's intended that this reverted from being a queue_move or?
+								queue_move(unitid,ox,oy,dir,specials,reason,x,y)
 								pushsound = true
 								--move(obs,ox,oy,dir,specials)
 							end
@@ -1836,7 +1835,6 @@ function move(unitid,ox,oy,dir,specials_,instant_,simulate_,x_,y_)
 			if (b ~= 2) and (reason ~= "weak") then
 				local bunit = mmf.newObject(b)
 				bx,by = bunit.values[XPOS],bunit.values[YPOS]
-				
 				if (bx ~= x+ox) or (by ~= y+oy) then
 					dodge = true
 				else
@@ -2257,8 +2255,8 @@ function trunc(num)
 	end
 end
 
-function queue_move(unitid,ox,oy,dir,specials,reason)
-	table.insert(movelist, {unitid,ox,oy,dir,specials,reason})
+function queue_move(unitid,ox,oy,dir,specials,reason,x,y)
+	table.insert(movelist, {unitid,ox,oy,dir,specials,reason,x,y})
 
 	--implement SIDEKICK
 	if (unitid ~= 2) then
