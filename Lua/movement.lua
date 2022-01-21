@@ -106,17 +106,19 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 						if (unitmap[tileid] ~= nil) then
 							if (#unitmap[tileid] > 1) then
 								for a,b in ipairs(unitmap[tileid]) do
-									if (b ~= v) and floating(b,v) then
+									if (b ~= v) and floating(b,v,x,y) then
 										local newunit = mmf.newObject(b)
 										local unitname = getname(newunit)
 
-										if (been_seen[b] == nil) then
-											table.insert(moving_units, {unitid = b, reason = "slip", state = 0, moves = 1, dir = unit.values[DIR], xpos = x, ypos = y})
-											been_seen[b] = #moving_units
-										else
-											local id = been_seen[b]
-											local this = moving_units[id]
-											this.moves = this.moves + 1
+										if (isstill_or_locked(b,x,y,newunit.values[DIR]) == false) then
+											if (been_seen[b] == nil) then
+												table.insert(moving_units, {unitid = b, reason = "slip", state = 0, moves = 1, dir = unit.values[DIR], xpos = x, ypos = y})
+												been_seen[b] = #moving_units
+											else
+												local id = been_seen[b]
+												local this = moving_units[id]
+												this.moves = this.moves + 1
+											end
 										end
 									end
 								end
@@ -724,7 +726,7 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 										end
 									end
 									
-									queue_move(data.unitid,ox,oy,olddir,specials,x,y,data.reason)
+									queue_move(data.unitid,ox,oy,olddir,specials,data.reason)
 									--move(data.unitid,ox,oy,dir,specials)
 									
 									local swapped = {}
@@ -936,7 +938,7 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 				for i,data in ipairs(movelist) do
 					local success = move(data[1],data[2],data[3],data[4],data[5],nil,nil,data[6],data[7])
 					if (success) then
-						if (data[8] == "slip") then
+						if (data[6] == "slip") then
 							slipped[data[1]] = true
 						end
 						unitid = data[1]
@@ -957,7 +959,7 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 										break
 									end
 								end
-								if not alreadysliding then
+								if (not alreadysliding) and (isstill_or_locked(unitid,unit.values[XPOS],unit.values[YPOS],unit.values[DIR]) == false) then
 									table.insert(still_moving, {unitid = unitid, reason = "slide", state = 0, moves = 1, dir = unit.values[DIR], xpos = unit.values[XPOS], ypos = unit.values[YPOS]})
 								end
 							end
@@ -1602,7 +1604,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 		
 		while (finaldone == false) and (HACK_MOVES < 10000) do
 			if (result == 0) then
-				queue_move(unitid,ox,oy,dir,specials,x,y,reason)
+				queue_move(unitid,ox,oy,dir,specials,reason)
 				--move(unitid,ox,oy,dir,specials)
 				pushsound = true
 				finaldone = true
@@ -1612,7 +1614,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 					for i,obs in ipairs(pullhmlist) do
 						if (obs < -1) or (obs > 1) and (obs ~= pusherid) then
 							if (obs ~= 2) then
-								queue_move(obs,ox,oy,dir,pullspecials,x,y,reason)
+								queue_move(obs,ox,oy,dir,pullspecials,reason)
 								pushsound = true
 								--move(obs,ox,oy,dir,specials)
 							end
@@ -1962,9 +1964,7 @@ function add_moving_units(rule,newdata,data,been_seen,empty_)
 				dir = 3
 			end
 			
-			local still = cantmove(unitname,v,dir)
-			
-			if (sleep ~= nil and rule ~= "slip") or still or slipped[v] ~= nil then
+			local still = cantmove(unitname,v,dir)			if (sleep ~= nil and rule ~= "slip") or still or slipped[v] ~= nil then
 				sleeping = true --sleeping and not slipping, still OR slipped
 			end
 		else
@@ -2039,7 +2039,7 @@ function find_copys(unitid,dir)
 	for _,copyid in ipairs(iscopy) do
 		local copyunit = mmf.newObject(copyid)
 		local copyname = getname(copyunit)
-		if not hasfeature(copyname,"is","sleep",copyid) then
+		if not hasfeature(copyname,"is","sleep",copyid) and (isstill_or_locked(copyid,copyunit.values[XPOS],copyunit.values[YPOS],dir) == false) then
 			table.insert(result, copyid)
 		end
 	end
@@ -2057,7 +2057,7 @@ function find_sidekicks(unitid,dir)
 		return result;
 	end
 	local x,y = unit.values[XPOS],unit.values[YPOS]
-	print("find_sidekicks",x,y,dir)
+	--print("find_sidekicks",x,y,dir)
 	local dir90 = (dir+1) % 4;
 	for i = 1,2 do
 		local curdir = (dir90+2*i) % 4;
@@ -2065,13 +2065,13 @@ function find_sidekicks(unitid,dir)
 		local curdy = ndirs[curdir+1][2];
 		local curx = x+curdx;
 		local cury = y+curdy;
-		print("find_sidekicks is checking",curx,cury)
+		--print("find_sidekicks is checking",curx,cury)
 		local obs = findobstacle(curx,cury);
 		for i,id in ipairs(obs) do
 			if (id ~= -1) then
 				local obsunit = mmf.newObject(id)
 				local obsname = getname(obsunit)
-				if hasfeature(obsname,"is","sidekick",id) then
+				if hasfeature(obsname,"is","sidekick",id) and (isstill_or_locked(id,curx,cury,dir) == false) then
 					table.insert(result, id);
 				end
 			end
@@ -2191,7 +2191,7 @@ function queue_move(unitid,ox,oy,dir,specials,reason)
 			end
 			if not alreadysidekicking then
 				updatedir(sidekickid, dir)
-				print("adding to moving_units",unitid,getname(sidekick))
+				--print("adding to moving_units",unitid,getname(sidekick))
 				table.insert(moving_units, {unitid = sidekickid, reason = "sidekick", state = 0, moves = 1, dir = dir, xpos = sidekick.values[XPOS], ypos = sidekick.values[YPOS]})
 			end
 		end
