@@ -1123,8 +1123,8 @@ function isgone(unitid)
 		local ispush = hasfeature(name,"is","push",unitid,x,y)
 		local ispull = hasfeature(name,"is","pull",unitid,x,y)
 		local eat = findfeatureat(nil,"eat",name,x,y)
-    local sinks = findfeatureat(nil,"sinks",name,x,y)
-    local opens = findfeatureat(nil,"opens",name,x,y)
+		local sinks = findfeatureat(nil,"sinks",name,x,y)
+		local opens = findfeatureat(nil,"opens",name,x,y)
 		
 		if (eat ~= nil) then
 			for i,v in ipairs(eat) do
@@ -1133,14 +1133,14 @@ function isgone(unitid)
 				end
 			end
 		end
-    if (sinks ~= nil) then
+		if (sinks ~= nil) then
 			for i,v in ipairs(sinks) do
 				if (v ~= unitid) then
 					return true
 				end
 			end
 		end
-    if (opens ~= nil) then
+		if (opens ~= nil) then
 			for i,v in ipairs(opens) do
 				if (v ~= unitid) then
 					return true
@@ -1168,8 +1168,8 @@ function isgone(unitid)
 					end
 				end
 			end
-      
-      local isdefeats = findfeatureat(nil,"defeats",name,x,y)
+			
+			local isdefeats = findfeatureat(nil,"defeats",name,x,y)
 			
 			if (isdefeats ~= nil) then
 				for i,v in ipairs(isdefeats) do

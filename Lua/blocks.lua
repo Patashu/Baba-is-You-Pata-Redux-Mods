@@ -1358,8 +1358,8 @@ function block(small_)
 			end
 		end
 	end
-  
-  local issinks = getunitswithverb("sinks",delthese)
+	
+	local issinks = getunitswithverb("sinks",delthese)
 	local issinksed = {}
 	
 	for id,ugroup in ipairs(issinks) do
@@ -1378,18 +1378,18 @@ function block(small_)
 							sunk = true
 							issinksed[b] = 1
 							
-              local pmult,sound = checkeffecthistory("sink")
-              removalshort = sound
-              removalsound = 3
-              local c1,c2 = getcolour(unit.fixed)
-              MF_particles("destroy",x,y,15 * pmult,c1,c2,1,1)
+							local pmult,sound = checkeffecthistory("sink")
+							removalshort = sound
+							removalsound = 3
+							local c1,c2 = getcolour(unit.fixed)
+							MF_particles("destroy",x,y,15 * pmult,c1,c2,1,1)
 						end
 					end
 				end
-        if sunk then
-          table.insert(delthese, unit.fixed)
-        end
-      end
+				if sunk then
+					table.insert(delthese, unit.fixed)
+				end
+			end
 		end
 	end
 	
@@ -1547,7 +1547,7 @@ function block(small_)
 	for id,unit in ipairs(isyou) do
 		local x,y = unit.values[XPOS],unit.values[YPOS]
 		local defeat = findfeature(nil,"is","defeat")
-    local defeats = findfeature(nil,"defeats",getname(unit));
+		local defeats = findfeature(nil,"defeats",getname(unit));
 		
 		if (defeat ~= nil) then
 			for a,b in ipairs(defeat) do
@@ -1586,7 +1586,7 @@ function block(small_)
 				end
 			end
 		end
-    if (defeats ~= nil) then
+		if (defeats ~= nil) then
 			for a,b in ipairs(defeats) do
 				if (b[1] ~= "empty") then
 					local skull = findtype(b,x,y,0)
@@ -1666,8 +1666,8 @@ function block(small_)
 			end
 		end
 	end
-  
-  local isopens = getunitswithverb("opens",delthese)
+	
+	local isopens = getunitswithverb("opens",delthese)
 	
 	for id,ugroup in ipairs(isopens) do
 		local v = ugroup[1]
@@ -1678,7 +1678,7 @@ function block(small_)
 				local things = findtype({v,nil},x,y,0)
 				local sunk = false
 				if (#things > 0) then
-          local doparts = false
+					local doparts = false
 					for a,b in ipairs(things) do
 						if (b ~= 0) and floating(b,unit.fixed,x,y) then
 							if (issafe(unit.fixed) == false) then
@@ -1703,7 +1703,7 @@ function block(small_)
 						end
 					end
 				end
-      end
+			end
 		end
 	end
 	

@@ -1211,8 +1211,8 @@ function check(unitid,x,y,dir,pulling_,reason,ox,oy)
 						table.insert(specials, {id, "lock"})
 					end
 				end
-        
-        if (hasfeature(name,"opens",obsname,unitid,x+ox,y+oy) or hasfeature(obsname,"opens",name,id,x+ox,y+oy)) and (pulling == false) then
+				
+				if (hasfeature(name,"opens",obsname,unitid,x+ox,y+oy) or hasfeature(obsname,"opens",name,id,x+ox,y+oy)) and (pulling == false) then
 					local partner = hasfeature(obsname,"is",lockpartner,id,x+ox,y+oy)
 					
 					if ((issafe(id,x+ox,y+oy) == false) or (issafe(unitid,x,y) == false)) and floating(id,unitid,x+ox,y+oy) then
@@ -1306,7 +1306,7 @@ function check(unitid,x,y,dir,pulling_,reason,ox,oy)
 		end
 	elseif (phantom == nil) then
 		local emptystop = hasfeature("empty","is","stop",2,x+ox,y+oy)
-    emptystop = emptystop or (featureindex["stops"] ~= nil and hasfeature("empty","stops",name,2,x+ox,y+oy))
+		emptystop = emptystop or (featureindex["stops"] ~= nil and hasfeature("empty","stops",name,2,x+ox,y+oy))
 		emptystop = emptystop or (featureindex["hates"] ~= nil and hasfeature(name,"hates","empty",unitid,x,y))
 		emptystop = emptystop or hasfeature("empty","is","sidekick",2,x+ox,y+oy)
 		if (not emptystop) then emptystop = nil end
