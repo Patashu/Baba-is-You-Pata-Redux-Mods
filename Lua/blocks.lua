@@ -2183,7 +2183,7 @@ function levelblock()
 			for i,v in ipairs(featureindex["empty"]) do
 				local rule = v[1]
 				
-				if (rule[1] == "empty") and ((rule[2] == "is") or (rule[2] == "eat")) then
+				if (rule[1] == "empty") and ((rule[2] == "is") or (rule[2] == "eat") or (rule[2] == "defeats") or (rule[2] == "melts") or (rule[2] == "opens")) then
 					table.insert(emptythings, v)
 				end
 			end
@@ -2230,6 +2230,29 @@ function levelblock()
 						for a,rules in ipairs(emptythings) do
 							local rule = rules[1]
 							local conds = rules[2]
+							
+							if (rule[2] == "melts" and rule[3] == "empty" and testcond(conds,2,i,j)) then
+								melt = true
+							end
+							if (rule[2] == "opens" and rule[3] == "empty" and testcond(conds,2,i,j)) then
+								unlock = true
+							end
+							if (rule[2] == "defeats" and rule[3] == "empty") and testcond(conds,2,i,j) then
+								if (string.len(defeatpair) == 0) then
+									defeatpair = "you"
+								elseif (defeatpair == "defeat") then
+									defeat = true
+								end
+							elseif ((rule[3] == "you") or (rule[3] == "you2") or (rule[3] == "3d")) and testcond(conds,2,i,j) then
+								candefeat = true
+								canwin = true
+								
+								if (string.len(defeatpair) == 0) then
+									defeatpair = "defeat"
+								elseif (defeatpair == "you") then
+									defeat = true
+								end
+							end
 							
 							if (rule[2] == "is") then
 								if (rule[3] == "open") and testcond(conds,2,i,j) then
