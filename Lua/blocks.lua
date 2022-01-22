@@ -2870,17 +2870,172 @@ function levelblock()
 						delete(b,x,y)
 					end
 				end
-				if (rule[1] ~= "level") and (rule[3] == "level") and (rule[2] == "melts") and testcond(conds,1) then
-					--TODO: if any 1 exists, destroy level
+				if (rule[1] ~= "level") and (rule[3] == "level") and (rule[2] == "melts") and testcond(conds,1) and lsafe == false then
+					local target = rule[1]
+						
+					if (target ~= "all") and (target ~= "empty") then
+						local dothese = {}
+						
+						if (string.sub(target, 1, 5) ~= "group") then
+							dothese = {target}
+						else
+							dothese = findgroup(target)
+						end
+						
+						for c,d in ipairs(dothese) do
+							if (unitlists[d] ~= nil) then
+								for a,unitid in ipairs(unitlists[d]) do
+									local pmult,sound = checkeffecthistory("hot")
+									setsoundname("removal",1,sound)
+									destroylevel()
+									return
+								end
+							end
+						end
+					elseif (target == "empty") then
+						local empties = findempty()
+						
+						for a,b in ipairs(empties) do
+							local pmult,sound = checkeffecthistory("hot")
+							setsoundname("removal",1,sound)
+							destroylevel()
+						end
+					end
 				end
 				if (rule[1] ~= "level") and (rule[3] == "level") and (rule[2] == "opens") and testcond(conds,1) then
-					--TODO: if any 1 exists, destroy level
+					local eaten = {}
+					local target = rule[1]
+						
+					if (target ~= "all") and (target ~= "empty") then
+						local dothese = {}
+						
+						if (string.sub(target, 1, 5) ~= "group") then
+							dothese = {target}
+						else
+							dothese = findgroup(target)
+						end
+						
+						for c,d in ipairs(dothese) do
+							if (unitlists[d] ~= nil) then
+								for a,unitid in ipairs(unitlists[d]) do
+									if (issafe(unitid) == false) then
+										table.insert(eaten, unitid)
+									end
+									if lsafe == false then
+										local pmult,sound = checkeffecthistory("unlock")
+										setsoundname("removal",1,sound)
+										destroylevel()
+										return
+									end
+								end
+							end
+						end
+					elseif (target == "empty") then
+						local empties = findempty()
+						
+						for a,b in ipairs(empties) do
+							local x = b % roomsizex
+							local y = math.floor(b / roomsizex)
+
+							local pmult,sound = checkeffecthistory("unlock")
+							MF_particles("unlock",x,y,15 * pmult,2,4,1,1)
+							setsoundname("removal",1,sound)
+								
+							delete(2,x,y)
+							if lsafe == false then
+								local pmult,sound = checkeffecthistory("unlock")
+								setsoundname("removal",1,sound)
+								destroylevel()
+								return
+							end
+						end
+					end
+					
+					for a,b in ipairs(eaten) do
+						local bunit = mmf.newObject(b)
+						local x,y = bunit.values[XPOS],bunit.values[YPOS]
+						generaldata.values[SHAKE] = 4
+						
+						local pmult,sound = checkeffecthistory("unlock")
+						MF_particles("unlock",x,y,15 * pmult,2,4,1,1)
+						setsoundname("removal",1,sound)
+						
+						delete(b,x,y)
+					end
 				end
-				if (rule[1] ~= "level") and (rule[3] == "level") and (rule[2] == "defeats") and testcond(conds,1) then
-					--TODO: TODO: if any 1 exists and level is you, destroy level
+				if (rule[1] ~= "level") and (rule[3] == "level") and (rule[2] == "defeats") and testcond(conds,1) and lsafe == false and (hasfeature("level","is","you",1) ~= nil or hasfeature("level","is","you2",1) ~= nil or hasfeature("level","is","3d",1) ~= nil) then
+					local target = rule[1]
+						
+					if (target ~= "all") and (target ~= "empty") then
+						local dothese = {}
+						
+						if (string.sub(target, 1, 5) ~= "group") then
+							dothese = {target}
+						else
+							dothese = findgroup(target)
+						end
+						
+						for c,d in ipairs(dothese) do
+							if (unitlists[d] ~= nil) then
+								for a,unitid in ipairs(unitlists[d]) do
+									local pmult,sound = checkeffecthistory("defeat")
+									setsoundname("removal",1,sound)
+									destroylevel()
+									return
+								end
+							end
+						end
+					elseif (target == "empty") then
+						local empties = findempty()
+						
+						for a,b in ipairs(empties) do
+							local pmult,sound = checkeffecthistory("defeat")
+							setsoundname("removal",1,sound)
+							destroylevel()
+						end
+					end
 				end
 				if (rule[1] ~= "level") and (rule[3] == "level") and (rule[2] == "sinks") and testcond(conds,1) then
-					--TODO: if any 1 exists, destroy level
+					local eaten = {}
+					local target = rule[1]
+						
+					if (target ~= "all") and (target ~= "empty") then
+						local dothese = {}
+						
+						if (string.sub(target, 1, 5) ~= "group") then
+							dothese = {target}
+						else
+							dothese = findgroup(target)
+						end
+						
+						for c,d in ipairs(dothese) do
+							if (unitlists[d] ~= nil) then
+								for a,unitid in ipairs(unitlists[d]) do
+									if (issafe(unitid) == false) then
+										table.insert(eaten, unitid)
+									end
+									if lsafe == false then
+										local pmult,sound = checkeffecthistory("sink")
+										setsoundname("removal",1,sound)
+										destroylevel()
+										return
+									end
+								end
+							end
+						end
+					end
+					
+					for a,b in ipairs(eaten) do
+						local bunit = mmf.newObject(b)
+						local x,y = bunit.values[XPOS],bunit.values[YPOS]
+						generaldata.values[SHAKE] = 4
+						
+						local pmult,sound = checkeffecthistory("sink")
+						MF_particles("destroy",i,j,1,0,3,1,1)
+						setsoundname("removal",1,sound)
+						
+						delete(b,x,y)
+					end
 				end
 				
 				if (rule[1] == "level") and (rule[2] == "is") and testcond(conds,1) then
