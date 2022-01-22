@@ -2391,6 +2391,27 @@ function levelblock()
 									destroylevel()
 									return
 								end
+							elseif (rule[2] == "melts") and (rule[3] == "level") and (lsafe == false) then
+								if testcond(conds,2,i,j) and floating_level(2,i,j) then
+									local pmult,sound = checkeffecthistory("melt")
+									setsoundname("removal",1,sound)
+									destroylevel()
+									return
+								end
+							elseif (rule[2] == "opens") and (rule[3] == "level") and (lsafe == false) then
+								if testcond(conds,2,i,j) and floating_level(2,i,j) then
+									local pmult,sound = checkeffecthistory("unlock")
+									setsoundname("removal",1,sound)
+									destroylevel()
+									return
+								end
+							elseif (rule[2] == "defeats") and (rule[3] == "level") and (lsafe == false) and ((hasfeature("level","is","you",1,i,j) ~= nil) or (hasfeature("level","is","you2",1,i,j) ~= nil) or (hasfeature("level","is","3d",1,i,j) ~= nil)) then
+								if testcond(conds,2,i,j) and floating_level(2,i,j) then
+									local pmult,sound = checkeffecthistory("defeat")
+									setsoundname("removal",1,sound)
+									destroylevel()
+									return
+								end
 							end
 						end
 						
