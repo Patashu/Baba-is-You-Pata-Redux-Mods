@@ -992,6 +992,7 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 				end
 			
 				for i,data in ipairs(movelist) do
+					local success = move(data[1],data[2],data[3],data[4],data[5],nil,nil,data[7],data[8])
 					if (success) then
 						if (data[6] == "slip") then
 							slipped[data[1]] = true
