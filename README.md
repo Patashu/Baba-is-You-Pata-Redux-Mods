@@ -30,10 +30,10 @@ To install: Copy everything in Lua and Sprites to the world folder you want to u
 
 **PUSHES, PULLS, STOPS, SINKS, DEFEATS, OPENS, SHIFTS, SWAPS, MELTS** - __Verb__ Conditional versions of common properties. x PUSHES y is like 'y is PUSH only when x is the pushee'. x PULLS y is like 'y is PULL only when x is the pushee'. x STOPS y is like 'x is STOP only when y is the pushee' (note that is is backwards from HATES - use that to match the rest of the patterning!). x SINKS y is like 'x is SINK only for y'. x DEFEATS y is like 'x is DEFEAT only for y'. x OPENS y is like 'x is OPEN/y is SHUT only for x/y'. x SHIFTS y is like 'x is SHIFT only for y'. x SWAPS y is like 'x is SWAP but only for moving onto y' (and not e.g. in the opposite case of y moving onto x!). x MELTS y is like 'x is HOT and y is MELT only for x/y'.
 
-(Potential future words: TELES, LAUNCH (bab GOOOO), YEET (from bab), LAUNCHES, SLIPS, SLIDES, SIDEKICKS, SEENBY/FACEDBY, SI (reverse IS), NORESET/NOUNDO (components of PERSIST))
+(Potential future words: TELES, LAUNCH (bab GOOOO), YEET (from bab), LAUNCHES, SLIPS, SLIDES, SIDEKICKS, SEENBY/FACEDBY, SI (reverse IS), NORESET/NOUNDO (components of PERSIST), SEND/RECEIVE/? (would have to brainstorm how I even want it to work), GIVE/TAKE, HOLD/HOLDS/TRAP/TRAPS/CARRY/CARRIES (hold, its two components and its verbified versions), wins, floats, booms, falls (dir), nudges (dir), selects, saves (more verbified properties), ON variant that also checks floating state)
 
 Baba is You Discord server: https://discord.gg/GGbUUse
 
-You may use these mods in your mod pack or custom world with attribution!
+You may use/modify these mods for your mod pack or custom world with attribution!
 
-If you find a bug or missing feature (for example, I haven't gotten all interactions with EMPTY or LEVEL), open an github issue!
+If you find a bug or missing feature or think an edge case should work differently for your puzzle, open an github issue or poke me on Discord (Patashu#8123 on the Baba is You Discord server)!
