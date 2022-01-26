@@ -300,7 +300,7 @@ editor_objlist["text_shifts"] = {
 	colour_active = {1, 3},
 }
 
-table.insert(editor_objlist_order, "text_teles")
+--[[table.insert(editor_objlist_order, "text_teles")
 editor_objlist["text_teles"] = {
 	name = "text_teles",
 	sprite_in_root = false,
@@ -312,7 +312,7 @@ editor_objlist["text_teles"] = {
 	operatortype = "verb",
 	colour = {1, 2},
 	colour_active = {1, 4},
-}
+}]]
 
 table.insert(editor_objlist_order, "text_swaps")
 editor_objlist["text_swaps"] = {
