@@ -342,6 +342,19 @@ editor_objlist["text_melts"] = {
 	colour_active = {2, 3},
 }
 
+table.insert(editor_objlist_order, "text_topple")
+editor_objlist["text_topple"] = {
+	name = "text_topple",
+	sprite_in_root = false,
+	unittype = "text",
+  tags = {"patashu"},
+	tiling = -1,
+	type = 2,
+  layer = 20,
+	colour = {3, 0},
+	colour_active = {3, 1},
+}
+
 formatobjlist()
 
 print("End of !init.lua")

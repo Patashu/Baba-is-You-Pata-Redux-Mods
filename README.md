@@ -30,6 +30,8 @@ To install: Copy everything in Lua and Sprites to the world folder you want to u
 
 **PUSHES, PULLS, STOPS, SINKS, DEFEATS, OPENS, SHIFTS, SWAPS, MELTS** - __Verb__ Conditional versions of common properties. x PUSHES y is like 'y is PUSH only when x is the pushee'. x PULLS y is like 'y is PULL only when x is the pushee'. x STOPS y is like 'x is STOP only when y is the pushee' (note that is is backwards from HATES - use that to match the rest of the patterning!). x SINKS y is like 'x is SINK only for y'. x DEFEATS y is like 'x is DEFEAT only for y'. x OPENS y is like 'x is OPEN/y is SHUT only for x/y'. x SHIFTS y is like 'x is SHIFT only for y'. x SWAPS y is like 'x is SWAP but only for moving onto y' (and not e.g. in the opposite case of y moving onto x!). x MELTS y is like 'x is HOT and y is MELT only for x/y'.
 
+**TOPPLE** - __Property__ When a stack of topplers are on a tile, they eject themselves in the facing direction to form a line (first moves 0 tiles, second moves 1 tile, third moves 2 tiles, etc). Happens during movement after SHIFT.
+
 (Potential future words: TELES, LAUNCH (bab GOOOO), YEET (from bab), LAUNCHES, SLIPS, SLIDES, SIDEKICKS, SEENBY/FACEDBY, SI (reverse IS), NORESET/NOUNDO (components of PERSIST), SEND/RECEIVE/? (would have to brainstorm how I even want it to work), GIVE/TAKE, HOLD/HOLDS/TRAP/TRAPS/CONTAIN/CONTAINS/CARRY/CARRIES/DRIVE/DRIVES (hold, its two components and its verbified versions), wins, floats, booms, falls (dir), nudges (dir), selects, saves (more verbified properties), ON variant that also checks floating state)
 
 Baba is You Discord server: https://discord.gg/GGbUUse

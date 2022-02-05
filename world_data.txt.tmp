@@ -1,10 +1,10 @@
-[levels]
-levelid=13
-rolling_levelid=3
-
 [general]
-mods=1
-name=pataredux
-start=3level
 firstlevel=3level
+start=3level
+name=pataredux
+mods=1
+
+[levels]
+rolling_levelid=4
+levelid=14
 

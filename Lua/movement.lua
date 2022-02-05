@@ -6,7 +6,7 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 	local debug_moves = 0
 	
 	local take = 0
-	local takecount = 8
+	local takecount = 9
 	local finaltake = false
 	slipped = {}
 	local no3d = no3d_ or false
@@ -507,6 +507,49 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 								
 								if (isstill_or_locked(unit.fixed,x,y,leveldir) == false) and (issleep(unit.fixed,x,y) == false) then
 									table.insert(moving_units, {unitid = unit.fixed, reason = "shift", state = 0, moves = 1, dir = unit.values[DIR], xpos = x, ypos = y})
+								end
+							end
+						end
+					end
+				end
+			elseif (take == 9) then
+				local topplers = findallfeature(nil,"is","topple",true)
+				for i,v in ipairs(topplers) do
+					if (v ~= 2) then
+						local affected = {}
+						local unit = mmf.newObject(v)
+						
+						local x,y = unit.values[XPOS],unit.values[YPOS]
+						local tileid = x + y * roomsizex
+						
+						if (unitmap[tileid] ~= nil) then
+							if (#unitmap[tileid] > 1) then
+								--deterministic toppling algorithm: move each toppler before us by 1, stop when we find ourselves.
+								local firsttoppler = false
+								for a,b in ipairs(unitmap[tileid]) do
+									local newunit = mmf.newObject(b)
+									local unitname = getname(newunit)
+									local topple = hasfeature(unitname,"is","topple",b)
+									if (b ~= v) then
+										local newunit = mmf.newObject(b)
+										local unitname = getname(newunit)
+										local stuck = isstill_or_locked(b,x,y,unit.values[DIR])
+										
+										if (stuck == false) then
+											local moveadd = 1
+											
+											if (been_seen[b] == nil) then
+												table.insert(moving_units, {unitid = b, reason = "topple", state = 0, moves = moveadd, dir = newunit.values[DIR], xpos = x, ypos = y})
+												been_seen[b] = #moving_units
+											else
+												local id = been_seen[b]
+												local this = moving_units[id]
+												this.moves = this.moves + moveadd
+											end
+										end
+									else
+										break
+									end
 								end
 							end
 						end
