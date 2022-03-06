@@ -1647,6 +1647,34 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 		end
 	end
 	
+	if (featureindex["swaps"] ~= nil) then
+		local obs = findobstacle(x+ox,y+oy)
+		if (#obs > 0) then
+			for i,id in ipairs(obs) do
+				if (id ~= -1) then
+					local obsunit = mmf.newObject(id)
+					local obsname = getname(obsunit)
+					local yesswaps = hasfeature(name,"swaps",obsname,unitid,x+ox,y+oy);
+					if (yesswaps ~= nil) then
+						local b = id
+						if (pulling == false) or (pulling and (b ~= pusherid)) then
+							local alreadymoving = findupdate(b,"update")
+							local valid = true
+							
+							if (#alreadymoving > 0) then
+								valid = false
+							end
+							
+							if valid then
+								addaction(b,{"update",x,y,nil})
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+	
 	if pulling then
 		local swap = hasfeature(name,"is","swap",unitid,x,y)
 		
@@ -1665,6 +1693,34 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 					if valid and (b ~= 2) then
 						addaction(b,{"update",x,y,nil})
 						pushsound = true
+					end
+				end
+			end
+		end
+		
+		if (featureindex["swaps"] ~= nil) then
+			local obs = findobstacle(x+ox,y+oy)
+			if (#obs > 0) then
+				for i,id in ipairs(obs) do
+					if (id ~= -1) then
+						local obsunit = mmf.newObject(id)
+						local obsname = getname(obsunit)
+						local yesswaps = hasfeature(name,"swaps",obsname,unitid,x+ox,y+oy);
+						if (yesswaps ~= nil) then
+							local b = id
+							if (b ~= pusherid) then
+								local alreadymoving = findupdate(b,"update")
+								local valid = true
+								
+								if (#alreadymoving > 0) then
+									valid = false
+								end
+								
+								if valid and (b ~= 2) then
+									addaction(b,{"update",x,y,nil})
+								end
+							end
+						end
 					end
 				end
 			end
