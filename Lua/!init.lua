@@ -347,12 +347,51 @@ editor_objlist["text_topple"] = {
 	name = "text_topple",
 	sprite_in_root = false,
 	unittype = "text",
-  tags = {"patashu"},
+	tags = {"patashu"},
 	tiling = -1,
 	type = 2,
-  layer = 20,
+	layer = 20,
 	colour = {3, 0},
 	colour_active = {3, 1},
+}
+
+table.insert(editor_objlist_order, "text_zoom")
+editor_objlist["text_zoom"] = {
+	name = "text_zoom",
+	sprite_in_root = false,
+	unittype = "text",
+	tags = {"patashu"},
+	tiling = -1,
+	type = 2,
+	layer = 20,
+	colour = {0, 2},
+	colour_active = {0, 3},
+}
+
+table.insert(editor_objlist_order, "text_yeet")
+editor_objlist["text_yeet"] = {
+	name = "text_yeet",
+	sprite_in_root = false,
+	unittype = "text",
+	tags = {"patashu"},
+	tiling = -1,
+	type = 1,
+	layer = 20,
+	colour = {0, 2},
+	colour_active = {0, 3},
+}
+
+table.insert(editor_objlist_order, "text_launch")
+editor_objlist["text_launch"] = {
+	name = "text_launch",
+	sprite_in_root = false,
+	unittype = "text",
+	tags = {"patashu"},
+	tiling = -1,
+	type = 2,
+	layer = 20,
+	colour = {1, 2},
+	colour_active = {1, 3},
 }
 
 formatobjlist()

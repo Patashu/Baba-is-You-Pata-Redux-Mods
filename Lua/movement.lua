@@ -486,6 +486,39 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 					end
 				end
 				
+				local isyeet = getunitswithverb("yeet")
+				
+				for id,ugroup in ipairs(isyeet) do
+					local v = ugroup[1]
+					
+					if (ugroup[3] ~= "empty") then
+						for a,unit in ipairs(ugroup[2]) do
+							local x,y = unit.values[XPOS],unit.values[YPOS]
+							local things = findtype({v,nil},x,y,unit.fixed)
+							
+							if (#things > 0) then
+								for a,b in ipairs(things) do
+									if floating(b,unit.fixed,x,y) and (b ~= unit.fixed) then
+										
+										--updatedir(b, unit.values[DIR])
+										
+										if (isstill_or_locked(b,x,y,unit.values[DIR]) == false) then
+											if (been_seen[b] == nil) then
+												table.insert(moving_units, {unitid = b, reason = "yeet", state = 0, moves = 99, dir = unit.values[DIR], xpos = x, ypos = y})
+												been_seen[b] = #moving_units
+											else
+												local id = been_seen[b]
+												local this = moving_units[id]
+												this.moves = this.moves + 1
+											end
+										end
+									end
+								end
+							end
+						end
+					end
+				end
+				
 				local levelshift = findfeature("level","is","shift")
 				
 				if (levelshift ~= nil) then
@@ -560,8 +593,11 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 			for i,data in ipairs(still_moving) do
 				if (data.unitid ~= 2) then
 					local unit = mmf.newObject(data.unitid)
-					
-					table.insert(moving_units, {unitid = data.unitid, reason = data.reason, state = data.state, moves = data.moves, dir = unit.values[DIR], xpos = unit.values[XPOS], ypos = unit.values[YPOS]})
+					local newdir = unit.values[DIR]
+					if (data.reason == "launch") then
+						newdir = data.dir;
+					end
+					table.insert(moving_units, {unitid = data.unitid, reason = data.reason, state = data.state, moves = data.moves, dir = newdir, xpos = unit.values[XPOS], ypos = unit.values[YPOS]})
 				else
 					table.insert(moving_units, {unitid = data.unitid, reason = data.reason, state = data.state, moves = data.moves, dir = data.dir, xpos = -1, ypos = -1})
 				end
@@ -661,7 +697,7 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 							end
 						end
 						
-						if (state == 0) and (data.reason == "shift") and (data.unitid ~= 2) then
+						if (state == 0) and (data.reason == "shift" or data.reason == "yeet" or data.reason == "launch") and (data.unitid ~= 2) then
 							updatedir(data.unitid, data.dir)
 							dir = data.dir
 						end
@@ -706,7 +742,7 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 						end
 						
 						local ox,oy = ndrs[1],ndrs[2]
-						if (very_drunk or (data.reason ~= "shift" and data.reason ~= "yeet")) then
+						if (very_drunk or (data.reason ~= "shift" and data.reason ~= "yeet" and data.reason ~= "launch")) then
 							dir, ox, oy = apply_moonwalk(data.unitid,x,y,dir,ox,oy,false)
 						end
 						local pushobslist = {}
@@ -1042,6 +1078,32 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 						end
 						unitid = data[1]
 
+						--implement ZOOM
+						if (featureindex["zoom"]) then
+							local unit = mmf.newObject(unitid)
+							unitname = getname(unit)
+							--ugly hack: temporarily move the unit so we can check conditional rules at the destination (doesn't move until doupdate() later)
+							local oldx = unit.values[XPOS];
+							local oldy = unit.values[YPOS];
+							local olddir = unit.values[DIR];
+							local x = unit.values[XPOS] + data[2];
+							local y = unit.values[YPOS] + data[3];
+							local dir = data[4];
+							unit.values[XPOS] = x
+							unit.values[YPOS] = y
+							unit.values[DIR] = dir
+							updateunitmap(unitid,oldx,oldy,x,y,unit.strings[UNITNAME])
+							local is_zoom = hasfeature(unitname, "is", "zoom", unitid);
+							if (is_zoom and isstill_or_locked(unitid,unit.values[XPOS],unit.values[YPOS],unit.values[DIR]) == false) then
+								HACK_MOVES = HACK_MOVES + 1
+								table.insert(still_moving, {unitid = unitid, reason = "zoom", state = 0, moves = 1, dir = unit.values[DIR], xpos = unit.values[XPOS], ypos = unit.values[YPOS]})
+							end
+							unit.values[XPOS] = oldx
+							unit.values[YPOS] = oldy
+							unit.values[DIR] = olddir
+							updateunitmap(unitid,x,y,oldx,oldy,unit.strings[UNITNAME])
+						end
+
 						--implement SLIDE
 						if (unitid ~= 2 and featureindex["slide"]) then
 							local unit = mmf.newObject(unitid)
@@ -1061,16 +1123,16 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 							local emptyslide = hasfeature("empty","is","slide",2,x,y) and #findobstacle(x,y) == 1;
 							local nonemptyslide = false;
 							local slides = findfeatureat(nil,"is","slide",x,y);
-              if (slides ~= nil) then
-                for a,b in ipairs(slides) do
-                  local slide_surface = mmf.newObject(b)
-                  local slide_name = getname(slide_surface);
-                  if (b ~= unitid) and floating(b,unitid,x,y) then
-                    nonemptyslide = true;
-                    break;
-                  end
-                end
-              end
+							if (slides ~= nil) then
+								for a,b in ipairs(slides) do
+									local slide_surface = mmf.newObject(b)
+									local slide_name = getname(slide_surface);
+									if (b ~= unitid) and floating(b,unitid,x,y) then
+										nonemptyslide = true;
+										break;
+									end
+								end
+							end
 							if (emptyslide or nonemptyslide) then
 								--no multiplicative cascades in slide - only start sliding if we're not already sliding
 								local alreadysliding = false
@@ -1081,6 +1143,7 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 									end
 								end
 								if (not alreadysliding) and (isstill_or_locked(unitid,unit.values[XPOS],unit.values[YPOS],unit.values[DIR]) == false) then
+									HACK_MOVES = HACK_MOVES + 1
 									table.insert(still_moving, {unitid = unitid, reason = "slide", state = 0, moves = 1, dir = unit.values[DIR], xpos = unit.values[XPOS], ypos = unit.values[YPOS]})
 								end
 							end
@@ -1089,7 +1152,69 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 							unit.values[DIR] = olddir
 							updateunitmap(unitid,x,y,oldx,oldy,unit.strings[UNITNAME])
 						end
+						
+						--implement LAUNCH
+						if (unitid ~= 2 and featureindex["launch"]) then
+							local unit = mmf.newObject(unitid)
+							unitname = getname(unit)
+							--ugly hack: temporarily move the unit so we can check conditional rules at the destination (doesn't move until doupdate() later)
+							local oldx = unit.values[XPOS];
+							local oldy = unit.values[YPOS];
+							local olddir = unit.values[DIR];
+							local x = unit.values[XPOS] + data[2];
+							local y = unit.values[YPOS] + data[3];
+							local dir = data[4];
+							unit.values[XPOS] = x
+							unit.values[YPOS] = y
+							unit.values[DIR] = dir
+							updateunitmap(unitid,oldx,oldy,x,y,unit.strings[UNITNAME])
+							--if we find ANOTHER unit (or just empty) and it's launch and samefloat then we launch
+							--for now we just pick the first thing we find that's launch. you could imagine 'count directions and pick the strongest' alternate solutions but you still run into 'so what's the tie breaker'. if any puzzle maker makes a compelling argument I can change it.
+							local emptylaunch = hasfeature("empty","is","launch",2,x,y) and #findobstacle(x,y) == 1;
+							if (emptylaunch) then
+								launchdir = emptydir(x,y)
+							end
+							local nonemptylaunch = false;
+							local launches = findfeatureat(nil,"is","launch",x,y);
+							if (launches ~= nil) then
+								for a,b in ipairs(launches) do
+									local launch_surface = mmf.newObject(b)
+									local launch_name = getname(launch_surface);
+									if (b ~= unitid) and floating(b,unitid,x,y) then
+										nonemptylaunch = true;
+										launchdir = launch_surface.values[DIR];
+										break;
+									end
+								end
+							end
+							if (emptylaunch or nonemptylaunch) then
+								--no multiplicative cascades in launch - only start launching if we're not already launching
+								local alreadylaunching = false
+								for _,other in ipairs(still_moving) do
+									if other.unitid == unitid and other.reason == "launch" then
+										alreadylaunching = true
+										break
+									end
+								end
+								if (not alreadylaunching) and (isstill_or_locked(unitid,unit.values[XPOS],unit.values[YPOS],unit.values[DIR]) == false) then
+									HACK_MOVES = HACK_MOVES + 1
+									table.insert(still_moving, {unitid = unitid, reason = "launch", state = 0, moves = 1, dir = launchdir, xpos = unit.values[XPOS], ypos = unit.values[YPOS]})
+								end
+							end
+							unit.values[XPOS] = oldx
+							unit.values[YPOS] = oldy
+							unit.values[DIR] = olddir
+							updateunitmap(unitid,x,y,oldx,oldy,unit.strings[UNITNAME])
+						end
 					end
+				end
+				
+				--lower than the normal 10k
+				if (HACK_MOVES >= 1000) then
+					HACK_MOVES = 0
+					HACK_INFINITY = 200
+					destroylevel("infinity")
+					return
 				end
 			end
 			
@@ -1305,7 +1430,7 @@ function check(unitid,x,y,dir,pulling_,reason,ox,oy)
 					for a,b in ipairs(alreadymoving) do
 						local nx,ny = b[3],b[4]
 						
-						if ((nx ~= x) and (ny ~= y)) and ((reason == "shift") and (pulling == false)) then
+						if ((nx ~= x) and (ny ~= y)) and ((reason == "shift" or reason == "yeet" or reason == "launch") and (pulling == false)) then
 							valid = false
 						end
 						
