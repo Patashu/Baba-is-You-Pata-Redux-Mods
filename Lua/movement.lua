@@ -1057,8 +1057,21 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 							unit.values[YPOS] = y
 							unit.values[DIR] = dir
 							updateunitmap(unitid,oldx,oldy,x,y,unit.strings[UNITNAME])
-							local slides = findfeatureat(nil,"is","slide",x,y) and true or (hasfeature("empty","is","slide",2,x,y) and #findobstacle(x,y) == 1)
-							if slides then
+							--if we find ANOTHER unit (or just empty) and it's slide and samefloat then we slide
+							local emptyslide = hasfeature("empty","is","slide",2,x,y) and #findobstacle(x,y) == 1;
+							local nonemptyslide = false;
+							local slides = findfeatureat(nil,"is","slide",x,y);
+              if (slides ~= nil) then
+                for a,b in ipairs(slides) do
+                  local slide_surface = mmf.newObject(b)
+                  local slide_name = getname(slide_surface);
+                  if (b ~= unitid) and floating(b,unitid,x,y) then
+                    nonemptyslide = true;
+                    break;
+                  end
+                end
+              end
+							if (emptyslide or nonemptyslide) then
 								--no multiplicative cascades in slide - only start sliding if we're not already sliding
 								local alreadysliding = false
 								for _,other in ipairs(still_moving) do
