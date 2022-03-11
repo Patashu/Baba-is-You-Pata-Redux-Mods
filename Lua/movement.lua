@@ -1412,6 +1412,27 @@ function check(unitid,x,y,dir,pulling_,reason,ox,oy)
 		end
 	end
 	
+	--cancel out phantom if we hate something on the destination tile. hate is stronger than phantom.
+	if (featureindex["hates"] ~= nil and (phantom ~= nil)) then
+		if (#obs > 0) then
+			for i,id in ipairs(obs) do
+				if (id ~= -1) then
+					local obsunit = mmf.newObject(id)
+					local obsname = getname(obsunit)
+					local ishates = hasfeature(name,"hates",obsname,unitid,x,y);
+					if (ishates == true) then
+						phantom = nil;
+						break;
+					end
+				end
+			end
+		else
+			if (hasfeature(name,"hates","empty",unitid,x,y)) then
+				phantom = nil;
+			end
+		end
+	end
+	
 	if (#obs > 0) and (phantom == nil) then
 		for i,id in ipairs(obs) do
 			if (id == -1) then

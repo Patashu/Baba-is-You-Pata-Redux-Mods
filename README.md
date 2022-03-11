@@ -14,9 +14,9 @@ To install: Copy everything in Lua and Sprites to the world folder you want to u
 
 **LAUNCH** - __Property__ Whenever a unit steps onto something that is LAUNCH, it immediately moves again in the LAUNCH's direction. EMPTY IS LAUNCH works. (Technical notes: Unlike bab, it doesn't also have SHIFT's properties. If you step onto multiple LAUNCH things at once, the first one found determines the direction.)
 
-**HATES** - __Verb__ Conditional STOP. If x HATES y, y is STOP to x. x HATES LEVEL causes x to be unable to move. x HATES EMPTY causes x to be unable to enter empty tiles.
+**HATES** - __Verb__ Conditional STOP. If x HATES y, y is STOP to x. x HATES LEVEL causes x to be unable to move. x HATES EMPTY causes x to be unable to enter empty tiles. Stronger than PHANTOM and similar rules.
 
-**LIKES** - __Verb__ If x LIKES things, x can only step onto tiles that contain at least one thing it LIKES. BABA LIKES BABA causes blobs of BABA to stack. BABA LIKES EMPTY causes BABA to be unable to enter non-empty tiles, and causes blobs of BABA to break apart! KEKE LIKES ROCK, ROCK IS PUSH, KEKE IS YOU makes it so if BABA pushes a rock/keke stack around, the keke moves with the rock but can't leave the rock.
+**LIKES** - __Verb__ If x LIKES things, x can only step onto tiles that contain at least one thing it LIKES. BABA LIKES BABA causes blobs of BABA to stack. BABA LIKES EMPTY causes BABA to be unable to enter non-empty tiles, and causes blobs of BABA to break apart! KEKE LIKES ROCK, ROCK IS PUSH, KEKE IS YOU makes it so if BABA pushes a rock/keke stack around, the keke moves with the rock but can't leave the rock. Stronger than PHANTOM and similar rules.
 
 **SIDEKICK** - __Property__ Like a 90 degree counterpart to PUSH and PULL - Solid, and when a unit moves, SIDEKICK units on the tiles either side of it attempt to move as well.
 
