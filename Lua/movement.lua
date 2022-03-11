@@ -1122,6 +1122,7 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 							--if we find ANOTHER unit (or just empty) and it's slide and samefloat then we slide
 							local emptyslide = hasfeature("empty","is","slide",2,x,y) and #findobstacle(x,y) == 1;
 							local nonemptyslide = false;
+							local slider = nil;
 							local slides = findfeatureat(nil,"is","slide",x,y);
 							if (slides ~= nil) then
 								for a,b in ipairs(slides) do
@@ -1129,6 +1130,7 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 									local slide_name = getname(slide_surface);
 									if (b ~= unitid) and floating(b,unitid,x,y) then
 										nonemptyslide = true;
+										slider = b;
 										break;
 									end
 								end
@@ -1140,6 +1142,15 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 									if other.unitid == unitid and other.reason == "slide" then
 										alreadysliding = true
 										break
+									end
+								end
+								--if very_slippery mod is off: don't slide on something that's also moving
+								if (slider ~= nil and not very_slippery) then
+									for _,other in ipairs(movelist) do
+										if other[1] == slider then
+											alreadysliding = true
+											break
+										end
 									end
 								end
 								if (not alreadysliding) and (isstill_or_locked(unitid,unit.values[XPOS],unit.values[YPOS],unit.values[DIR]) == false) then
@@ -1171,6 +1182,8 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 							--if we find ANOTHER unit (or just empty) and it's launch and samefloat then we launch
 							--for now we just pick the first thing we find that's launch. you could imagine 'count directions and pick the strongest' alternate solutions but you still run into 'so what's the tie breaker'. if any puzzle maker makes a compelling argument I can change it.
 							local emptylaunch = hasfeature("empty","is","launch",2,x,y) and #findobstacle(x,y) == 1;
+							local launch_dir = nil;
+							local launcher = nil;
 							if (emptylaunch) then
 								launchdir = emptydir(x,y)
 							end
@@ -1182,6 +1195,7 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 									local launch_name = getname(launch_surface);
 									if (b ~= unitid) and floating(b,unitid,x,y) then
 										nonemptylaunch = true;
+										launcher = b;
 										launchdir = launch_surface.values[DIR];
 										break;
 									end
@@ -1194,6 +1208,15 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 									if other.unitid == unitid and other.reason == "launch" then
 										alreadylaunching = true
 										break
+									end
+								end
+								--if very_slippery mod is off: don't launch on something that's also moving
+								if (launcher ~= nil and not very_slippery) then
+									for _,other in ipairs(movelist) do
+										if other[1] == launcher then
+											alreadylaunching = true
+											break
+										end
 									end
 								end
 								if (not alreadylaunching) and (isstill_or_locked(unitid,unit.values[XPOS],unit.values[YPOS],unit.values[DIR]) == false) then

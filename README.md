@@ -6,13 +6,13 @@ To install: Copy everything in Lua and Sprites to the world folder you want to u
 
 **SLIP** - __Property__ Once per turn, objects standing on something SLIP will involuntarily move in the direction they're facing. If they did, voluntary movement (YOU, MOVE, COPY) is prevented that turn.
 
-**SLIDE** - __Property__ Whenever a unit steps onto something that is SLIDE, it immediately moves again in the same direction. EMPTY IS SLIDE works.
+**SLIDE** - __Property__ Whenever a unit steps onto something that is SLIDE, it immediately moves again in the same direction. EMPTY IS SLIDE works. (modified by very_slippery in !init.lua.)
 
 **ZOOM** - __Property__ Whenever a unit that is ZOOM moves, it continues moving in the same direction until prevented.
 
 **YEET** - __Verb__ Like SHIFTS, but it sends the target hurtling as far away as possible. Happens in the same take as SHIFT/SHIFTS.
 
-**LAUNCH** - __Property__ Whenever a unit steps onto something that is LAUNCH, it immediately moves again in the LAUNCH's direction. EMPTY IS LAUNCH works. (Technical notes: Unlike bab, it doesn't also have SHIFT's properties. If you step onto multiple LAUNCH things at once, the first one found determines the direction.)
+**LAUNCH** - __Property__ Whenever a unit steps onto something that is LAUNCH, it immediately moves again in the LAUNCH's direction. EMPTY IS LAUNCH works. (Technical notes: Unlike bab, it doesn't also have SHIFT's properties. If you step onto multiple LAUNCH things at once, the first one found determines the direction. modified by very_slippery in !init.lua.)
 
 **HATES** - __Verb__ Conditional STOP. If x HATES y, y is STOP to x. x HATES LEVEL causes x to be unable to move. x HATES EMPTY causes x to be unable to enter empty tiles. Stronger than PHANTOM and similar rules.
 
@@ -22,7 +22,7 @@ To install: Copy everything in Lua and Sprites to the world folder you want to u
 
 **LAZY** - __Property__ Something that is LAZY can't push or pull. ROCK IS PUSH AND LAZY gives you sokoban style 'max 1' pushing. KEKE IS MOVE AND LAZY gives you moving actors that don't shive things around with them.
 
-**MOONWALK / DRUNK / DRUNKER / SKIP** - __Property__ Causes movement (YOU/MOVE/PUSH/PULL/SHIFT/SLIDE/SLIP/SIDEKICK/COPY) to be 180, 90 or 45 degrees 'wrong' respectively. SKIP makes movements go 2 tiles instead of 1! All 4 stack with each other and themselves!
+**MOONWALK / DRUNK / DRUNKER / SKIP** - __Property__ Causes movement (YOU/MOVE/PUSH/PULL/SHIFT/SLIDE/SLIP/SIDEKICK/COPY) to be 180, 90 or 45 degrees 'wrong' respectively. SKIP makes movements go 2 tiles instead of 1! All 4 stack with each other and themselves! (modified by very_drunk in !init.lua)
 
 **TALL** - __Property__ This unit is considered to be both float levels simultaneously.
 
