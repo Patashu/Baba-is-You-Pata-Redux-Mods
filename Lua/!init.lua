@@ -394,6 +394,19 @@ editor_objlist["text_launch"] = {
 	colour_active = {1, 3},
 }
 
+table.insert(editor_objlist_order, "text_sticky")
+editor_objlist["text_sticky"] = {
+	name = "text_sticky",
+	sprite_in_root = false,
+	unittype = "text",
+	tags = {"patashu"},
+	tiling = -1,
+	type = 2,
+	layer = 20,
+	colour = {6, 1},
+	colour_active = {2, 4},
+}
+
 formatobjlist()
 
 print("End of !init.lua")

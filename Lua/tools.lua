@@ -2529,3 +2529,34 @@ function simplecheck(x,y,noempty_,checkc)
 	
 	return 0
 end
+
+function table.has_value(tab, val)
+  for index, value in ipairs(tab) do
+      if value == val then
+          return true
+      end
+  end
+
+  return false
+end
+
+function mergeTable(t, other)
+  if other ~= nil then
+    for k,v in pairs(other) do
+      if type(k) == "number" then
+        if not table.has_value(t, v) then
+          table.insert(t, v)
+        end
+      else
+        if t[k] ~= nil then
+          if type(t[k]) == "table" and type(v) == "table" then
+            mergeTable(t[k], v)
+          end
+        else
+          t[k] = v
+        end
+      end
+    end
+  end
+  return t
+end

@@ -747,8 +747,47 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 						end
 						local pushobslist = {}
 						
-						local obslist,allobs,specials = check(data.unitid,x,y,dir,false,data.reason,ox,oy)
-						local pullobs,pullallobs,pullspecials = check(data.unitid,x,y,dir,true,data.reason,ox,oy)
+						local obslist,allobs,specials = {},{},{}
+						local specials_by_unitid = {}
+						local pullobs,pullallobs,pullspecials = {},{},{}
+						local units,pushers,pullers = {},{},{}
+						
+						if (featureindex["sticky"] ~= nil and hasfeature(name,"is","sticky",data.unitid)) then
+							units, pushers, pullers = find_entire_sticky_unit(data.unitid,ox,oy);
+							for _,pusher in ipairs(pushers) do
+								--print("x1", pusher)
+								local pusher_obj = mmf.newObject(pusher);
+								--print("x2", pusher_obj)
+								local pusher_x = pusher_obj.values[XPOS];
+								local pusher_y = pusher_obj.values[YPOS];
+								local obslist_,allobs_,specials_ = check(pusher,pusher_x,pusher_y,dir,false,data.reason,ox,oy);
+								mergeTable(obslist, obslist_);
+								mergeTable(allobs, allobs_);
+								mergeTable(specials, specials_);
+								specials_by_unitid[pusher] = specials_;
+							end
+							--if any of the moves fail, they all fail
+							for _,obs in ipairs(obslist) do
+								if obs == -1 then
+									obslist = {-1}
+									break;
+								end
+							end
+							for _,puller in ipairs(pullers) do
+								--print("z1",puller)
+								local puller_obj = mmf.newObject(puller);
+								--print("z2",puller_obj)
+								local puller_x = puller_obj.values[XPOS];
+								local puller_y = puller_obj.values[YPOS];
+								local pullobs_,pullallobs_,pullspecials_ = check(puller,puller_x,puller_y,dir,true,data.reason,ox,oy)
+								mergeTable(pullobs, pullobs_);
+								mergeTable(pullallobs, pullallobs_);
+								mergeTable(pullspecials, pullspecials_);
+							end
+						else
+							obslist,allobs,specials = check(data.unitid,x,y,dir,false,data.reason,ox,oy)
+							pullobs,pullallobs,pullspecials = check(data.unitid,x,y,dir,true,data.reason,ox,oy)
+						end
 						
 						if returnolddir then
 							dir = olddir
@@ -841,7 +880,15 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 										end
 									end
 									
-									queue_move(data.unitid,ox,oy,olddir,specials,data.reason,x,y)
+									if (#units > 1) then --STICKY case
+										for _,u in ipairs(units) do
+											--print("y1",u)
+											--print("y2",specials_by_unitid[u])
+											queue_move(u,ox,oy,olddir,specials_by_unitid[u],data.reason,x,y)
+										end
+									else
+										queue_move(data.unitid,ox,oy,olddir,specials,data.reason,x,y)
+									end
 									--move(data.unitid,ox,oy,dir,specials)
 									
 									local swapped = {}
@@ -1646,7 +1693,7 @@ function check(unitid,x,y,dir,pulling_,reason,ox,oy)
 	return result,results,specials
 end
 
-function trypush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
+function trypush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid,is_sticky)
 	local x,y = 0,0
 	local unit = {}
 	local name = ""
@@ -1679,6 +1726,24 @@ function trypush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 	end
 	
 	local pulling = pulling_ or false
+	
+	--sticky check! sticky things are pushed or pulled as a whole unit. the whole thing has to succeed or fail together.
+	if (is_sticky ~= true and name ~= empty and featureindex["sticky"] ~= nil and hasfeature(name,"is","sticky",unitid)) then
+		local units, pushers, pullers = find_entire_sticky_unit(unitid,ox,oy);
+		if pulling ~= true then
+			for _,u in ipairs(pushers) do
+				if trypush(u,ox,oy,dir,pulling_,x_,y_,reason,pusherid,true) == 1 then
+					return 1
+				end
+			end
+			return 0
+		else
+			--TODO: sticky pull
+			--[[for _,u in ipairs(pullers) do
+			
+			end]]
+		end
+	end
 	
 	local weak = hasfeature(name,"is","weak",unitid,x_,y_)
 	
@@ -1734,7 +1799,7 @@ function trypush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 	end
 end
 
-function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
+function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid,is_sticky)
 	local pid2 = tostring(ox + oy * roomsizex) .. tostring(unitid)
 	pushedunits[pid2] = 1
 	
@@ -1768,6 +1833,31 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid)
 	local pulling = false
 	if (pulling_ ~= nil) then
 		pulling = pulling_
+	end
+	
+	--sticky check! sticky things are pushed or pulled as a whole unit. and if we got this far, it succeeded.
+	if (is_sticky ~= true and name ~= empty and featureindex["sticky"] ~= nil and hasfeature(name,"is","sticky",unitid)) then
+		local units, pushers, pullers = find_entire_sticky_unit(unitid,ox,oy);
+		if pulling ~= true then
+			pushers_table = {}
+			local result = 0
+			--everything on the push-front pushes, everything else JUST moves. otherwise it infinite loops lmao
+			for _,u in ipairs(pushers) do
+				pushers[u] = true
+				result = math.max(result, dopush(u,ox,oy,dir,pulling_,x_,y_,reason,pusherid,true));
+			end
+			for _,u in ipairs(units) do
+				if pushers[u] == nil then
+					queue_move(u,ox,oy,dir,{},reason,x,y)
+				end
+			end
+			return result; --TODO: not sure if this should be the lowest or highest value
+		else
+			--TODO: sticky pull
+			--[[for _,u in ipairs(pullers) do
+			
+			end]]
+		end
 	end
 	
 	local swaps = findfeatureat(nil,"is","swap",x+ox,y+oy)
@@ -2503,7 +2593,7 @@ function queue_move(unitid,ox,oy,dir,specials,reason,x,y)
 	--implement SIDEKICK
 	if (unitid ~= 2) then
 		local unit = mmf.newObject(unitid)
-		unitname = getname(unit)
+		local unitname = getname(unit)
 		local sidekicks = find_sidekicks(unitid, dir);
 		for _,sidekickid in ipairs(sidekicks) do
 			--no multiplicative cascades in sidekick - only start sidekicking if we're not already sidekicking
@@ -2522,4 +2612,97 @@ function queue_move(unitid,ox,oy,dir,specials,reason,x,y)
 			end
 		end
 	end
+end
+
+function find_entire_sticky_unit(unitid, dx, dy)
+	local unit = mmf.newObject(unitid)
+	local unitx = unit.values[XPOS];
+	local unity = unit.values[YPOS];
+	local unitname = getname(unit)
+	--print("0:",unitid,unitname,unitx,unity)
+	local units, pushers, pullers = {}, {}, {}
+	local visited = {}
+	local ignored = {}
+	local unit_added = {}
+	visited[tostring(unitx)..","..tostring(unity)] = unitid
+	unit_added[unitid] = true
+	
+	--base case - add the original unit
+	table.insert(units, unitid)
+	
+	--on with the floodfill!
+	local unchecked_tiles = {{unitx, unity}}
+	
+	while #unchecked_tiles > 0 do
+		local x, y = unchecked_tiles[1][1], unchecked_tiles[1][2]
+		local cur_unitid = visited[tostring(x)..","..tostring(y)];
+		local cur_unit = mmf.newObject(cur_unitid)
+		--print("a:",x,y,cur_unitid)
+		table.remove(unchecked_tiles, 1)
+		--print("a.5:",#unchecked_tiles)
+		
+		--check all 4 directions
+		for i = 1,4 do
+			local cur_dx, cur_dy = dirtooxoy(i)
+			local xx, yy = x+cur_dx, y+cur_dy
+			--print("b:",cur_dx,cur_dy,xx,yy,tostring(xx)..","..tostring(yy),visited[tostring(xx)..","..tostring(yy)])
+			--visit surrounding tiles if we don't know their status yet
+			--print("c")
+			local tileid = xx + yy * roomsizex
+			local others = unitmap[tileid]
+			local first = false
+			if (others ~= nil) then
+				for _,other in ipairs(others) do
+					local other_unit = mmf.newObject(other)
+					local other_name = getname(other_unit);
+					--print("d:",other,other_name)
+					if other_name == unitname and not unit_added[other] then
+						local other_is_sticky = hasfeature(other_name,"is","sticky",other)
+						if other_is_sticky then
+							--print("f, we did it")
+							table.insert(units, other)
+							unit_added[other] = true
+							--print(#units)
+							--we haven't expanded out from this tile yet - queue it
+							if not first then
+								table.insert(unchecked_tiles, {xx, yy})
+								--print("f.5:",#unchecked_tiles)
+								first = true
+								visited[tostring(xx)..","..tostring(yy)] = other
+							end
+						end
+					end
+				end
+			end
+			--END iterate units on that tile
+			--END visit surrounding unvisited tile
+				
+			--while checking the forward/backward direction, add the current unit to pushers/pullers if we know the tile ahead of/behind it is vacant
+			--print("g", dx, cur_dx, dy, cur_dy, visited[tostring(xx)..","..tostring(yy)], not visited[tostring(xx)..","..tostring(yy)])
+			if dx == cur_dx and dy == cur_dy and not visited[tostring(xx)..","..tostring(yy)] then
+				--print("added a pusher:",cur_unitid)
+				table.insert(pushers, cur_unitid)
+			elseif -dx == cur_dx and -dy == cur_dy and not visited[tostring(xx)..","..tostring(yy)] then
+				--print("added a puller:", cur_unitid)
+				table.insert(pullers, cur_unitid)
+			end
+		end
+		--END check all 8 directions 
+		--print("final:",#unchecked_tiles)
+	end
+	--END check all unchecked tiles
+
+	--failsafe: return the original unit in case we couldn't floodfill at all for whatever reason
+	
+	if #units == 0 then
+		table.insert(units, unitid)
+	end
+	if #pushers == 0 then
+		table.insert(pushers, unitid)
+	end
+	if #pullers == 0 then
+		table.insert(pullers, unitid)
+	end
+
+	return units, pushers, pullers
 end
