@@ -1,7 +1,5 @@
 --If true, MOONWALK and related properties (DRUNK, DRUNKER, SKIP) apply to PUSH, PULL, SHIFT and YEET in addition to basically everything else. Defaults to true.
 very_drunk = true
---if true, if you push something that's SLIDE/LAUNCH away from you, the pusher will think it's moving onto something SLIDE/LAUNCH and slide/launch.
-very_slippery = true
 
 print("Start of !init.lua")
 

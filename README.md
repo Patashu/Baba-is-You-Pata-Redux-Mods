@@ -6,13 +6,13 @@ To install: Copy everything in Lua and Sprites to the world folder you want to u
 
 **SLIP** - __Property__ Once per turn, objects standing on something SLIP will involuntarily move in the direction they're facing. If they did, voluntary movement (YOU, MOVE, COPY) is prevented that turn.
 
-**SLIDE** - __Property__ Whenever a unit steps onto something that is SLIDE, it immediately moves again in the same direction. EMPTY IS SLIDE works. (modified by very_slippery in !init.lua.)
+**SLIDE** - __Property__ Whenever a unit steps onto something that is SLIDE, it immediately moves again in the same direction. EMPTY IS SLIDE works.
 
 **ZOOM** - __Property__ Whenever a unit that is ZOOM moves, it continues moving in the same direction until prevented.
 
 **YEET** - __Verb__ Like SHIFTS, but it sends the target hurtling as far away as possible. Happens in the same take as SHIFT/SHIFTS.
 
-**LAUNCH** - __Property__ Whenever a unit steps onto something that is LAUNCH, it immediately moves again in the LAUNCH's direction. EMPTY IS LAUNCH works. (Technical notes: Unlike bab, it doesn't also have SHIFT's properties. If you step onto multiple LAUNCH things at once, the first one found determines the direction. modified by very_slippery in !init.lua.)
+**LAUNCH** - __Property__ Whenever a unit steps onto something that is LAUNCH, it immediately moves again in the LAUNCH's direction. EMPTY IS LAUNCH works. (Technical notes: Unlike bab, it doesn't also have SHIFT's properties. If you step onto multiple LAUNCH things at once, the first one found determines the direction.)
 
 **HATES** - __Verb__ Conditional STOP. If x HATES y, y is STOP to x. x HATES LEVEL causes x to be unable to move. x HATES EMPTY causes x to be unable to enter empty tiles. Stronger than PHANTOM and similar rules.
 

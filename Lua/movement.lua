@@ -1076,49 +1076,57 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 						if (data[6] == "slip") then
 							slipped[data[1]] = true
 						end
-						unitid = data[1]
-
-						--implement ZOOM
-						if (featureindex["zoom"]) then
-							local unit = mmf.newObject(unitid)
-							unitname = getname(unit)
-							--ugly hack: temporarily move the unit so we can check conditional rules at the destination (doesn't move until doupdate() later)
-							local oldx = unit.values[XPOS];
-							local oldy = unit.values[YPOS];
-							local olddir = unit.values[DIR];
-							local x = unit.values[XPOS] + data[2];
-							local y = unit.values[YPOS] + data[3];
-							local dir = data[4];
-							unit.values[XPOS] = x
-							unit.values[YPOS] = y
-							unit.values[DIR] = dir
-							updateunitmap(unitid,oldx,oldy,x,y,unit.strings[UNITNAME])
+					end
+				end
+				
+				--lower than the normal 10k
+				if (HACK_MOVES >= 1000) then
+					HACK_MOVES = 0
+					HACK_INFINITY = 200
+					destroylevel("infinity")
+					return
+				end
+			end
+			
+			movelist = {}
+			
+			if (smallest_state > state) then
+				state = state + 1
+			else
+				state = smallest_state
+			end
+			
+			if (#moving_units == 0) then
+				local updatelist_copy = updatelist;
+				doupdate()
+				
+				--once everything moves, check ZOOM, SLIDE and LAUNCH
+				--implement ZOOM
+				if (featureindex["zoom"]) then
+					for i,data in ipairs(updatelist_copy) do
+						local unitid = data[1];
+						if (data[2] == "update") then
+							local unit = mmf.newObject(unitid);
+							local unitname = getname(unit);
 							local is_zoom = hasfeature(unitname, "is", "zoom", unitid);
 							if (is_zoom and isstill_or_locked(unitid,unit.values[XPOS],unit.values[YPOS],unit.values[DIR]) == false) then
 								HACK_MOVES = HACK_MOVES + 1
 								table.insert(still_moving, {unitid = unitid, reason = "zoom", state = 0, moves = 1, dir = unit.values[DIR], xpos = unit.values[XPOS], ypos = unit.values[YPOS]})
 							end
-							unit.values[XPOS] = oldx
-							unit.values[YPOS] = oldy
-							unit.values[DIR] = olddir
-							updateunitmap(unitid,x,y,oldx,oldy,unit.strings[UNITNAME])
 						end
-
-						--implement SLIDE
-						if (unitid ~= 2 and featureindex["slide"]) then
-							local unit = mmf.newObject(unitid)
-							unitname = getname(unit)
-							--ugly hack: temporarily move the unit so we can check conditional rules at the destination (doesn't move until doupdate() later)
-							local oldx = unit.values[XPOS];
-							local oldy = unit.values[YPOS];
-							local olddir = unit.values[DIR];
-							local x = unit.values[XPOS] + data[2];
-							local y = unit.values[YPOS] + data[3];
+					end
+				end
+				
+				--implement SLIDE
+				if (featureindex["slide"]) then
+					for i,data in ipairs(updatelist_copy) do
+						local unitid = data[1];
+						if (data[2] == "update" and unitid ~= 2) then
+							local unit = mmf.newObject(unitid);
+							local unitname = getname(unit);
+							local x = unit.values[XPOS];
+							local y = unit.values[YPOS];
 							local dir = data[4];
-							unit.values[XPOS] = x
-							unit.values[YPOS] = y
-							unit.values[DIR] = dir
-							updateunitmap(unitid,oldx,oldy,x,y,unit.strings[UNITNAME])
 							--if we find ANOTHER unit (or just empty) and it's slide and samefloat then we slide
 							local emptyslide = hasfeature("empty","is","slide",2,x,y) and #findobstacle(x,y) == 1;
 							local nonemptyslide = false;
@@ -1144,41 +1152,25 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 										break
 									end
 								end
-								--if very_slippery mod is off: don't slide on something that's also moving
-								if (slider ~= nil and not very_slippery) then
-									for _,other in ipairs(movelist) do
-										if other[1] == slider then
-											alreadysliding = true
-											break
-										end
-									end
-								end
 								if (not alreadysliding) and (isstill_or_locked(unitid,unit.values[XPOS],unit.values[YPOS],unit.values[DIR]) == false) then
 									HACK_MOVES = HACK_MOVES + 1
 									table.insert(still_moving, {unitid = unitid, reason = "slide", state = 0, moves = 1, dir = unit.values[DIR], xpos = unit.values[XPOS], ypos = unit.values[YPOS]})
 								end
 							end
-							unit.values[XPOS] = oldx
-							unit.values[YPOS] = oldy
-							unit.values[DIR] = olddir
-							updateunitmap(unitid,x,y,oldx,oldy,unit.strings[UNITNAME])
 						end
-						
-						--implement LAUNCH
-						if (unitid ~= 2 and featureindex["launch"]) then
-							local unit = mmf.newObject(unitid)
-							unitname = getname(unit)
-							--ugly hack: temporarily move the unit so we can check conditional rules at the destination (doesn't move until doupdate() later)
-							local oldx = unit.values[XPOS];
-							local oldy = unit.values[YPOS];
-							local olddir = unit.values[DIR];
-							local x = unit.values[XPOS] + data[2];
-							local y = unit.values[YPOS] + data[3];
+					end
+				end
+				
+				--implement LAUNCH
+				if (featureindex["launch"]) then
+					for i,data in ipairs(updatelist_copy) do
+						local unitid = data[1];
+						if (data[2] == "update" and unitid ~= 2) then
+							local unit = mmf.newObject(unitid);
+							local unitname = getname(unit);
+							local x = unit.values[XPOS];
+							local y = unit.values[YPOS];
 							local dir = data[4];
-							unit.values[XPOS] = x
-							unit.values[YPOS] = y
-							unit.values[DIR] = dir
-							updateunitmap(unitid,oldx,oldy,x,y,unit.strings[UNITNAME])
 							--if we find ANOTHER unit (or just empty) and it's launch and samefloat then we launch
 							--for now we just pick the first thing we find that's launch. you could imagine 'count directions and pick the strongest' alternate solutions but you still run into 'so what's the tie breaker'. if any puzzle maker makes a compelling argument I can change it.
 							local emptylaunch = hasfeature("empty","is","launch",2,x,y) and #findobstacle(x,y) == 1;
@@ -1210,47 +1202,15 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 										break
 									end
 								end
-								--if very_slippery mod is off: don't launch on something that's also moving
-								if (launcher ~= nil and not very_slippery) then
-									for _,other in ipairs(movelist) do
-										if other[1] == launcher then
-											alreadylaunching = true
-											break
-										end
-									end
-								end
 								if (not alreadylaunching) and (isstill_or_locked(unitid,unit.values[XPOS],unit.values[YPOS],unit.values[DIR]) == false) then
 									HACK_MOVES = HACK_MOVES + 1
 									table.insert(still_moving, {unitid = unitid, reason = "launch", state = 0, moves = 1, dir = launchdir, xpos = unit.values[XPOS], ypos = unit.values[YPOS]})
 								end
 							end
-							unit.values[XPOS] = oldx
-							unit.values[YPOS] = oldy
-							unit.values[DIR] = olddir
-							updateunitmap(unitid,x,y,oldx,oldy,unit.strings[UNITNAME])
 						end
 					end
 				end
 				
-				--lower than the normal 10k
-				if (HACK_MOVES >= 1000) then
-					HACK_MOVES = 0
-					HACK_INFINITY = 200
-					destroylevel("infinity")
-					return
-				end
-			end
-			
-			movelist = {}
-			
-			if (smallest_state > state) then
-				state = state + 1
-			else
-				state = smallest_state
-			end
-			
-			if (#moving_units == 0) then
-				doupdate()
 				done = true
 			else
 				movemap = {}
