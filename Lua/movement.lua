@@ -773,17 +773,7 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 									break;
 								end
 							end
-							for _,puller in ipairs(pullers) do
-								--print("z1",puller)
-								local puller_obj = mmf.newObject(puller);
-								--print("z2",puller_obj)
-								local puller_x = puller_obj.values[XPOS];
-								local puller_y = puller_obj.values[YPOS];
-								local pullobs_,pullallobs_,pullspecials_ = check(puller,puller_x,puller_y,dir,true,data.reason,ox,oy)
-								mergeTable(pullobs, pullobs_);
-								mergeTable(pullallobs, pullallobs_);
-								mergeTable(pullspecials, pullspecials_);
-							end
+							--don't use pullers here - sticky pull will be handled after the move succeeds
 						else
 							obslist,allobs,specials = check(data.unitid,x,y,dir,false,data.reason,ox,oy)
 							pullobs,pullallobs,pullspecials = check(data.unitid,x,y,dir,true,data.reason,ox,oy)
@@ -1578,7 +1568,8 @@ function check(unitid,x,y,dir,pulling_,reason,ox,oy)
 							added = true
 						end
 						
-						if (ispull ~= nil) and pulling then
+						--don't pull sticky things at this timing - easier on my brain
+						if (ispull ~= nil) and pulling and (featureindex["sticky"] == nil or ( hasfeature(obsname,"is","sticky",id,x+ox,y+oy) == nil)) then
 							table.insert(result, id)
 							table.insert(results, id)
 							added = true
@@ -2496,6 +2487,38 @@ function find_sidekicks(unitid,dir)
 	return result;
 end
 
+function find_sticky_pulls(unitid,dir)
+	--fast track
+	if featureindex["sticky"] == nil then return {} end
+	--sticky units don't pull or be pulled via the normal logic - they'll happen at sidekick/copy timing because that's a lot easier for my brain to mentally model
+	local result = {}
+	local unit = mmf.newObject(unitid)
+	local unitname = getname(unit)
+	local sticky = hasfeature(unitname,"is","sticky",unitid)
+	local lazy = hasfeature(unitname,"is","lazy",unitid)
+	if lazy ~= nil then
+		return result;
+	end
+	local x,y = unit.values[XPOS],unit.values[YPOS]
+	--print("find_sticky_pulls",x,y,dir)
+	local curdir = (dir+2) % 4;
+	local curdx = ndirs[curdir+1][1];
+	local curdy = ndirs[curdir+1][2];
+	local curx = x+curdx;
+	local cury = y+curdy;
+	local obs = findobstacle(curx,cury);
+	for i,id in ipairs(obs) do
+		if (id ~= -1) then
+			local obsunit = mmf.newObject(id)
+			local obsname = getname(obsunit)
+			if hasfeature(obsname,"is","pull",id) and (isstill_or_locked(id,curx,cury,dir) == false) and (sticky or hasfeature(obsname,"is","sticky",id)) then
+				table.insert(result, id);
+			end
+		end
+	end
+	return result;
+end
+
 function apply_moonwalk(unitid, x, y, dir, ox, oy, reverse)
 	local name = "empty"
 	local sgn = reverse == true and -1 or 1
@@ -2591,6 +2614,7 @@ function queue_move(unitid,ox,oy,dir,specials,reason,x,y)
 	table.insert(movelist, {unitid,ox,oy,dir,specials,reason,x,y})
 
 	--implement SIDEKICK
+	--implement STICKY/PULL
 	if (unitid ~= 2) then
 		local unit = mmf.newObject(unitid)
 		local unitname = getname(unit)
@@ -2609,6 +2633,23 @@ function queue_move(unitid,ox,oy,dir,specials,reason,x,y)
 				updatedir(sidekickid, dir)
 				--print("adding to moving_units",unitid,getname(sidekick))
 				table.insert(moving_units, {unitid = sidekickid, reason = "sidekick", state = 0, moves = 1, dir = dir, xpos = sidekick.values[XPOS], ypos = sidekick.values[YPOS]})
+			end
+		end
+		local others = find_sticky_pulls(unitid, dir);
+		for _,otherid in ipairs(others) do
+			--no multiplicative cascades in sticky/pull you get the idea by now I hope
+			local other = mmf.newObject(otherid)
+			local alreadymoving = false
+			for _,other2 in ipairs(moving_units) do
+				if other2.unitid == otherid then
+					alreadymoving = true
+					break
+				end
+			end
+			if not alreadymoving then
+				updatedir(otherid, dir)
+				--print("adding to moving_units",unitid,getname(other))
+				table.insert(moving_units, {unitid = otherid, reason = "pull", state = 0, moves = 1, dir = dir, xpos = other.values[XPOS], ypos = other.values[YPOS]})
 			end
 		end
 	end
