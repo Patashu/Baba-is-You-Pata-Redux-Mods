@@ -753,13 +753,13 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 						local units,pushers,pullers = {},{},{}
 						
 						if (featureindex["sticky"] ~= nil and hasfeature(name,"is","sticky",data.unitid)) then
+							print("we are!")
 							units, pushers, pullers = find_entire_sticky_unit(data.unitid,ox,oy);
 							for _,pusher in ipairs(pushers) do
-								--print("x1", pusher)
 								local pusher_obj = mmf.newObject(pusher);
-								--print("x2", pusher_obj)
 								local pusher_x = pusher_obj.values[XPOS];
 								local pusher_y = pusher_obj.values[YPOS];
+								--print("sticky pusher:",pusher,pusher_x,pusher_y)
 								local obslist_,allobs_,specials_ = check(pusher,pusher_x,pusher_y,dir,false,data.reason,ox,oy);
 								mergeTable(obslist, obslist_);
 								mergeTable(allobs, allobs_);
@@ -872,9 +872,9 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 									
 									if (#units > 1) then --STICKY case
 										for _,u in ipairs(units) do
-											--print("y1",u)
-											--print("y2",specials_by_unitid[u])
-											queue_move(u,ox,oy,olddir,specials_by_unitid[u],data.reason,x,y)
+											local uunit =	mmf.newObject(u)
+											local xx,yy = uunit.values[XPOS],uunit.values[YPOS]
+											queue_move(u,ox,oy,olddir,specials_by_unitid[u],data.reason,xx,yy)
 										end
 									else
 										queue_move(data.unitid,ox,oy,olddir,specials,data.reason,x,y)
@@ -886,11 +886,18 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 									if (swap ~= nil) and (still == false) then
 										for a,b in ipairs(allobs) do
 											if (b ~= -1) and (b ~= 2) and (b ~= 0) then
+												
 												local swapunit = mmf.newObject(b)
 												local swapname = getname(swapunit)
 												
 												local obsstill = hasfeature(swapname,"is","still",b,x+ox,y+oy)
-												
+												--sticky swap check: we also have to be the unit that's moving onto it
+												if (featureindex["sticky"] ~= nil) then
+													local xx, yy = swapunit.values[XPOS],swapunit.values[YPOS];
+													if (x+ox ~= xx or y+oy ~= yy) then
+														break
+													end
+												end
 												if (obsstill == nil) then
 													addaction(b,{"update",x,y,nil})
 													swapped[b] = 1
@@ -899,27 +906,64 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 										end
 									end
 									
-									local swaps = findfeatureat(nil,"is","swap",x+ox,y+oy,{"still"})
-									if (swaps ~= nil) then
-										for a,b in ipairs(swaps) do
-											if (swapped[b] == nil) and (b ~= 2) then
-												addaction(b,{"update",x,y,nil})
+									--if we're a sticky mover, all pushers do this swap check. otherwise, we do it.
+									if (#pushers > 0) then
+										for _,pusher in ipairs(pushers) do
+											local pusher_obj = mmf.newObject(pusher);
+											local pusher_x = pusher_obj.values[XPOS];
+											local pusher_y = pusher_obj.values[YPOS];
+											local pusher_name = getname(pusher_obj);
+											local swaps = findfeatureat(nil,"is","swap",pusher_x+ox,pusher_y+oy,{"still"})
+											if (swaps ~= nil) then
+												for a,b in ipairs(swaps) do
+													if (swapped[b] == nil) and (b ~= 2) then
+														addaction(b,{"update",pusher_x,pusher_y,nil})
+													end
+												end
+											end
+											
+											if (featureindex["swaps"] ~= nil) then
+												local _obs = findobstacle(pusher_x+ox,pusher_y+oy)
+												for a,b in ipairs(_obs) do
+													if (b ~= -1) and (b ~= 2) and (b ~= 0) then
+														local swapunit = mmf.newObject(b)
+														local swapname = getname(swapunit)
+														
+														local obsstill = hasfeature(swapname,"is","still",b,pusher_x+ox,pusher_y+oy)
+														
+														if (obsstill == nil) then
+															if hasfeature(pusher_name,"swaps",swapname,pusher,pusher_x+ox,pusher_y+oy) then
+																addaction(b,{"update",pusher_x,pusher_y,nil})
+																swapped[b] = 1
+															end
+														end
+													end
+												end
 											end
 										end
-									end
-									
-									if (featureindex["swaps"] ~= nil) then
-										for a,b in ipairs(allobs) do
-											if (b ~= -1) and (b ~= 2) and (b ~= 0) then
-												local swapunit = mmf.newObject(b)
-												local swapname = getname(swapunit)
-												
-												local obsstill = hasfeature(swapname,"is","still",b,x+ox,y+oy)
-												
-												if (obsstill == nil) then
-													if hasfeature(name,"swaps",swapname,data.unitid,x+ox,y+oy) then
-														addaction(b,{"update",x,y,nil})
-														swapped[b] = 1
+									else
+										local swaps = findfeatureat(nil,"is","swap",x+ox,y+oy,{"still"})
+										if (swaps ~= nil) then
+											for a,b in ipairs(swaps) do
+												if (swapped[b] == nil) and (b ~= 2) then
+													addaction(b,{"update",x,y,nil})
+												end
+											end
+										end
+										
+										if (featureindex["swaps"] ~= nil) then
+											for a,b in ipairs(allobs) do
+												if (b ~= -1) and (b ~= 2) and (b ~= 0) then
+													local swapunit = mmf.newObject(b)
+													local swapname = getname(swapunit)
+													
+													local obsstill = hasfeature(swapname,"is","still",b,x+ox,y+oy)
+													
+													if (obsstill == nil) then
+														if hasfeature(name,"swaps",swapname,data.unitid,x+ox,y+oy) then
+															addaction(b,{"update",x,y,nil})
+															swapped[b] = 1
+														end
 													end
 												end
 											end
