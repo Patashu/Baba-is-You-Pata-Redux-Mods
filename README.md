@@ -1,6 +1,6 @@
 # Baba Is You Pata Redux Mods
 
-Special thanks to lily for initial COPY/PERSIST/RESET/STICKY implementation. (Also to whoever implemented ZOOM way back when Baba first came out, my memory doesn't go back that far sorry!)
+Special thanks to lily for the original COPY/PERSIST/RESET/STICKY implementation, and cg5 for the original ZOOM implementation.
 
 To install: Copy everything in Lua and Sprites to the world folder you want to use this mod. Edit the world folder's world_data.txt. Add mods=1 under [general] (like it is for the one in this repository).
 
