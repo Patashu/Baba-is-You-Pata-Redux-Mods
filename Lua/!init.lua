@@ -424,6 +424,34 @@ editor_objlist["text_sticky"] = {
 	colour_active = {2, 4},
 }
 
+table.insert(editor_objlist_order, "text_print")
+editor_objlist["text_print"] = {
+	name = "text_print",
+	sprite_in_root = false,
+	unittype = "text",
+	tags = {"patashu"},
+	tiling = -1,
+	type = 1,
+  argtype = {0, 2},
+	layer = 20,
+	colour = {0, 2},
+	colour_active = {0, 3},
+}
+
+table.insert(editor_objlist_order, "text_scrawl")
+editor_objlist["text_scrawl"] = {
+	name = "text_scrawl",
+	sprite_in_root = false,
+	unittype = "text",
+	tags = {"patashu"},
+	tiling = -1,
+	type = 1,
+  argtype = {0, 2},
+	layer = 20,
+	colour = {0, 2},
+	colour_active = {0, 3},
+}
+
 formatobjlist()
 
 print("End of !init.lua")

@@ -931,6 +931,7 @@ end
 
 function inside(name,x,y,dir_,unitid,leveldata_)
 	local ins = {}
+	local wordins = {}
 	local tileid = x + y * roomsizex
 	local maptile = unitmap[tileid] or {}
 	local dir = dir_
@@ -953,6 +954,9 @@ function inside(name,x,y,dir_,unitid,leveldata_)
 			if (target == name) and (verb == "has") and (findnoun(object,nlist.short) or (unitreference[object] ~= nil)) then
 				table.insert(ins, {object,conds})
 			end
+			if (target == name) and (verb == "scrawl") then
+				table.insert(wordins, {object,conds})
+			end
 		end
 	end
 	
@@ -973,6 +977,17 @@ function inside(name,x,y,dir_,unitid,leveldata_)
 					end
 				else
 					create("text_" .. name,x,y,dir,nil,nil,nil,nil,leveldata)
+				end
+			end
+		end
+	end
+	if (#wordins > 0) then
+		for i,v in ipairs(wordins) do
+			local object = "text_" .. v[1]
+			local conds = v[2]
+			if testcond(conds,unitid,x,y) then
+				if (unitreference[object] ~= nil) then
+					create(object,x,y,dir,nil,nil,nil,nil,leveldata)
 				end
 			end
 		end

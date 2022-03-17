@@ -1861,6 +1861,76 @@ function block(small_)
 				end
 			end
 		end
+		
+		local isprint = getunitswithverb("print",delthese)
+		
+		for id,ugroup in ipairs(isprint) do
+			local v = ugroup[1]
+			v = "text_" .. v
+			
+			for a,unit in ipairs(ugroup[2]) do
+				local x,y,dir,name = 0,0,4,""
+				
+				local leveldata = {}
+				
+				if (ugroup[3] ~= "empty") then
+					x,y,dir = unit.values[XPOS],unit.values[YPOS],unit.values[DIR]
+					name = getname(unit)
+					leveldata = {unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.flags[MAPLEVEL],unit.values[VISUALLEVEL],unit.values[VISUALSTYLE],unit.values[COMPLETED],unit.strings[COLOUR],unit.strings[CLEARCOLOUR]}
+				else
+					x = math.floor(unit % roomsizex)
+					y = math.floor(unit / roomsizex)
+					name = "empty"
+					dir = emptydir(x,y)
+				end
+				
+				if (dir == 4) then
+					dir = fixedrandom(0,3)
+				end
+				
+				if unitreference[v] ~= nil then
+					local domake = true
+					
+					if (name ~= "empty") then
+						local thingshere = findallhere(x,y)
+						
+						if (#thingshere > 0) then
+							for a,b in ipairs(thingshere) do
+								local thing = mmf.newObject(b)
+								local thingname = thing.strings[UNITNAME]
+								
+								if (thing.flags[CONVERTED] == false) and ((thingname == v) or ((thing.strings[UNITTYPE] == "text") and (v == "text"))) then
+									domake = false
+								end
+							end
+						end
+					end
+					
+					if domake then
+						if (findnoun(v,nlist.short) == false) then
+							create(v,x,y,dir,x,y,nil,nil,leveldata)
+						elseif (v == "text") then
+							if (name ~= "text") and (name ~= "all") then
+								create("text_" .. name,x,y,dir,x,y,nil,nil,leveldata)
+								updatecode = 1
+							end
+						elseif (string.sub(v, 1, 5) == "group") then
+							--[[
+							local mem = findgroup(v)
+							
+							for c,d in ipairs(mem) do
+								local thishere = findtype({d},x,y,nil,true)
+								
+								if (#thishere == 0) then
+									create(d,x,y,dir,x,y,nil,nil,leveldata)
+								end
+							end
+							]]--
+						end
+					end
+				end
+			end
+		end
 	end
 	
 	delthese,doremovalsound = handledels(delthese,doremovalsound)

@@ -1,11 +1,11 @@
-[levels]
-levelid=17
-rolling_levelid=7
-
 [general]
-mods=1
-name=pataredux
-author=Patashu
-start=3level
 firstlevel=3level
+start=3level
+author=Patashu
+name=pataredux
+mods=1
+
+[levels]
+rolling_levelid=8
+levelid=18
 
