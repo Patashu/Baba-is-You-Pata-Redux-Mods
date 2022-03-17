@@ -669,10 +669,9 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 						solved = false
 						
 						if (state == 0) then
-							if ((data.reason == "move") or (data.reason == "chill")) and (data.unitid == 2) and (dir == 4) then
-								dir = fixedrandom(0,3)
-								
-								data.dir = dir
+							if (data.unitid == 2) and (((data.reason == "move") and (dir == 4)) or (data.reason == "chill")) then
+								data.dir = fixedrandom(0,3)
+								dir = data.dir
 								
 								if cantmove(name,data.unitid,dir,x,y) then
 									skipthis = true
@@ -753,7 +752,6 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 						local units,pushers,pullers = {},{},{}
 						
 						if (featureindex["sticky"] ~= nil and hasfeature(name,"is","sticky",data.unitid)) then
-							print("we are!")
 							units, pushers, pullers = find_entire_sticky_unit(data.unitid,ox,oy);
 							for _,pusher in ipairs(pushers) do
 								local pusher_obj = mmf.newObject(pusher);
@@ -1895,7 +1893,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid,is_sticky)
 		end
 	end
 	
-	local swaps = findfeatureat(nil,"is","swap",x+ox,y+oy)
+	local swaps = findfeatureat(nil,"is","swap",x+ox,y+oy,{"still"})
 	
 	if (swaps ~= nil) and ((unitid ~= 2) or ((unitid == 2) and (pulling == false))) then
 		for a,b in ipairs(swaps) do
@@ -1922,7 +1920,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid,is_sticky)
 					local obsunit = mmf.newObject(id)
 					local obsname = getname(obsunit)
 					local yesswaps = hasfeature(name,"swaps",obsname,unitid,x+ox,y+oy);
-					if (yesswaps ~= nil) then
+					if (yesswaps ~= nil) and hasfeature(obsname,"is","still",id,x+ox,y+oy) == nil then
 						local b = id
 						if (pulling == false) or (pulling and (b ~= pusherid)) then
 							local alreadymoving = findupdate(b,"update")
@@ -1943,7 +1941,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid,is_sticky)
 	end
 	
 	if pulling then
-		local swap = hasfeature(name,"is","swap",unitid,x,y)
+		local swap = hasfeature(name,"is","swap",unitid,x,y,{"still"})
 		
 		if swap then
 			local swapthese = findallhere(x+ox,y+oy)
@@ -1973,7 +1971,7 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid,is_sticky)
 						local obsunit = mmf.newObject(id)
 						local obsname = getname(obsunit)
 						local yesswaps = hasfeature(name,"swaps",obsname,unitid,x+ox,y+oy);
-						if (yesswaps ~= nil) then
+						if (yesswaps ~= nil) and hasfeature(obsname,"is","still",id,x+ox,y+oy) == nil then
 							local b = id
 							if (b ~= pusherid) then
 								local alreadymoving = findupdate(b,"update")
@@ -2128,31 +2126,30 @@ function dopush(unitid,ox,oy,dir,pulling_,x_,y_,reason,pusherid,is_sticky)
 			if (lazypusher) then
 				return 1
 			end
-			if (movedata.pull == 0) then
-				hmlist,hms,specials = check(unitid,x,y,dir,pulling,reason,ox,oy)
-				hm = 0
-			
-				for i,obs in pairs(hmlist) do
-					if (obs < -1) or (obs > 1) then
-						if (not lazyid) then
-							--Mostly the lazypusher stuff is self-explanatory - don't do a push if we're lazy.
-							--But in the case of pulling, the item one ahead of us does a pull 'early', so we have to stop it in advance.
-							if (obs ~= 2) then
-								queue_move(unitid,ox,oy,dir,specials,reason,x,y)
-								pushsound = true
-								--move(obs,ox,oy,dir,specials)
-							end
-
-							local pid = tostring(x-ox + (y-oy) * roomsizex) .. tostring(obs)
-
-							if (pushedunits[pid] == nil) then
-								pushedunits[pid] = 1
-								hm = dopush(obs,ox,oy,dir,pulling,x-ox,y-oy,reason,unitid)
-							end
+			hmlist,hms,specials = check(unitid,x,y,dir,pulling,reason)
+			hm = 0
+		
+			for i,obs in pairs(hmlist) do
+				if (obs < -1) or (obs > 1) then
+					if (not lazyid) then
+						--Mostly the lazypusher stuff is self-explanatory - don't do a push if we're lazy.
+						--But in the case of pulling, the item one ahead of us does a pull 'early', so we have to stop it in advance.
+						local pid = tostring(x - ox + (y - oy) * roomsizex) .. tostring(obs)
+						
+						if (obs ~= 2) and (pushedunits[pid] == nil) then
+							queue_move(unitid,ox,oy,dir,specials,reason,x,y)
+							pushsound = true
+						end
+						
+						if (pushedunits[pid] == nil) then
+							pushedunits[pid] = 1
+							hm = dopush(obs,ox,oy,dir,pulling,x-ox,y-oy,reason,unitid)
 						end
 					end
 				end
-				
+			end
+			
+			if (movedata.pull == 0) then
 				movedata.pull = hm + 1
 			else
 				hm = movedata.pull - 1
@@ -2199,7 +2196,10 @@ function move(unitid,ox,oy,dir,specials_,instant_,simulate_,x_,y_)
 			local dodge = false
 			
 			local bx,by = 0,0
-			if (b ~= 2) and (reason ~= "weak") then
+			if (b ~= 2) and (deleted[b] ~= nil) then
+				MF_alert("Already gone")
+				dodge = true
+			elseif (b ~= 2) and (reason ~= "weak") then
 				local bunit = mmf.newObject(b)
 				bx,by = bunit.values[XPOS],bunit.values[YPOS]
 				if (bx ~= x+ox) or (by ~= y+oy) then

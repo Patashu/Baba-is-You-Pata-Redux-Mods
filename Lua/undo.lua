@@ -183,7 +183,7 @@ function undo()
 					local baseuid = line[7] or -1
 					
 					if (paradox[uid] == nil) and (paradox[baseuid] == nil) then
-						local x,y,dir,levelfile,levelname,vislevel,complete,visstyle,maplevel,colour,clearcolour,followed,back_init,ogname,convert,oldid = line[3],line[4],line[5],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],line[16],line[17],line[18],line[19],line[20]
+						local x,y,dir,levelfile,levelname,vislevel,complete,visstyle,maplevel,colour,clearcolour,followed,back_init,ogname,signtext,convert,oldid = line[3],line[4],line[5],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],line[16],line[17],line[18],line[19],line[20],line[21]
 						local name = line[2]
 						
 						local unitname = ""
@@ -217,6 +217,7 @@ function undo()
 							
 							unit.strings[COLOUR] = colour
 							unit.strings[CLEARCOLOUR] = clearcolour
+							unit.strings[UNITSIGNTEXT] = signtext or ""
 							
 							if (unit.className == "level") then
 								MF_setcolourfromstring(unitid,colour)
@@ -279,14 +280,14 @@ function undo()
 						
 						local unit = mmf.newObject(unitid)
 						--paradox-proofing
-            local unitname = nil
-            local x,y = nil,nil
-            local unittype = nil
-            if (unit ~= nil) then
-              unitname = unit.strings[UNITNAME]
-              x,y = unit.values[XPOS],unit.values[YPOS]
-              unittype = unit.strings[UNITTYPE]
-            end
+						local unitname = nil
+						local x,y = nil,nil
+						local unittype = nil
+						if (unit ~= nil) then
+							unitname = unit.strings[UNITNAME]
+							x,y = unit.values[XPOS],unit.values[YPOS]
+							unittype = unit.strings[UNITTYPE]
+						end
 						
 						if (unit ~= nil) and (not hasfeature(getname(unit),"is","persist",unitid)) then
 							unit = {}
@@ -356,8 +357,8 @@ function undo()
 						if (unitid ~= nil) and (unitid ~= 0) then
 							local unit = mmf.newObject(unitid)
 							if (unit ~= nil) then --paradox-proofing
-                unit.values[FLOAT] = tonumber(line[4])
-              end
+								unit.values[FLOAT] = tonumber(line[4])
+							end
 						end
 					end
 				elseif (style == "levelupdate") then
@@ -403,8 +404,8 @@ function undo()
 					MF_setcolour(unitid,line[3],line[4])
 					local unit = mmf.newObject(unitid)
 					if (unit ~= nil) then --paradox-proofing
-            unit.values[A] = line[5]
-          end
+						unit.values[A] = line[5]
+					end
 				elseif (style == "broken") then
 					local unitid = getunitid(line[3])
 					local unit = mmf.newObject(unitid)

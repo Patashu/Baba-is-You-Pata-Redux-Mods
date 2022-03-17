@@ -33,6 +33,7 @@ function clearunits(restore_)
 	leveldata = {}
 	leveldata.colours = {}
 	leveldata.currcolour = 0
+	poweredstatus = {}
 	
 	visiontargets = {}
 	vision_rendered = {}
@@ -76,6 +77,7 @@ function smallclear()
 	pushedunits = {}
 	levelconversions = {}
 	vision_rendered = {}
+	poweredstatus = {}
 	
 	HACK_MOVES = 0
 	movemap = {}
@@ -110,6 +112,7 @@ function clear()
 	leveldata = {}
 	leveldata.colours = {}
 	leveldata.currcolour = 0
+	poweredstatus = {}
 	
 	visiontargets = {}
 	vision_rendered = {}

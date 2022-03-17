@@ -436,7 +436,7 @@ function setunitmap()
 	
 	for i,unit in ipairs(delthese) do
 		local x,y,dir,unitname = unit.values[XPOS],unit.values[YPOS],unit.values[DIR],unit.strings[UNITNAME]
-		addundo({"remove",unitname,x,y,dir,unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],unit.followed,unit.back_init,unit.originalname,false,unit.fixed})
+		addundo({"remove",unitname,x,y,dir,unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],unit.followed,unit.back_init,unit.originalname,unit.strings[UNITSIGNTEXT],false,unit.fixed})
 		delunit(unit.fixed)
 		MF_remove(unit.fixed)
 	end
@@ -755,7 +755,11 @@ function generatefreqs()
 				local name = v .. "flat" .. tostring(j)
 				local pair = prev .. "sharp" .. tostring(j)
 				
-				if (play_data.freqs[pair] ~= nil) then
+				if (string.sub(name, 1, 1) == "c") or (string.sub(name, 1, 1) == "f") then
+					pair = prev .. tostring(j)
+				end
+				
+				if (play_data.freqs[pair] ~= nil) and (play_data.freqs[pair] < 100000) then
 					play_data.freqs[name] = play_data.freqs[pair]
 				end
 				

@@ -537,7 +537,7 @@ function delete(unitid,x_,y_,total_,noinside_)
 				changevisiontarget(unit.fixed)
 			end
 			
-			addundo({"remove",unitname,x,y,dir,unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],unit.followed,unit.back_init,unit.originalname,false,unitid},unitid)
+			addundo({"remove",unitname,x,y,dir,unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],unit.followed,unit.back_init,unit.originalname,unit.strings[UNITSIGNTEXT],false,unitid},unitid)
 			unit = {}
 			delunit(unitid)
 			MF_remove(unitid)
@@ -1351,13 +1351,13 @@ function emptydir(x,y)
 			if (rule[1] == "empty") then
 				if (rule[2] == "is") then
 					if (issleep(2,x,y) == false) then
-						if (rule[3] == "right") and testcond(econds,2,x,y,{"facing"}) then
+						if (rule[3] == "right") and testcond(econds,2,x,y,{"facing"},nil,cconds) then
 							dir = 0
-						elseif (rule[3] == "up") and testcond(econds,2,x,y,{"facing"}) then
+						elseif (rule[3] == "up") and testcond(econds,2,x,y,{"facing"},nil,cconds) then
 							dir = 1
-						elseif (rule[3] == "left") and testcond(econds,2,x,y,{"facing"}) then
+						elseif (rule[3] == "left") and testcond(econds,2,x,y,{"facing"},nil,cconds) then
 							dir = 2
-						elseif (rule[3] == "down") and testcond(econds,2,x,y,{"facing"}) then
+						elseif (rule[3] == "down") and testcond(econds,2,x,y,{"facing"},nil,cconds) then
 							dir = 3
 						end
 					end
@@ -2531,32 +2531,32 @@ function simplecheck(x,y,noempty_,checkc)
 end
 
 function table.has_value(tab, val)
-  for index, value in ipairs(tab) do
-      if value == val then
-          return true
-      end
-  end
+	for index, value in ipairs(tab) do
+			if value == val then
+					return true
+			end
+	end
 
-  return false
+	return false
 end
 
 function mergeTable(t, other)
-  if other ~= nil then
-    for k,v in pairs(other) do
-      if type(k) == "number" then
-        if not table.has_value(t, v) then
-          table.insert(t, v)
-        end
-      else
-        if t[k] ~= nil then
-          if type(t[k]) == "table" and type(v) == "table" then
-            mergeTable(t[k], v)
-          end
-        else
-          t[k] = v
-        end
-      end
-    end
-  end
-  return t
+	if other ~= nil then
+		for k,v in pairs(other) do
+			if type(k) == "number" then
+				if not table.has_value(t, v) then
+					table.insert(t, v)
+				end
+			else
+				if t[k] ~= nil then
+					if type(t[k]) == "table" and type(v) == "table" then
+						mergeTable(t[k], v)
+					end
+				else
+					t[k] = v
+				end
+			end
+		end
+	end
+	return t
 end
