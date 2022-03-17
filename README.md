@@ -30,7 +30,7 @@ To install: Copy everything in Lua and Sprites to the world folder you want to u
 
 **COPY** - __Verb__ If x COPY y, whenever y moves, x will try to move the same way.
 
-**RESET** - __Property__ If YOU touches RESET, the game is undone back to the starting state. However, anything that is currently PERSIST will remain as-is.
+**RESET** - __Property__ If YOU touches RESET, the game is undone back to the starting state. However, anything that is currently NORESET will remain as-is.
 
 **NOUNDO/NORESET** - __Property__ NOUNDO units are unaffected by undoing. Edge cases: If a NOUNDO unit is created by conversion, the thing that converted into it does not come back. If a NOUNDO unit is destroyed, it does not come back when you undo. If a unit is currently NORESET, it will remain unchanged when YOU RESET, even if it used to not be NORESET. (This used to be PERSIST, but I split it into two properties so you can pick if it has one or both of the behaviours, and to not be confused with Randomiser's Persistence levelpack.) LEVEL IS NOUNDO/NORESET disables the player using those functions.
 
