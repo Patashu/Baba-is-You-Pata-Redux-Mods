@@ -2741,7 +2741,7 @@ function find_entire_sticky_unit(unitid, dx, dy)
 					local other_unit = mmf.newObject(other)
 					local other_name = getname(other_unit);
 					--print("d:",other,other_name)
-					if other_name == unitname and not unit_added[other] then
+					if ((other_name == unitname) or very_sticky) and (not float_breaks_sticky or floating(other, unitid, xx, yy)) and not unit_added[other] then
 						local other_is_sticky = hasfeature(other_name,"is","sticky",other)
 						if other_is_sticky then
 							--print("f, we did it")

@@ -1,5 +1,9 @@
 --If true, MOONWALK and related properties (DRUNK, DRUNKER, SKIP) apply to PUSH, PULL, SHIFT and YEET in addition to basically everything else. Defaults to true.
 very_drunk = true
+--If true, two things at different float values can't stick together. Defaults to true.
+float_breaks_sticky = true
+--If true, two things with different names can stick together. Defaults to false.
+very_sticky = false
 
 print("Start of !init.lua")
 
