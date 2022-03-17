@@ -4112,6 +4112,9 @@ function diceblock()
 end
 
 function resetlevel()
+	if (hasfeature("level","is","noreset",1) ~= nil) then
+		return
+	end
 	MF_playsound("restart")
 	resetting = true
 	while #undobuffer > 1 do

@@ -176,12 +176,14 @@ function command(key,player_)
 		end
 	end
 	
-	if (keyid == 5) then
-		MF_restart(false)
-		do_mod_hook("level_restart", {})
-	elseif (keyid == 8) then
-		MF_restart(true)
-		do_mod_hook("level_restart", {})
+	if (hasfeature("level","is","noreset",1) == nil) then
+		if (keyid == 5) then
+			MF_restart(false)
+			do_mod_hook("level_restart", {})
+		elseif (keyid == 8) then
+			MF_restart(true)
+			do_mod_hook("level_restart", {})
+		end
 	end
 	
 	dolog(key)

@@ -193,17 +193,30 @@ editor_objlist["text_reset"] = {
 	layer = 20,
 }
 
-table.insert(editor_objlist_order, "text_persist")
-editor_objlist["text_persist"] = {
-	name = "text_persist",
+table.insert(editor_objlist_order, "text_noundo")
+editor_objlist["text_noundo"] = {
+	name = "text_noundo",
 	sprite_in_root = false,
 	unittype = "text",
 	tags = {"patashu"},
 	tiling = -1,
 	type = 2,
 	layer = 20,
-	colour = {0, 2},
-	colour_active = {0, 3},
+	colour = {5, 2},
+	colour_active = {5, 3},
+}
+
+table.insert(editor_objlist_order, "text_noreset")
+editor_objlist["text_noreset"] = {
+	name = "text_noreset",
+	sprite_in_root = false,
+	unittype = "text",
+	tags = {"patashu"},
+	tiling = -1,
+	type = 2,
+	layer = 20,
+	colour = {5, 2},
+	colour_active = {5, 3},
 }
 
 table.insert(editor_objlist_order, "text_stops")

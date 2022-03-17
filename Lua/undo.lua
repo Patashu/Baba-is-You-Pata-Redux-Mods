@@ -101,6 +101,9 @@ function undo()
 	local result = 0
 	HACK_INFINITY = 0
 	logevents = false
+	if (hasfeature("level","is","noundo",1) ~= nil) then
+		return result
+	end
 	
 	if (#undobuffer > 1) then
 		result = 1
@@ -128,7 +131,7 @@ function undo()
 						if (unit ~= nil) then
 							local unitname = getname(unit)
 						end
-						if unit ~= nil and not hasfeature(unitname,"is","persist",unitid) then
+						if unit ~= nil and not unit_ignores_undos(unitid) then
 							local oldx,oldy = unit.values[XPOS],unit.values[YPOS]
 							local x,y,dir = line[3],line[4],line[5]
 							unit.values[XPOS] = x
@@ -191,7 +194,7 @@ function undo()
 
 						--If the unit was converted into 'no undo' byproducts that still exist, don't bring it back.
 						local proceed = true;
-						if (convert and featureindex["persist"] ~= nil) then
+						if (convert and (featureindex["noundo"] ~= nil or featureindex["noreset"] ~= nil)) then
 							proceed = not turnedIntoOnlyNoUndoUnits(i, oldid);
 						end
 
@@ -260,7 +263,7 @@ function undo()
 							end
 
 							--If the unit was actually a destroyed 'PERSIST', oops. Don't actually bring it back. It's dead, Jim.
-							if (not convert and hasfeature(getname(unit),"is","persist",unitid)) then
+							if (not convert and unit_ignores_undos(unitid)) then
 								unit = {}
 								delunit(unitid)
 								MF_remove(unitid)
@@ -289,7 +292,7 @@ function undo()
 							unittype = unit.strings[UNITTYPE]
 						end
 						
-						if (unit ~= nil) and (not hasfeature(getname(unit),"is","persist",unitid)) then
+						if (unit ~= nil) and (not unit_ignores_undos(unitid)) then
 							unit = {}
 							delunit(unitid)
 							MF_remove(unitid)
@@ -548,8 +551,7 @@ function turnedIntoOnlyNoUndoUnits(i, unit_id)
 		if (action == "create") and created_from_id == unit_id then
 			local still_exists = mmf.newObject(created_id)
 			if (still_exists ~= nil) then
-				local name = getname(still_exists)
-				if (hasfeature(name,"is","persist",created_id)) then
+				if unit_ignores_undos(created_id) then
 					found_no_undo = true;
 				else
 					found_non_no_undo = true;
@@ -560,4 +562,16 @@ function turnedIntoOnlyNoUndoUnits(i, unit_id)
 		i = i + 1;
 	end
 	return not (found_non_no_undo or not found_no_undo);
+end
+
+function unit_ignores_undos(unitid)
+	local still_exists = mmf.newObject(unitid)
+	if (still_exists ~= nil) then
+		local name = getname(still_exists)
+		if doreset then
+			return hasfeature(name,"is","noreset",unitid)
+		else
+			return hasfeature(name,"is","noundo",unitid)
+		end
+	end
 end
