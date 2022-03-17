@@ -439,6 +439,36 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 						end
 					end
 				end
+				
+				local ishates = getunitswithverb("hates")
+				
+				for id,ugroup in ipairs(ishates) do
+					local v = ugroup[1]
+					
+					if (ugroup[3] ~= "empty") then
+						for a,unit in ipairs(ugroup[2]) do
+							local x,y = unit.values[XPOS],unit.values[YPOS]
+							local things = findtype({v,nil},x,y,unit.fixed)
+							
+							if (#things > 0) then
+								for a,b in ipairs(things) do
+									if (b ~= unit.fixed) then
+										if (isstill_or_locked(unit.fixed,x,y,unit.values[DIR]) == false) then
+											if (been_seen[unit.fixed] == nil) then
+												table.insert(moving_units, {unitid = unit.fixed, reason = "hates", state = 0, moves = 1, dir = unit.values[DIR], xpos = x, ypos = y})
+												been_seen[unit.fixed] = #moving_units
+											else
+												local id = been_seen[unit.fixed]
+												local this = moving_units[id]
+												this.moves = this.moves + 1
+											end
+										end
+									end
+								end
+							end
+						end
+					end
+				end
 			elseif (take == 8) then
 				local shifts = findallfeature(nil,"is","shift",true)
 				
