@@ -4,7 +4,7 @@ Special thanks to lily for the original COPY/PERSIST/RESET/STICKY implementation
 
 To install: Copy everything in Lua and Sprites to the world folder you want to use this mod. Edit the world folder's world_data.txt. Add mods=1 under [general] (like it is for the one in this repository).
 
-**SLIP** - __Property__ Once per turn, objects standing on something SLIP will involuntarily move in the direction they're facing. If they did, voluntary movement (YOU, MOVE, COPY) is prevented that turn.
+**SLIP** - __Property__ Once per turn, objects standing on something SLIP will involuntarily move in the direction they're facing. If they did, voluntary movement (YOU, MOVE, COPY) is prevented that turn. A unit that didn't move last turn won't SLIP.
 
 **SLIDE** - __Property__ Whenever a unit steps onto something that is SLIDE, it immediately moves again in the same direction. EMPTY IS SLIDE works.
 
