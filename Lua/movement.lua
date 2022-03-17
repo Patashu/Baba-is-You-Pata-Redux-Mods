@@ -112,9 +112,30 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 
 										if (isstill_or_locked(b,x,y,newunit.values[DIR]) == false) then
 											if (been_seen[b] == nil) then
-												table.insert(moving_units, {unitid = b, reason = "slip", state = 0, moves = 1, dir = unit.values[DIR], xpos = x, ypos = y})
-												been_seen[b] = #moving_units
+												--bab style SLIP: only SLIP if you were moving last turn, and SLIP in that direction
+												if (#undobuffer > 1) then
+													local currentundo = undobuffer[2]
+													if (currentundo ~= nil) then
+														for i,line in ipairs(currentundo) do
+															local style = line[1]
+															if (style == "update") then
+																local uid = getunitid(line[9])
+																if (uid == b) then
+																	local xx,yy = line[3],line[4]
+																	if (xx ~= x or yy ~= y) then
+																		local dx = x-xx;
+																		local dy = y-yy;
+																		local newdir = math.floor(oxoytodir(dx, dy));
+																		table.insert(moving_units, {unitid = b, reason = "slip", state = 0, moves = 1, dir = newdir, xpos = x, ypos = y})
+																		been_seen[b] = #moving_units
+																	end
+																end
+															end
+														end
+													end
+												end
 											else
+												--I THINK doing this all the way down here is okay, we don't need to redo the undo history check?
 												local id = been_seen[b]
 												local this = moving_units[id]
 												this.moves = this.moves + 1
