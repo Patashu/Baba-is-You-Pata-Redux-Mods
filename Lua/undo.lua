@@ -101,7 +101,7 @@ function undo()
 	local result = 0
 	HACK_INFINITY = 0
 	logevents = false
-	if (hasfeature("level","is","noundo",1) ~= nil) then
+	if ((not resetting) and (hasfeature("level","is","noundo",1) ~= nil)) then
 		return result
 	end
 	
@@ -568,7 +568,7 @@ function unit_ignores_undos(unitid)
 	local still_exists = mmf.newObject(unitid)
 	if (still_exists ~= nil) then
 		local name = getname(still_exists)
-		if doreset then
+		if resetting then
 			return hasfeature(name,"is","noreset",unitid)
 		else
 			return hasfeature(name,"is","noundo",unitid)

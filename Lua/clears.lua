@@ -48,6 +48,7 @@ function clearunits(restore_)
 	destroylevel_style = ""
 
 	doreset = false
+	resetting = false
 	resetcount = 0
 	resetmoves = 0
 	
@@ -129,6 +130,7 @@ function clear()
 	destroylevel_style = ""
 
 	doreset = false
+	resetting = false
 	resetcount = 0
 	resetmoves = 0
 	

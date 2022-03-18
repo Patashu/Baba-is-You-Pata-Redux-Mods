@@ -4183,6 +4183,7 @@ end
 
 function resetlevel()
 	if (hasfeature("level","is","noreset",1) ~= nil) then
+		doreset = false
 		return
 	end
 	MF_playsound("restart")
