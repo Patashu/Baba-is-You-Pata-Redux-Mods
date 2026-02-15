@@ -680,6 +680,8 @@ function movecommand(ox,oy,dir_,playerid_,dir_2,no3d_)
 		if skiptake then
 			done = true
 		end
+
+		do_mod_hook("movement_take",{moving_units,take})
 		
 		while (done == false) and (skiptake == false) and (debug_moves < movelimit) do
 			local smallest_state = 99

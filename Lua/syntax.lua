@@ -34,13 +34,25 @@ function addunit(id,undoing_,levelstart_)
 	
 	local name = getname(unit)
 	local name_ = unit.strings[NAME]
+	local name__ = unit.strings[UNITNAME]
 	unit.originalname = unit.strings[UNITNAME]
 	
 	if (unitlists[name] == nil) then
 		unitlists[name] = {}
 	end
+
+	if (string.sub(name_, 1, 5) == "text_") then
+		unit.flags[META] = true
+	end
 	
 	table.insert(unitlists[name], unit.fixed)
+
+	if (name ~= name__) then
+		if (unitlists[name__] == nil) then
+			unitlists[name__] = {}
+		end
+		table.insert(unitlists[name__], unit.fixed)
+	end
 	
 	if (unit.strings[UNITTYPE] ~= "text") or ((unit.strings[UNITTYPE] == "text") and (unit.values[TYPE] == 0)) then
 		objectlist[name_] = 1
@@ -320,7 +332,11 @@ function createall(matdata,x_,y_,id_,dolevels_,leveldata_)
 				else
 					local x = v % roomsizex
 					local y = math.floor(v / roomsizex)
-					local dir = 4
+					local dir = emptydir(x,y)
+					
+					if (dir == 4) then
+						dir = fixedrandom(0,3)
+					end
 					
 					local blocked = {}
 					
@@ -348,7 +364,7 @@ function createall(matdata,x_,y_,id_,dolevels_,leveldata_)
 						
 						if (blocked["all"] == nil) then
 							for b,mat in pairs(objectlist) do
-								if (findnoun(b) == false) and (blocked[target] == nil)	then
+								if (findnoun(b) == false) and (blocked[b] == nil)	then
 									local nunitid,ningameid = create(b,x,y,dir,nil,nil,nil,nil,leveldata)
 									addundo({"convert",matdata[1],mat,ningameid,2,x,y,dir})
 								end
@@ -389,6 +405,86 @@ function createall(matdata,x_,y_,id_,dolevels_,leveldata_)
 			end
 		end
 	end
+end
+
+function createall_single(unitid,conds,x_,y_,id_,dolevels_,leveldata_)
+	local all = {}
+	local empty = false
+	local dolevels = dolevels_ or false
+	local delthis = false
+	
+	local leveldata = leveldata_ or {}
+	
+	local vunit
+	local x,y,dir,name,id = x_,y_,4,"",id_
+	
+	if (unitid ~= 2) then
+		vunit = mmf.newObject(unitid)
+		x,y,dir,id = vunit.values[XPOS],vunit.values[YPOS],vunit.values[DIR],vunit.values[ID]
+		name = getname(vunit)
+	else
+		name = "empty"
+		dir = emptydir(x,y)
+		if (dir == 4) then
+			dir = fixedrandom(0,3)
+		end
+	end
+	
+	for b,unit in pairs(objectlist) do
+		if (findnoun(b) == false) and (b ~= name) then
+			local protect = hasfeature(name,"is","not " .. b,unitid,x,y)
+			
+			if (protect == nil) then
+				local mat = findtype({b},x,y,unitid)
+				--local tmat = findtext(x,y)
+				
+				if (#mat == 0) then
+					local nunitid,ningameid = create(b,x,y,dir,nil,nil,nil,nil,leveldata)
+					addundo({"convert",name,mat,ningameid,id,x,y,dir})
+					
+					local nunit = mmf.newObject(nunitid)
+					
+					if (unitid ~= 2) then
+						nunit.originalname = vunit.originalname
+					else
+						nunit.originalname = "empty"
+					end
+					
+					if (name == "text") or (name == "level") then
+						delthis = true
+					end
+				end
+			end
+		end
+	end
+	
+	if (name == "level") and dolevels then
+		local blocked = {}
+		
+		if (featureindex["level"] ~= nil) then
+			for i,rules in ipairs(featureindex["level"]) do
+				local rule = rules[1]
+				local conds = rules[2]
+				
+				if (rule[1] == "level") and (rule[2] == "is") and (string.sub(rule[3], 1, 4) == "not ") then
+					if testcond(conds,1,x,y) then
+						local target = string.sub(rule[3], 5)
+						blocked[target] = 1
+					end
+				end
+			end
+		end
+		
+		if (blocked["all"] == nil) and ((conds == nil) or testcond(conds,1)) then
+			for b,unit in pairs(objectlist) do
+				if (findnoun(b,nlist.brief) == false) and (b ~= "empty") and (b ~= "level") and (blocked[target] == nil) then
+					table.insert(levelconversions, {b, {}})
+				end
+			end
+		end
+	end
+	
+	return delthis
 end
 
 function setunitmap()
@@ -438,7 +534,7 @@ function setunitmap()
 	
 	for i,unit in ipairs(delthese) do
 		local x,y,dir,unitname = unit.values[XPOS],unit.values[YPOS],unit.values[DIR],unit.strings[UNITNAME]
-		addundo({"remove",unitname,x,y,dir,unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],unit.followed,unit.back_init,unit.originalname,unit.strings[UNITSIGNTEXT],false,unit.fixed})
+		addundo({"remove",unitname,x,y,dir,unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],unit.followed,unit.back_init,unit.originalname,unit.strings[UNITSIGNTEXT],unit.holder,false,unit.fixed})
 		delunit(unit.fixed)
 		MF_remove(unit.fixed)
 	end
@@ -568,8 +664,12 @@ function updatescreen(x,y)
 	Yoffset = y
 end
 
+HACK_ROOMSIZEUNDO = false
+HACK_ROOMSIZEUNDO_DELTHESE = {}
+
 function updateroomsize(tilesize_,roomsizex_,roomsizey_)
 	tilesize = tilesize_
+	HACK_ROOMSIZEUNDO_DELTHESE = {}
 	
 	roomsizex = roomsizex_
 	roomsizey = roomsizey_
@@ -590,7 +690,11 @@ function updateroomsize(tilesize_,roomsizex_,roomsizey_)
 		if (generaldata.values[MODE] == 5) then
 			removetile(unit.fixed,unit.values[XPOS],unit.values[YPOS])
 		else
-			delunit(unit.fixed)
+			if (HACK_ROOMSIZEUNDO == false) then
+				delunit(unit.fixed)
+			else
+				table.insert(HACK_ROOMSIZEUNDO_DELTHESE, unit.fixed)
+			end
 		end
 	end
 	
@@ -784,6 +888,7 @@ function setupnounlists()
 	nlist.short = {"group","all","text","empty"}
 	nlist.brief = {"group","all"}
 	nlist.objects = {"text","empty"}
+	nlist.conversions = {"createall","empty","revert"}
 end
 
 function update_cleanup()

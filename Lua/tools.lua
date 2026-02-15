@@ -37,11 +37,13 @@ end
 function findall(name_,ignorebroken_,just_testing_)
 	local result = {}
 	local name = name_[1]
+	local meta = true
 	
 	local checklist = unitlists[name]
 	
 	if (name == "text") then
 		checklist = codeunits
+		meta = false
 	end
 	
 	local ignorebroken = ignorebroken_ or false
@@ -50,7 +52,7 @@ function findall(name_,ignorebroken_,just_testing_)
 	if (checklist ~= nil) then
 		for i,unitid in ipairs(checklist) do
 			local unit = mmf.newObject(unitid)
-			local unitname = getname(unit)
+			local unitname = getname(unit,meta)
 			
 			local oldbroken = unit.broken
 			if ignorebroken then
@@ -81,6 +83,7 @@ function delunit(unitid)
 		local name = getname(unit)
 		local x,y = unit.values[XPOS],unit.values[YPOS]
 		local unitlist = unitlists[name]
+		local unitlist_ = unitlists[unit.strings[UNITNAME]] or {}
 		local unittype = unit.strings[UNITTYPE]
 		
 		if (unittype == "text") then
@@ -95,6 +98,17 @@ function delunit(unitid)
 				if (v == unitid) then
 					v = {}
 					table.remove(unitlist, i)
+					break
+				end
+			end
+		end
+
+		if (unitlist_ ~= nil) then
+			for i,v in pairs(unitlist_) do
+				if (v == unitid) then
+					v = {}
+					table.remove(unitlist_, i)
+					break
 				end
 			end
 		end
@@ -200,7 +214,7 @@ function delunit(unitid)
 			end
 		end
 	else
-		MF_alert("delunit(): no object found with id " .. tostring(unitid))
+		MF_alert("delunit(): no object found with id " .. tostring(unitid) .. " (delunit)")
 	end
 		
 	for i,v in ipairs(units) do
@@ -537,7 +551,7 @@ function delete(unitid,x_,y_,total_,noinside_)
 				changevisiontarget(unit.fixed)
 			end
 			
-			addundo({"remove",unitname,x,y,dir,unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],unit.followed,unit.back_init,unit.originalname,unit.strings[UNITSIGNTEXT],false,unitid},unitid)
+			addundo({"remove",unitname,x,y,dir,unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],unit.followed,unit.back_init,unit.originalname,unit.strings[UNITSIGNTEXT],unit.holder,false,unitid},unitid)
 			unit = {}
 			delunit(unitid)
 			MF_remove(unitid)
@@ -595,7 +609,36 @@ function writerules(parent,name,x_,y_)
 				
 				if dunit.visible then
 					fullinvis = false
+					break
 				end
+			end
+		end
+
+		for a,b in ipairs(tags) do
+			if (string.sub(b, 1, 12) == "mimicparent_") and (featureindex["mimic"] ~= nil) then
+				local id = tonumber(string.sub(b, -1))
+				local parent = featureindex["mimic"][id]
+				
+				if (parent ~= nil) then
+					local ids_ = parent[3]
+					local finvis = true
+					for a,b_ in ipairs(ids_) do
+						for c,d in ipairs(b_) do
+							local dunit = mmf.newObject(d)
+							
+							if dunit.visible then
+								finvis = false
+								break
+							end
+						end
+					end
+					
+					if finvis then
+						fullinvis = true
+					end
+				end
+				
+				break
 			end
 		end
 		
@@ -1105,7 +1148,7 @@ function issolid(unitid)
 	local name = unit.strings[UNITNAME]
 	
 	if (unit.strings[UNITTYPE] == "text") then
-		name = "text"
+		-- name = "text"
 	end
 	
 	local ispush = hasfeature(name,"is","push",unitid)
@@ -1126,7 +1169,7 @@ function isgone(unitid)
 		local x,y,name = unit.values[XPOS],unit.values[YPOS],unit.strings[UNITNAME]
 		
 		if (unit.strings[UNITTYPE] == "text") then
-			name = "text"
+			-- name = "text"
 		end
 		
 		local isyou = hasfeature(name,"is","you",unitid,x,y) or hasfeature(name,"is","you2",unitid,x,y) or hasfeature(name,"is","3d",unitid,x,y)
@@ -1354,7 +1397,7 @@ function floating_level(id,x_,y_)
 	return false
 end
 
-function emptydir(x,y)
+function emptydir(x,y,cconds)
 	local dir = 4
 	local followcheck = false
 	
@@ -1366,13 +1409,13 @@ function emptydir(x,y)
 			if (rule[1] == "empty") then
 				if (rule[2] == "is") then
 					if (issleep(2,x,y) == false) then
-						if (rule[3] == "right") and testcond(econds,2,x,y,{"facing"},nil,cconds) then
+						if (rule[3] == "right") and testcond(econds,2,x,y,{"facing","seeing"},nil,cconds) then
 							dir = 0
-						elseif (rule[3] == "up") and testcond(econds,2,x,y,{"facing"},nil,cconds) then
+						elseif (rule[3] == "up") and testcond(econds,2,x,y,{"facing","seeing"},nil,cconds) then
 							dir = 1
-						elseif (rule[3] == "left") and testcond(econds,2,x,y,{"facing"},nil,cconds) then
+						elseif (rule[3] == "left") and testcond(econds,2,x,y,{"facing","seeing"},nil,cconds) then
 							dir = 2
-						elseif (rule[3] == "down") and testcond(econds,2,x,y,{"facing"},nil,cconds) then
+						elseif (rule[3] == "down") and testcond(econds,2,x,y,{"facing","seeing"},nil,cconds) then
 							dir = 3
 						end
 					end
@@ -1389,7 +1432,7 @@ function emptydir(x,y)
 					
 					for c,name in ipairs(checkthese) do
 						if (followcheck == false) and (issleep(2,x,y) == false) and (objectlist[name] ~= nil) and (unitlists[name] ~= nil) then
-							if testcond(econds,2,x,y,{"facing"}) then
+							if testcond(econds,2,x,y,{"facing","seeing"}) then
 								for i,v in ipairs(unitlists[name]) do
 									local funit = mmf.newObject(v)
 									
@@ -1441,7 +1484,7 @@ function issafe(unitid,x,y)
 	
 	if (unitid ~= 1) and (unitid ~= 2) then
 		local unit = mmf.newObject(unitid)
-		name = getname(unit)
+		name = unit.strings[UNITNAME]
 	elseif (unitid == 1) then
 		name = "level"
 	else
@@ -1462,7 +1505,7 @@ function issleep(unitid,x_,y_)
 	
 	if (unitid ~= 1) and (unitid ~= 2) then
 		local unit = mmf.newObject(unitid)
-		local name = getname(unit)
+		local name = unit.strings[UNITNAME]
 	elseif (unitid == 2) then
 		name = "empty"
 	elseif (unitid == 1) then
@@ -1486,7 +1529,7 @@ function isstill(unitid,x,y)
 	
 	if (unitid ~= 1) and (unitid ~= 2) then
 		local unit = mmf.newObject(unitid)
-		name = getname(unit)
+		name = unit.strings[UNITNAME]
 	elseif (unitid == 1) then
 		name = "level"
 	else
@@ -1507,7 +1550,7 @@ function isstill_or_locked(unitid,x,y,dir)
 	
 	if (unitid ~= 1) and (unitid ~= 2) then
 		local unit = mmf.newObject(unitid)
-		name = getname(unit)
+		name = unit.strings[UNITNAME]
 	elseif (unitid == 1) then
 		name = "level"
 	else
@@ -1691,13 +1734,11 @@ function append(t1,t2)
 	return result
 end
 
-function getname(unit)
-	if (unit == nil) then
-		print(debug.traceback())
-	end
+function getname(unit,meta_)
 	local result = unit.strings[UNITNAME]
+	local meta = meta_ or false
 	
-	if (unit.strings[UNITTYPE] == "text") then
+	if (meta == false) and (unit.strings[UNITTYPE] == "text") then
 		result = "text"
 	end
 	
@@ -2196,7 +2237,7 @@ function findfears(unitid,feartargets,x_,y_)
 					local ndrs = ndirs[resultdir+1]
 					local ox,oy = ndrs[1],ndrs[2]
 					
-					local obsresult_ = trypush(obsresult,ox,oy,resultdir,false,x,y,unitid)
+					local obsresult_ = trypush(obsresult,ox,oy,resultdir,false,x,y,"fear",unitid)
 					
 					if (obsresult_ ~= 0) then
 						problems = true
@@ -2267,12 +2308,17 @@ end
 
 function cantmove(name,unitid,dir,x,y)
 	local still = hasfeature(name,"is","still",unitid,x,y)
+	local levelhold = hasfeature("level","is","hold",1,x,y)
+
+	if (levelhold ~= nil) and ((unitid ~= 1) and floating_level(unitid,x,y)) then
+		return true
+	end
 	
 	if (still ~= nil) then
 		return true
 	end
 	
-	if (dir ~= nil) then
+	if (dir ~= nil) and (dir ~= 4) then
 		local opts = {"lockedright","lockedup","lockedleft","lockeddown"}
 		local checkdir = dir
 		if (featureindex["reverse"] ~= nil) then

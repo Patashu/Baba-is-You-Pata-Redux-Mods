@@ -34,6 +34,8 @@ function clearunits(restore_)
 	leveldata.colours = {}
 	leveldata.currcolour = 0
 	poweredstatus = {}
+	specialtiling = {}
+	backparticles = {}
 	
 	visiontargets = {}
 	vision_rendered = {}

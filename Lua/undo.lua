@@ -186,7 +186,7 @@ function undo()
 					local baseuid = line[7] or -1
 					
 					if (paradox[uid] == nil) and (paradox[baseuid] == nil) then
-						local x,y,dir,levelfile,levelname,vislevel,complete,visstyle,maplevel,colour,clearcolour,followed,back_init,ogname,signtext,convert,oldid = line[3],line[4],line[5],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],line[16],line[17],line[18],line[19],line[20],line[21]
+						local x,y,dir,levelfile,levelname,vislevel,complete,visstyle,maplevel,colour,clearcolour,followed,back_init,ogname,signtext,holder,convert,oldid = line[3],line[4],line[5],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],line[16],line[17],line[18],line[19],line[20],line[21]
 						local name = line[2]
 						
 						local unitname = ""
@@ -201,6 +201,12 @@ function undo()
 						if (proceed) then
 							--MF_alert("Trying to create " .. name .. ", " .. tostring(unitreference[name]))
 							unitname = unitreference[name]
+							if (name == "level") and (unitreference[name] ~= "level") then
+								unitname = "level"
+								unitreference["level"] = "level"
+								MF_alert("ALERT! Unitreference for level was wrong!")
+							end
+
 							unitid = MF_emptycreate(unitname,x,y)
 							
 							local unit = mmf.newObject(unitid)
@@ -233,6 +239,7 @@ function undo()
 							unit.followed = followed
 							unit.back_init = back_init
 							unit.originalname = ogname
+							unit.holder = holder
 							
 							if (unit.strings[UNITTYPE] == "text") then
 								updatecode = 1
@@ -346,6 +353,7 @@ function undo()
 					--print(unit.className .. ", " .. tostring(unitid) .. ", " .. tostring(line[3]) .. ", " .. unit.strings[UNITNAME])
 					
 					addunit(unitid,true)
+					unit.originalname = line[9]
 					
 					if (unit.values[TILING] == 1) then
 						dynamic(unitid)
@@ -356,7 +364,7 @@ function undo()
 					if (paradox[uid] == nil) then
 						local unitid = getunitid(line[3])
 						
-						-- Kökkö ratkaisu!
+						-- Kï¿½kkï¿½ ratkaisu!
 						if (unitid ~= nil) and (unitid ~= 0) then
 							local unit = mmf.newObject(unitid)
 							if (unit ~= nil) then --paradox-proofing
@@ -457,6 +465,8 @@ function undo()
 					local unit = mmf.newObject(unitid)
 					if (unit ~= nil) then --paradox-proofing
 						unit.holder = line[3]
+					else
+						undocall(style,line)
 					end
 				end
 			end

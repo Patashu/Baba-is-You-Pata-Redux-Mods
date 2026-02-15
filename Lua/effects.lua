@@ -9,7 +9,9 @@ function effects(timer)
 	doeffect(timer,nil,"sad","tear",1,2,20,{3,2})
 	doeffect(timer,nil,"sleep","sleep",1,2,60,{3,2})
 	doeffect(timer,nil,"broken","error",3,10,8,{2,2})
-	doeffect(timer,nil,"pet","pet",1,0,50,{3,1},"nojitter")
+	doeffect(timer,nil,"pet","pet",1,0,50,{3,1},"nojitter",nil,true)
+	doeffect(timer,nil,"angry","angry",1,10,5,{2,2})
+	doeffect(timer,nil,"happy","happy",1,10,5,{5,4})
 	
 	doeffect(timer,nil,"power","electricity",2,5,8,{2,4})
 	doeffect(timer,nil,"power2","electricity",2,5,8,{5,4})
@@ -35,12 +37,13 @@ function shorteffectblock()
 	do_mod_hook("effect_once")
 end
 	
-function doeffect(timer,word2_,word3,particle,count,chance,timing,colour,specialrule_,layer_)
+function doeffect(timer,word2_,word3,particle,count,chance,timing,colour,specialrule_,layer_,follow_)
 	local zoom = generaldata2.values[ZOOM]
 	
 	local specialrule = specialrule_ or ""
 	local layer = layer_ or 1
 	local word2 = word2_ or "is"
+	local follow = follow_ or false
 	
 	if (timer % timing == 0) then
 		local this = findfeature(nil,word2,word3)
@@ -50,7 +53,7 @@ function doeffect(timer,word2_,word3,particle,count,chance,timing,colour,special
 		
 		if (this ~= nil) then
 			for k,v in ipairs(this) do
-				if (v[1] ~= "empty") and (v[1] ~= "all") and (v[1] ~= "level") then
+				if (v[1] ~= "empty") and (v[1] ~= "all") then
 					local these = findall(v,true)
 					
 					if (#these > 0) then
@@ -86,6 +89,11 @@ function doeffect(timer,word2_,word3,particle,count,chance,timing,colour,special
 										end
 									end
 									
+									if (partid ~= nil) and (partid ~= 0) and follow then
+										local part = mmf.newObject(partid)
+										part.values[FOLLOW] = unit.fixed
+									end
+									
 									if (partid ~= nil) and (specialrule == "inwards") and (partid ~= 0) then
 										local part = mmf.newObject(partid)
 										
@@ -116,7 +124,9 @@ function doeffect(timer,word2_,word3,particle,count,chance,timing,colour,special
 							end
 						end
 					end
-				elseif ((v[1] == "empty") or (v[1] == "level")) then
+				end
+				
+				if ((v[1] == "empty") or (v[1] == "level")) then
 					local ignorebroken = false
 					if (word3 == "broken") then
 						ignorebroken = true
@@ -201,14 +211,19 @@ function domaprotation()
 end
 
 function levelparticles(name)
+	backparticles = {}
+	
 	if (particletypes[name] ~= nil) then
 		local data = particletypes[name]
+		local partname = data.object or "Level_particle"
+		backparticles.name = name
+		backparticles.update = data.update
 		
 		if (data.customfunc == nil) then
 			local amount = data.amount
 			
 			for i=1,amount do
-				local unitid = MF_specialcreate("Level_particle")
+				local unitid = MF_specialcreate(partname)
 				local unit = mmf.newObject(unitid)
 				
 				unit.values[ONLINE] = 1
@@ -250,12 +265,26 @@ function levelparticles(name)
 				if (data.extra ~= nil) then
 					data.extra(unitid)
 				end
+				
+				if (partname ~= "Level_particle") and (data.add_to_list ~= nil) and data.add_to_list then
+					table.insert(backparticles, unit)
+				end
 			end
 		else
 			data.customfunc()
 		end
+		
+		if (data.init_extra ~= nil) then
+			data.init_extra()
+		end
 	else
 		print("No particles with name " .. name)
+	end
+end
+
+function backparticles_update(timer)
+	if (backparticles.update ~= nil) then
+		backparticles.update(timer)
 	end
 end
 

@@ -59,15 +59,18 @@ function effectblock()
 	
 	for i,unit in ipairs(units) do
 		unit.new = false
+		unit.flags[LEVELVISOVERRIDE] = false
 		
 		if (levelhide == nil) then
 			unit.visible = true
 		else
 			unit.visible = false
+			unit.flags[LEVELVISOVERRIDE] = true
 		end
 		
 		if (unit.className ~= "level") then			
-			local name = getname(unit)
+			local name = unit.strings[UNITNAME]
+
 			local isred = hasfeature(name,"is","red",unit.fixed)
 			local isblue = hasfeature(name,"is","blue",unit.fixed)
 			local islime = hasfeature(name,"is","lime",unit.fixed)
@@ -147,6 +150,7 @@ function effectblock()
 			local unit = mmf.newObject(unitid)
 			
 			unit.visible = false
+			unit.flags[LEVELVISOVERRIDE] = true
 		end
 	end
 end
@@ -161,7 +165,7 @@ function brokenblock(ids)
 	end
 	
 	for i,unit in ipairs(checkthese) do
-		local name = getname(unit)
+		local name = unit.strings[UNITNAME]
 		local realbroken = unit.broken
 		unit.broken = 0
 		local broken = hasfeature(name,"is","broken",unit.fixed)
@@ -700,8 +704,6 @@ function moveblock(onlystartblock_)
 											end
 										end
 										
-										local uname = getname(newunit)
-										
 										if (#undowordrelatedunits > 0) then
 											for a,b in ipairs(undowordrelatedunits) do
 												if (b == bline[6]) then
@@ -714,7 +716,7 @@ function moveblock(onlystartblock_)
 									end
 								end
 								
-								addundo({"remove",unit.strings[UNITNAME],unit.values[XPOS],unit.values[YPOS],unit.values[DIR],unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],unit.followed,unit.back_init,unit.originalname,unit.strings[UNITSIGNTEXT],false,unitid})
+								addundo({"remove",unit.strings[UNITNAME],unit.values[XPOS],unit.values[YPOS],unit.values[DIR],unit.values[ID],unit.values[ID],unit.strings[U_LEVELFILE],unit.strings[U_LEVELNAME],unit.values[VISUALLEVEL],unit.values[COMPLETED],unit.values[VISUALSTYLE],unit.flags[MAPLEVEL],unit.strings[COLOUR],unit.strings[CLEARCOLOUR],unit.followed,unit.back_init,unit.originalname,unit.strings[UNITSIGNTEXT],unit.holder,false,unitid})
 								
 								for a,b in ipairs(delname) do
 									MF_alert("added undo for " .. b[1] .. " with ID " .. tostring(b[2]))
@@ -747,7 +749,7 @@ function moveblock(onlystartblock_)
 					for i,v in ipairs(targets) do
 						local vunit = mmf.newObject(v)
 						local thistype = vunit.strings[UNITTYPE]
-						local vname = getname(vunit)
+						local vname = vunit.strings[UNITNAME]
 						
 						local targetvalid = isgone(v)
 						local targetstill = hasfeature(vname,"is","still",v,x,y)
@@ -973,7 +975,7 @@ function fallblock()
 				
 				local unit = mmf.newObject(unitid)
 				local x,y,dir = unit.values[XPOS],unit.values[YPOS],unit.values[DIR]
-				local name = getname(unit)
+				local name = unit.strings[UNITNAME]
 				
 				local drs = ndirs[falldir + 1]
 				local ox,oy = drs[1],drs[2]
@@ -1160,7 +1162,7 @@ function block(small_)
 				end
 				
 				if (ufloat ~= 2) and (ded == false) then
-					addundo({"done",unit.strings[UNITNAME],unit.values[XPOS],unit.values[YPOS],unit.values[DIR],unit.values[ID],unit.fixed,ufloat})
+					addundo({"done",unit.strings[UNITNAME],unit.values[XPOS],unit.values[YPOS],unit.values[DIR],unit.values[ID],unit.fixed,ufloat,unit.originalname})
 				end
 				
 				delunit(unit.fixed)
@@ -1173,7 +1175,7 @@ function block(small_)
 		for id,unit in ipairs(ismore) do
 			local x,y = unit.values[XPOS],unit.values[YPOS]
 			local unitid = unit.fixed
-			local name = getname(unit)
+			local name = unit.strings[UNITNAME]
 			local doblocks = {}
 			
 			for i=1,4 do
@@ -1191,7 +1193,7 @@ function block(small_)
 							valid = false
 						elseif (b ~= 0) and (b ~= -1) then
 							local bunit = mmf.newObject(b)
-							local obsname = getname(bunit)
+							local obsname = bunit.strings[UNITNAME]
 							
 							local obsstop = hasfeature(obsname,"is","stop",b,x+ox,y+oy) or (featureindex["stops"] ~= nil and hasfeature(obsname,"stops",name,b,x+ox,y+oy)) or hasfeature(obsname,"is","sidekick",b,x+ox,y+oy) or (featureindex["hates"] ~= nil and hasfeature(name,"hates",obsname,unitid,x,y)) or (hasfeature(obsname,"is","oneway",b) and oxoytodir(ox,oy) == rotate(bunit.values[DIR]))
 							if (obsstop == false) then
@@ -1271,23 +1273,25 @@ function block(small_)
 		end
 	end
 	
-	if (generaldata.strings[WORLD] == "museum") then
-		local ishold = getunitswitheffect("hold",false,delthese)
-		local holders = {}
+	-- if (generaldata.strings[WORLD] == "museum") then
+	local ishold = getunitswitheffect("hold",false,delthese)
+	local holders = {}
+	
+	for id,unit in ipairs(ishold) do
+		local x,y = unit.values[XPOS],unit.values[YPOS]
+		local tileid = x + y * roomsizex
+		holders[unit.values[ID]] = unit.fixed
 		
-		for id,unit in ipairs(ishold) do
-			local x,y = unit.values[XPOS],unit.values[YPOS]
-			local tileid = x + y * roomsizex
-			holders[unit.values[ID]] = 1
+		if (unitmap[tileid] ~= nil) then
+			local water = findallhere(x,y)
 			
-			if (unitmap[tileid] ~= nil) then
-				local water = findallhere(x,y)
-				
-				if (#water > 0) then
-					for a,b in ipairs(water) do
-						if floating(b,unit.fixed,x,y) then
-							if (b ~= unit.fixed) then
-								local bunit = mmf.newObject(b)
+			if (#water > 0) then
+				for a,b in ipairs(water) do
+					if floating(b,unit.fixed,x,y) then
+						if (b ~= unit.fixed) then
+							local bunit = mmf.newObject(b)
+							
+							if (bunit.holder ~= unit.values[ID]) then
 								addundo({"holder",bunit.values[ID],bunit.holder,unit.values[ID],},unitid)
 								bunit.holder = unit.values[ID]
 							end
@@ -1296,24 +1300,49 @@ function block(small_)
 				end
 			end
 		end
-		
-		for i,unit in ipairs(units) do
-			if (unit.holder ~= nil) and (unit.holder ~= 0) then
-				if (holders[unit.holder] ~= nil) then
-					local unitid = getunitid(unit.holder)
-					local bunit = mmf.newObject(unitid)
-					local x,y = bunit.values[XPOS],bunit.values[YPOS]
-					
+	end
+	
+	for i,unit in ipairs(units) do
+		if (unit.holder ~= nil) and (unit.holder ~= 0) then
+			if (holders[unit.holder] ~= nil) then
+				local unitid = getunitid(unit.holder)
+				local bunit = mmf.newObject(unitid)
+				local x,y = bunit.values[XPOS],bunit.values[YPOS]
+				
+				local name = getname(unit)
+				local hdir = 4
+				local ox = x - unit.values[XPOS]
+				local oy = y - unit.values[YPOS]
+				if (ox > 0) and (oy == 0) then
+					hdir = 0
+				elseif (ox == 0) and (oy < 0) then
+					hdir = 1
+				elseif (ox < 0) and (oy == 0) then
+					hdir = 2
+				elseif (ox == 0) and (oy > 0) then
+					hdir = 3
+				end
+				
+				if (cantmove(name,unit.fixed,hdir,unit.values[XPOS],unit.values[YPOS]) == false) then
 					update(unit.fixed,x,y,unit.values[DIR])
+					
+					if (floating(unit.fixed,unitid,x,y) == false) then
+						addundo({"holder",unit.values[ID],unit.holder,0,},unitid)
+						unit.holder = 0
+					end
 				else
 					addundo({"holder",unit.values[ID],unit.holder,0,},unitid)
 					unit.holder = 0
 				end
 			else
+				addundo({"holder",unit.values[ID],unit.holder,0,},unitid)
 				unit.holder = 0
 			end
+		else
+			unit.holder = 0
 		end
 	end
+	-- end
 	
 	local issink = getunitswitheffect("sink",false,delthese)
 	
@@ -1421,7 +1450,10 @@ function block(small_)
 			doremovalsound = true
 		end
 		
-		local name = getname(unit)
+		local name = unit.strings[UNITNAME]
+		if (unit.strings[UNITTYPE] == "text") then
+			name = "text"
+		end
 		local count = hasfeature_count(name,"is","boom",unit.fixed,ux,uy)
 		local dim = math.min(count - 1, math.max(roomsizex, roomsizey))
 		
@@ -1600,7 +1632,7 @@ function block(small_)
 							if (d ~= unit.fixed) then
 								if floating(d,unit.fixed,x,y) then
 									local kunit = mmf.newObject(d)
-									local kname = getname(kunit)
+									local kname = kunit.strings[UNITNAME]
 									
 									local weakskull = hasfeature(kname,"is","weak",d)
 									
@@ -1934,6 +1966,50 @@ function block(small_)
 	end
 	
 	delthese,doremovalsound = handledels(delthese,doremovalsound)
+
+	if (featureindex["hold"] ~= nil) then
+		local ishold = getunitswitheffect("hold",false,delthese)
+		local holders = {}
+		
+		for id,unit in ipairs(ishold) do
+			local x,y = unit.values[XPOS],unit.values[YPOS]
+			local tileid = x + y * roomsizex
+			holders[unit.values[ID]] = 1
+			
+			if (unitmap[tileid] ~= nil) then
+				local water = findallhere(x,y)
+				
+				if (#water > 0) then
+					for a,b in ipairs(water) do
+						if floating(b,unit.fixed,x,y) then
+							if (b ~= unit.fixed) then
+								local bunit = mmf.newObject(b)
+								addundo({"holder",bunit.values[ID],bunit.holder,unit.values[ID],},unitid)
+								bunit.holder = unit.values[ID]
+							end
+						end
+					end
+				end
+			end
+		end
+		
+		for i,unit in ipairs(units) do
+			if (unit.holder ~= nil) and (unit.holder ~= 0) then
+				if (holders[unit.holder] ~= nil) then
+					local unitid = getunitid(unit.holder)
+					local bunit = mmf.newObject(unitid)
+					local x,y = bunit.values[XPOS],bunit.values[YPOS]
+					
+					update(unit.fixed,x,y,unit.values[DIR])
+				else
+					addundo({"holder",unit.values[ID],unit.holder,0,},unitid)
+					unit.holder = 0
+				end
+			else
+				unit.holder = 0
+			end
+		end
+	end
 	
 	isyou = getunitswitheffect("you",false,delthese)
 	isyou2 = getunitswitheffect("you2",false,delthese)
@@ -2065,6 +2141,8 @@ function block(small_)
 	end
 	
 	delthese,doremovalsound = handledels(delthese,doremovalsound)
+
+	do_mod_hook("block")
 	
 	for i,unit in ipairs(units) do
 		if (inbounds(unit.values[XPOS],unit.values[YPOS],1) == false) then
@@ -2185,7 +2263,7 @@ function startblock(light_)
 			--local isfollow = xthis(unitrules,name,"follow")
 			local isfloat = isthis(unitrules,"float")
 			local sleep = isthis(unitrules,"sleep")
-			local ismake = xthis(unitrules,name,"make")
+			--local ismake = xthis(unitrules,name,"make")
 			
 			--[[
 			local isright = isthis(unitrules,"right")
@@ -2224,6 +2302,8 @@ function startblock(light_)
 	
 	moveblock(true)
 	effectblock()
+
+	newundo()
 end
 
 function visionblock()
@@ -2265,6 +2345,9 @@ function levelblock()
 		local lsafe = issafe(1)
 		local emptybonus = false
 		local emptydone = false
+
+		local ewintiles = {}
+		local eendtiles = {}
 		
 		local levelteledone = 0
 		
@@ -2455,6 +2538,14 @@ function levelblock()
 								if canend and ((hasfeature("level","is","you",1,i,j) ~= nil) or (hasfeature("level","is","you2",1,i,j) ~= nil) or (hasfeature("level","is","3d",1,i,j) ~= nil)) and floating_level(2,i,j) then
 									ending = true
 								end
+
+								if victory then
+									table.insert(ewintiles, {i,j})
+								end
+								
+								if ending then
+									table.insert(eendtiles, {i,j})
+								end
 							elseif (rule[2] == "eat") and (rule[3] == "level") and (lsafe == false) then
 								if testcond(conds,2,i,j) and floating_level(2,i,j) then
 									local pmult,sound = checkeffecthistory("eat")
@@ -2576,11 +2667,16 @@ function levelblock()
 							table.insert(edelthese, {i,j})
 						end
 						
-						if bonus and (esafe == false) and alive then
-							setsoundname("turn",2)
-							
-							if (math.random(1,4) == 1) then
-								MF_particles("win",i,j,1,4,2,1,1)
+						if bonus and (esafe == false) then
+							if alive then
+								setsoundname("turn",2)
+								
+								if (math.random(1,4) == 1) then
+									MF_particles("win",i,j,1,4,2,1,1)
+								end
+								
+								alive = false
+								table.insert(edelthese, {i,j})
 							end
 							
 							if (emptybonus == false) then
@@ -2589,9 +2685,6 @@ function levelblock()
 								addundo({"bonus",1})
 								emptybonus = true
 							end
-							
-							alive = false
-							table.insert(edelthese, {i,j})
 						end
 						
 						if victory and alive then
@@ -2628,6 +2721,36 @@ function levelblock()
 		
 		for a,b in ipairs(edelthese) do
 			delete(2,b[1],b[2])
+		end
+
+		if (#ewintiles > 0) then
+			for a,b in ipairs(ewintiles) do
+				local i,j = b[1],b[2]
+				local tileid = i + j * roomsizex
+				if (unitmap[tileid] == nil) or (#unitmap[tileid] == 0) then
+					MF_win()
+					return
+				end
+			end
+		end
+		
+		if (#eendtiles > 0) and (generaldata.strings[WORLD] ~= generaldata.strings[BASEWORLD]) then
+			for a,b in ipairs(eendtiles) do
+				local i,j = b[1],b[2]
+				local tileid = i + j * roomsizex
+				if (unitmap[tileid] == nil) or (#unitmap[tileid] == 0) then
+					if (editor.values[INEDITOR] ~= 0) then
+						MF_end_single()
+						MF_win()
+						return
+					else
+						MF_end_single()
+						MF_win()
+						MF_credits(1)
+						return
+					end
+				end
+			end
 		end
 		
 		if (#things > 0) then
@@ -2686,7 +2809,7 @@ function levelblock()
 						end
 					elseif (rule[1] ~= "level") and (rule[3] == "level") then
 						local dothese = {}
-						if (findnoun(rule[1]) == false) then
+						if (findnoun(rule[1]) == false) or (rule[1] == "text") then
 							dothese = findall({rule[1],conds},nil,true)
 						elseif (rule[1] == "empty") then
 							dothese = findempty(conds,true)
@@ -3116,6 +3239,7 @@ function levelblock()
 						local defeats = findfeature(nil,"is","defeat")
 						local wins = findfeature(nil,"is","win")
 						local ends = findfeature(nil,"is","end")
+						local bonus = findfeature(nil,"is","bonus")
 						
 						if (defeats ~= nil) then
 							for a,b in ipairs(defeats) do
@@ -3137,13 +3261,14 @@ function levelblock()
 							end
 						end
 						
-						if ((#findallfeature("empty","is","defeat") > 0) or (#findallfeature("empty","is","defeat") > 0)) and floating_level(2) and (lsafe == false) then
+						if (#findallfeature("empty","is","defeat") > 0) and floating_level(2) and (lsafe == false) then
 							destroylevel()
 							return
 						end
 						
 						local canwin = false
 						local canend = false
+						local canbonus = false
 						
 						if (wins ~= nil) then
 							for a,b in ipairs(wins) do
@@ -3181,12 +3306,39 @@ function levelblock()
 							end
 						end
 						
-						if ((#findallfeature("empty","is","win") > 0) or (#findallfeature("empty","is","win") > 0)) and floating_level(2) then
+						if (bonus ~= nil) then
+							for a,b in ipairs(bonus) do
+								local allbonus = findall(b)
+								
+								if (#allbonus > 0) then
+									for c,d in ipairs(allbonus) do
+										if (issafe(d) == false) and floating_level(d) then
+											local unit = mmf.newObject(d)
+											
+											local pmult,sound = checkeffecthistory("bonus")
+											MF_particles("bonus",unit.values[XPOS],unit.values[YPOS],10 * pmult,4,1,1,1)
+											MF_playsound("bonus")
+											canbonus = true
+											generaldata.values[SHAKE] = 2
+											setsoundname("removal",2,sound)
+											delete(d)
+										end
+									end
+								end
+							end
+						end
+						
+						if (#findallfeature("empty","is","win") > 0) and floating_level(2) then
 							canwin = true
 						end
 						
-						if ((#findallfeature("empty","is","end") > 0) or (#findallfeature("empty","is","end") > 0)) and floating_level(2) then
+						if (#findallfeature("empty","is","end") > 0) and floating_level(2) then
 							canend = true
+						end
+
+						if canbonus then
+							MF_bonus(1)
+							addundo({"bonus",1})
 						end
 						
 						if canwin then
@@ -3520,6 +3672,8 @@ function levelblock()
 						local yous = findfeature(nil,"is","you")
 						local yous2 = findfeature(nil,"is","you2")
 						local yous3 = findfeature(nil,"is","3d")
+
+						local bonusget = false
 						
 						if (yous == nil) then
 							yous = {}
@@ -3544,13 +3698,19 @@ function levelblock()
 									
 									if (#allyous > 0) then
 										for c,d in ipairs(allyous) do
-											if (issafe(d) == false) and floating_level(d) then
-												destroylevel("bonus")
-												return
+											if floating_level(d) then
+												bonusget = true
+												
+												if (lsafe == false) then
+													destroylevel("bonus")
+													return
+												end
 											end
 										end
 									end
 								elseif testcond(b[2],1) then
+									bonusget = true
+
 									if (lsafe == false) then
 										destroylevel("bonus")
 										return
@@ -3559,9 +3719,19 @@ function levelblock()
 							end
 						end
 						
-						if ((#findallfeature("empty","is","you") > 0) or (#findallfeature("empty","is","you2") > 0) or (#findallfeature("empty","is","3d") > 0)) and floating_level(2) and (lsafe == false) then
-							destroylevel("bonus")
-							return
+						if ((#findallfeature("empty","is","you") > 0) or (#findallfeature("empty","is","you2") > 0) or (#findallfeature("empty","is","3d") > 0)) and floating_level(2) then
+							bonusget = true
+							
+							if (lsafe == false) then
+								destroylevel("bonus")
+								return
+							end
+						end
+						
+						if bonusget then
+							MF_playsound("bonus")
+							MF_bonus(1)
+							addundo({"bonus",1})
 						end
 					elseif (action == "reset" or action == "win") then
 						local yous = findfeature(nil,"is","you")
@@ -4030,9 +4200,13 @@ function levelblock()
 		if unlocked then
 			setsoundname("turn",7)
 		end
+
+		do_mod_hook("block_level")
 	end
 	
-	if (#units >= unitlimit) then
+	local totalunitcount = MF_totalunitcount()
+	
+	if (#units >= unitlimit) or (totalunitcount >= unitlimit + 1000) then
 		HACK_INFINITY = 200
 		destroylevel("toocomplex")
 		return
